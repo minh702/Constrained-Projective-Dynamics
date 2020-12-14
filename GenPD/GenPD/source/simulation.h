@@ -416,6 +416,8 @@ private:
 	void evaluateLaplacianPureConstraint1D(SparseMatrix& laplacian_matrix_1d);
 	void applyHessianForCGPureConstraint(const VectorX& x, VectorX& b); // b = H*x
 
+	void fepr();
+	bool m_use_fepr;
 	// collision
 	ScalarType evaluateEnergyCollision(const VectorX& x);
 	void evaluateGradientCollision(const VectorX& x, VectorX& gradient);

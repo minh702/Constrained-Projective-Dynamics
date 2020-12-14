@@ -322,6 +322,7 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "Friction Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_friction_coefficient, " min=0 group='Constants' ");
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->m_use_fepr, " group='Demo' ");
 	// !simulation settings bar
 
 	TwDefine(" TW_HELP visible=false ");

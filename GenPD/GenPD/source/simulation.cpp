@@ -56,6 +56,14 @@ TimerWrapper g_lbfgs_timer;
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
 // comparison function for sort
+
+
+
+EigenVector3 g_angular_momentum, g_linear_momentum;
+
+ScalarType g_total_energy;
+
+
 bool compareTriplet(SparseMatrixTriplet i, SparseMatrixTriplet j)
 { 
 	return (abs(i.value())<abs(j.value())); 
@@ -143,11 +151,18 @@ void Simulation::Reset()
 	m_mesh->m_expanded_system_dimension = 0;
 	m_mesh->m_expanded_system_dimension_1d = 0;
 
+
+
 	setupConstraints();
 	SetMaterialProperty();
 
 	m_selected_attachment_constraint = NULL;
 	m_step_mode = false;
+
+	VectorX f(m_mesh->m_system_dimension);
+	f.setZero();
+
+	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
@@ -228,6 +243,9 @@ void Simulation::Update()
 			integrateImplicitMethod();
 			break;
 		}
+
+		if (m_use_fepr) fepr();
+		
 
 		// damping
 		dampVelocity();
@@ -2689,6 +2707,24 @@ void Simulation::applyHessianForCGPureConstraint(const VectorX& x, VectorX& b)
 	{
 		(*it)->ApplyHessian(x, b);
 	}
+}
+
+void Simulation::fepr()
+{
+
+	float threshold = 10e-7;
+	VectorX c(7);
+	VectorX qx = m_mesh->m_current_positions;
+	VectorX qv = m_mesh->m_current_velocities;
+	int iter = 0;
+
+	while (c.norm()>threshold)
+	{
+		iter++;
+	}
+
+
+
 }
 
 ScalarType Simulation::evaluateEnergyCollision(const VectorX& x)
