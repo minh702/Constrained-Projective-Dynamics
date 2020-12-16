@@ -2716,15 +2716,68 @@ void Simulation::fepr()
 	VectorX c(7);
 	VectorX qx = m_mesh->m_current_positions;
 	VectorX qv = m_mesh->m_current_velocities;
+	Matrix dcx(m_mesh->m_system_dimension,7);
+	VectorX dh(m_mesh->m_system_dimension);
+	Matrix dcv(m_mesh->m_system_dimension,7);
+	VectorX ext_f(m_mesh->m_system_dimension);
+	VectorX dcst(2,7);
+	VectorX lambda(7);
 	int iter = 0;
+	VectorX st(2);
+	ScalarType h_squared = m_h * m_h;
+
+	m_previous_linear_momentum = m_current_linear_momentum;
+	m_previous_angular_momentum = m_previous_angular_momentum;
+
+	m_current_linear_momentum = evaluateLinearMomentum(qv);
+	m_current_angular_momentum = evaluateAngularMomentum(qx, qv);
+
 
 	while (c.norm()>threshold)
 	{
 		iter++;
+
+		c.block_vector(0) = (1 - st(0)) * m_current_linear_momentum + st(0) * m_previous_linear_momentum
+			- evaluateLinearMomentumAndGradient(qv,dcx);
+		c.block_vector(1) = (1 - st(1)) * m_current_angular_momentum + st(1) * m_previous_linear_momentum
+			- evaluateAngularMomentumAndGradient(qx, qv, dcx, dcv);
+		c(6) = m_hamiltonian - evaluateEnergyAndGradientPureConstraint(qx, ext_f, dh);
+
+
+		Matrix schur = dcx.transpose() * m_mesh->m_inv_mass_matrix * dcx
+			+ h_squared * dcv.transpose() * m_mesh->m_inv_mass_matrix * dcv
+			+ dcst.transpose() * dcst;
+			
+		lambda = schur.inverse() * c;
+
+		qx -= m_mesh->m_inv_mass_matrix * dcx * lambda;
+		qv -= h_squared * m_mesh->m_inv_mass_matrix * dcv * lambda;
+
+		st -= dcst * lambda;
 	}
 
 
 
+}
+
+EigenVector3 Simulation::evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix cpx, Matrix cpv)
+{
+	return EigenVector3();
+}
+
+EigenVector3 Simulation::evaluateAngularMomentum(const VectorX& x, const VectorX& v)
+{
+	return EigenVector3();
+}
+
+EigenVector3 Simulation::evaluateLinearMomentumAndGradient(const VectorX& v, Matrix cpv)
+{
+	return EigenVector3();
+}
+
+EigenVector3 Simulation::evaluateLinearMomentum(const VectorX& v)
+{
+	return EigenVector3();
 }
 
 ScalarType Simulation::evaluateEnergyCollision(const VectorX& x)
