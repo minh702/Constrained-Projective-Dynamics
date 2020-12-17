@@ -424,7 +424,10 @@ private:
 
 	//energy-momentum conservation
 	void fepr();
-	bool m_use_fepr;
+	bool m_enable_fepr;
+	bool m_verbose_show_fepr_converge;
+	bool m_verbose_show_fepr_optimization_time;
+
 	
 	EigenVector3 evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix cpx, Matrix cpv);
 	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
