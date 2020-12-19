@@ -271,6 +271,13 @@ protected:
 	// for optimization method
 	unsigned int m_current_iteration;
 
+	// for constrained pd 
+
+	bool m_enable_constrained_pd;
+	ScalarType m_hamiltonian;
+	EigenVector3 m_linear_momentum;
+	EigenVector3 m_angular_momentum;
+
 	// line search 
 	bool m_enable_line_search;
 	bool m_enable_exact_search;
@@ -377,6 +384,8 @@ private:
 
 	// evaluate energy
 	ScalarType evaluateEnergy(const VectorX& x);
+	void evaluateAngularMomentumConstraintGradient(const VectorX& x, Matrix& dcl);
+	void evaluateLinearMomentumConstraintGradient(Matrix& dcp);
 	// evaluate gradient
 	void evaluateGradient(const VectorX& x, VectorX& gradient, bool enable_omp = false);
 	// evaluate gradient and energy
