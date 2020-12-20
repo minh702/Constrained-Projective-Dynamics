@@ -55,8 +55,8 @@ TimerWrapper g_lbfgs_timer;
 
 Matrix g_dcp, g_dcl;
 VectorX g_dch;
-VectorX g_Ainv_dcp, g_Ainv_dcl;
-Matrix g_Ainv_dch;
+Matrix g_Ainv_dcp, g_Ainv_dcl;
+VectorX g_Ainv_dch;
 VectorX g_Ainv_vnh;
 VectorX g_c(7);
 ScalarType rest_length_adjust = 1; 
@@ -153,10 +153,13 @@ void Simulation::Reset()
 	if (!m_handles.empty())
 		m_handles.clear();
 	m_handle_id.resize(m_mesh->m_vertices_number);
+
 	for (unsigned int i = 0; i != m_handle_id.size(); ++i)
 	{
 		m_handle_id[i] = -1;
 	}
+
+
 	m_selected_handle_id = -1;
 
 	m_mesh->m_expanded_system_dimension = 0;
@@ -168,19 +171,40 @@ void Simulation::Reset()
 
 	if (m_enable_constrained_pd)
 	{
+		VectorX x0 = m_mesh->m_current_positions;
+		VectorX v0 = m_mesh->m_current_velocities;
+		VectorX f_ext = VectorX(m_mesh->m_system_dimension).setZero();
 		// precompute \nabla C_P and A^-1 \nabla C_P
+		g_dcp.resize(m_mesh->m_system_dimension, 3);
+		g_dcl.resize(m_mesh->m_system_dimension, 3);
+		g_dch.resize(m_mesh->m_system_dimension);
+
+		g_Ainv_dcp.resize(m_mesh->m_system_dimension, 3);
+		g_Ainv_dcl.resize(m_mesh->m_system_dimension, 3);
+		g_Ainv_dch.resize(m_mesh->m_system_dimension);
+
 		prefactorize();
 		evaluateLinearMomentumConstraintGradient(g_dcp);
+
 		VectorX dcpi(m_mesh->m_system_dimension);
 		VectorX Ainv_dcpi(m_mesh->m_system_dimension);
 
-		for (int i; i < 3; i++)
+		for (int i = 0; i < 3; i++)
 		{
 			dcpi = g_dcp.col(i);
 			LBFGSKernelLinearSolve(Ainv_dcpi, dcpi, 1);
 			g_Ainv_dcp.col(i) = Ainv_dcpi;
 		}
 
+
+		// compute initial P, L, H
+		m_linear_momentum = evaluateLinearMomentum(v0);
+		m_angular_momentum = evaluateAngularMomentum(x0, v0);
+		m_hamiltonian = evaluateEnergyPureConstraint(x0, f_ext) + evaluateKineticEnergy(v0);
+
+		std::cout << "P: " << m_linear_momentum.transpose() << std::endl;
+		std::cout << "L: " << m_angular_momentum.transpose() << std::endl;
+		std::cout << "H: " << m_hamiltonian << std::endl;
 
 	}
 
@@ -260,7 +284,8 @@ void Simulation::Update()
 			VectorX Ainv_dcli(m_mesh->m_system_dimension);
 			
 			evaluateAngularMomentumConstraintGradient(m_mesh->m_current_positions, g_dcl);
-			for (int i; i < 3; i++)
+
+			for (int i= 0; i < 3; i++)
 			{
 				dcli = g_dcp.col(i);
 				LBFGSKernelLinearSolve(Ainv_dcli, dcli, 1);
@@ -310,18 +335,37 @@ void Simulation::Update()
 	m_h = old_h;
 }
 
-void Simulation::evaluateAngularMomentumConstraintGradient(const VectorX& x, Matrix& dcl)
+EigenVector3 Simulation::evaluateLinearMomentum(const VectorX& v)
 {
 	ScalarType mi;
-	EigenVector3 xi;
-
+	EigenVector3 vi;
+	EigenVector3 linear_momentum(0, 0, 0);
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		mi = m_mesh->m_mass_matrix_1d.coeff(i,i);
-		xi = x.block_vector(i);
-		dcl.block_matrix(i) = mi * vec2skew(xi);
+		mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		vi = v.block_vector(i);
+		linear_momentum += mi * vi;
 	}
+
+	return linear_momentum;
+}
+
+EigenVector3 Simulation::evaluateAngularMomentum(const VectorX& x, const VectorX& v)
+{
+	ScalarType mi;
+	EigenVector3 xi, vi;
+	EigenVector3 angular_momentum(0, 0, 0);
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		xi = x.block_vector(i);
+		vi = v.block_vector(i);
+		angular_momentum += mi * xi.cross(vi);
+	}
+
+	return angular_momentum;
 }
 
 void Simulation::evaluateLinearMomentumConstraintGradient(Matrix& dcp)
@@ -336,6 +380,23 @@ void Simulation::evaluateLinearMomentumConstraintGradient(Matrix& dcp)
 		dcp.block_matrix(i) = mi * identity;
 	}
 }
+
+void Simulation::evaluateAngularMomentumConstraintGradient(const VectorX& x, Matrix& dcl)
+{
+	ScalarType mi;
+	EigenVector3 xi;
+
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		mi = m_mesh->m_mass_matrix_1d.coeff(i,i);
+		xi = x.block_vector(i);
+		dcl.block_matrix(i) = mi * vec2skew(xi);
+	}
+}
+
+
+
 
 
 void Simulation::Draw(const VBO& vbos)

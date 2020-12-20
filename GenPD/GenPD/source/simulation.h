@@ -386,6 +386,8 @@ private:
 	ScalarType evaluateEnergy(const VectorX& x);
 	void evaluateAngularMomentumConstraintGradient(const VectorX& x, Matrix& dcl);
 	void evaluateLinearMomentumConstraintGradient(Matrix& dcp);
+	EigenVector3 evaluateLinearMomentum(const VectorX& v);
+	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
 	// evaluate gradient
 	void evaluateGradient(const VectorX& x, VectorX& gradient, bool enable_omp = false);
 	// evaluate gradient and energy
