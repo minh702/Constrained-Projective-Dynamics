@@ -287,7 +287,7 @@ void Simulation::Update()
 
 			for (int i= 0; i < 3; i++)
 			{
-				dcli = g_dcp.col(i);
+				dcli = g_dcl.col(i);
 				LBFGSKernelLinearSolve(Ainv_dcli, dcli, 1);
 				g_Ainv_dcl.col(i) = Ainv_dcli;
 			}
@@ -385,7 +385,6 @@ void Simulation::evaluateAngularMomentumConstraintGradient(const VectorX& x, Mat
 {
 	ScalarType mi;
 	EigenVector3 xi;
-
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
@@ -2036,9 +2035,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 							g_dcl.transpose() * g_Ainv_dcl +
 							g_dch.transpose() * g_Ainv_dch;
 
-			g_c.block_vector(0) = g_dcp * x;
-			g_c.block_vector(1) = g_dcl
-				* x;
+			g_c.block_vector(0) = g_dcp * x - m_linear_momentum * m_h;
+			g_c.block_vector(1) = g_dcl * x - m_angular_momentum * m_h;
 
 			VectorX cTAinv_g = (g_dcp.transpose() + g_dcl.transpose() + g_dch.transpose()) * r;  // (7 x 3m) * (3m x 1) = (7 x 1)
 			VectorX lambda = schur.inverse() * (g_c - cTAinv_g); 
