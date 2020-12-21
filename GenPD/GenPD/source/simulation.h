@@ -277,6 +277,7 @@ protected:
 	ScalarType m_hamiltonian;
 	EigenVector3 m_linear_momentum;
 	EigenVector3 m_angular_momentum;
+	ScalarType m_cpd_threshold;
 
 	// line search 
 	bool m_enable_line_search;
