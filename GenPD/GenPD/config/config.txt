@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         longbar
+TetFilePath         tet
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -31,7 +31,7 @@ BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
 LaplacianStiffness  180
-GravityConstant     10
+GravityConstant     0
 DampingCoefficient  0
 RestiCoefficient    1
 FrictionCoefficient 0
@@ -40,7 +40,7 @@ DefinitenessFix     1
 LSEnable            1
 LSExact             0
 LSType              0
-LSStep              1
+LSStep              0
 LSAlpha             0.03
 LSBeta              0.5
 AnimEnableSwing     0
