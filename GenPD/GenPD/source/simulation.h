@@ -429,7 +429,7 @@ private:
 	bool m_verbose_show_fepr_optimization_time;
 
 	
-	EigenVector3 evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix& cpx, Matrix& cpv);
+	EigenVector3 evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix& clx, Matrix& clv);
 	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
 	EigenVector3 evaluateLinearMomentumAndGradient(const VectorX& v, Matrix& cpv);
 	EigenVector3 evaluateLinearMomentum(const VectorX& v);
