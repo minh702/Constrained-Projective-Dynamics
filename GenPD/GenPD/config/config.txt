@@ -23,7 +23,7 @@ SimMethod           0
 OptimizationMethod  2
 Timestep            0.0333
 SubStepping         1
-OpenMP              1
+OpenMP              0
 TetConstraintType   0
 AttachmentStiffness 120
 StretchStiffness    80
@@ -35,7 +35,7 @@ GravityConstant     0
 DampingCoefficient  0
 RestiCoefficient    1
 FrictionCoefficient 0
-IterationsPerFrame  2
+IterationsPerFrame  1
 DefinitenessFix     1
 LSEnable            1
 LSExact             0

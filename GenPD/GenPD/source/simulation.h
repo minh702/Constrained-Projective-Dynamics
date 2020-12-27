@@ -271,12 +271,18 @@ protected:
 	// for optimization method
 	unsigned int m_current_iteration;
 
-	// for constrained pd 
+	// for energy conservation
+	bool m_enable_cpd;
+	bool m_enable_user_defined_quantities;
 
-	bool m_enable_constrained_pd;
-	ScalarType m_hamiltonian;
+	ScalarType m_hamiltonian_user;
+	EigenVector3 m_linear_momentum_user;
+	EigenVector3 m_angular_momentum_user;
+
+	ScalarType m_hamiltonian, m_hamiltonian_rb;
 	EigenVector3 m_linear_momentum;
 	EigenVector3 m_angular_momentum;
+	ScalarType m_alpha;
 	ScalarType m_cpd_threshold;
 
 	// line search 
@@ -389,6 +395,9 @@ private:
 	void evaluateLinearMomentumConstraintGradient(Matrix& dcp);
 	EigenVector3 evaluateLinearMomentum(const VectorX& v);
 	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
+	ScalarType evaluateRigidBodyKineticEnergy(const EigenVector3& linear_momentum, const EigenVector3& angular_momentum);
+
+
 	// evaluate gradient
 	void evaluateGradient(const VectorX& x, VectorX& gradient, bool enable_omp = false);
 	// evaluate gradient and energy

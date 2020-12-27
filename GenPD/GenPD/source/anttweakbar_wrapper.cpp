@@ -323,7 +323,18 @@ void AntTweakBarWrapper::Init()
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
 
-	TwAddVarRW(m_sim_bar, "enable", TwType(sizeof(bool)), &g_simulation->m_enable_constrained_pd, " group='Constrained PD' ");
+	//Constrained PD 
+
+	//TwAddVarRW(m_sim_bar, "Enable", TwType(sizeof(bool)), &g_simulation->m_enable_cpd, " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_cpd_threshold, " group='Constrained PD' ");
+	/*TwAddVarRW(m_sim_bar, "User Defined Quantities", TwType(sizeof(bool)), &g_simulation->m_enable_user_defined_quantities, " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Px_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_user.x(), " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Py_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_user.y(), " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Pz_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_user.z(), " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Lx_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_user.x(), " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Ly_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_user.y(), " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "Lz_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_user.z(), " group='Constrained PD' ");
+	TwAddVarRW(m_sim_bar, "H_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_hamiltonian_user, " group='Constrained PD' ");*/
 	// !simulation settings bar
 
 	TwDefine(" TW_HELP visible=false ");
@@ -516,6 +527,15 @@ int AntTweakBarWrapper::Update()
 		TwDefine(" 'Simulation Settings'/'Beta' visible=false");
 		TwDefine(" 'Simulation Settings'/'Step Size' readonly=false");
 	}
+
+	/*if (g_simulation->m_enable_user_defined_quantities)
+	{
+		TwDefine(" 'Simulation Settings'/'Px_user' visible=true");
+	}
+	else
+	{
+		TwDefine(" 'Simulation Settings'/'Px_user' visible=false");
+	}*/
 	//if (g_simulation->m_animation_enable_swinging)
 	//{
 	//	TwDefine(" 'Simulation Settings'/'Swing Half Period' visible=true");
