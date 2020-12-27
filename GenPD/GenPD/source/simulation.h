@@ -262,6 +262,15 @@ protected:
 	VectorX m_y;
 	VectorX m_z;
 
+	ScalarType m_lx;
+	ScalarType m_ly;
+	ScalarType m_lz;
+
+	ScalarType m_px;
+	ScalarType m_py;
+	ScalarType m_pz;
+
+
 	// external force (gravity, wind, etc...)
 	VectorX m_external_force;
 
@@ -270,20 +279,6 @@ protected:
 
 	// for optimization method
 	unsigned int m_current_iteration;
-
-	// for energy conservation
-	bool m_enable_cpd;
-	bool m_enable_user_defined_quantities;
-
-	ScalarType m_hamiltonian_user;
-	EigenVector3 m_linear_momentum_user;
-	EigenVector3 m_angular_momentum_user;
-
-	ScalarType m_hamiltonian, m_hamiltonian_rb;
-	EigenVector3 m_linear_momentum;
-	EigenVector3 m_angular_momentum;
-	ScalarType m_alpha;
-	ScalarType m_cpd_threshold;
 
 	// line search 
 	bool m_enable_line_search;
@@ -305,6 +300,16 @@ protected:
 	SparseMatrix m_weighted_laplacian_1D;
 	SparseMatrix m_weighted_laplacian;
 
+
+	EigenVector3 m_com;
+
+	ScalarType m_total_energy;
+	bool m_use_fepr;
+	bool m_use_cpd;
+	bool m_manipulate_plh;
+	bool m_use_cpd_both_momenta;
+	bool m_use_cpd_angular_momentum;
+	bool m_use_cpd_linear_momentum;
 	bool m_precomputing_flag;
 	bool m_prefactorization_flag;
 	bool m_prefactorization_flag_newton;
@@ -391,13 +396,6 @@ private:
 
 	// evaluate energy
 	ScalarType evaluateEnergy(const VectorX& x);
-	void evaluateAngularMomentumConstraintGradient(const VectorX& x, Matrix& dcl);
-	void evaluateLinearMomentumConstraintGradient(Matrix& dcp);
-	EigenVector3 evaluateLinearMomentum(const VectorX& v);
-	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
-	ScalarType evaluateRigidBodyKineticEnergy(const EigenVector3& linear_momentum, const EigenVector3& angular_momentum);
-
-
 	// evaluate gradient
 	void evaluateGradient(const VectorX& x, VectorX& gradient, bool enable_omp = false);
 	// evaluate gradient and energy
@@ -436,12 +434,16 @@ private:
 	void evaluateLaplacianPureConstraint(SparseMatrix& laplacian_matrix);
 	void evaluateLaplacianPureConstraint1D(SparseMatrix& laplacian_matrix_1d);
 	void applyHessianForCGPureConstraint(const VectorX& x, VectorX& b); // b = H*x
-
+	
 	// collision
 	ScalarType evaluateEnergyCollision(const VectorX& x);
 	void evaluateGradientCollision(const VectorX& x, VectorX& gradient);
 	ScalarType evaluateEnergyAndGradientCollision(const VectorX& x, VectorX& gradient);
 	void evaluateHessianCollision(const VectorX& x, SparseMatrix& hessian_matrix);
+
+	// FEPR 
+	void FEPR();
+
 
 	// line search
 	ScalarType lineSearch(const VectorX& x, const VectorX& gradient_dir, const VectorX& descent_dir);
@@ -453,6 +455,8 @@ private:
 	void setWeightedLaplacianMatrix();
 	void setWeightedLaplacianMatrix1D();
 	void prefactorize();
+
+	void fepr();
 
 	// newton solver
 	void analyzeNewtonSolverPattern(const SparseMatrix& A);
@@ -467,6 +471,9 @@ private:
 	void factorizeDirectSolverLLT(const SparseMatrix& A, Eigen::SimplicialLLT<SparseMatrix, Eigen::Upper>& lltSolver, char* warning_msg = ""); // factorize matrix A using LLT decomposition
 
 	void generateRandomVector(const unsigned int size, VectorX& x); // generate random vector varing from [-1 1].
+
+
+	void set_prefactored_matrix();
 };
 
 #endif

@@ -322,19 +322,30 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "Friction Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_friction_coefficient, " min=0 group='Constants' ");
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "Constrained PD", TwType(sizeof(bool)), &g_simulation->m_use_cpd, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "cpd both momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_both_momenta, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "manipulate plh", TwType(sizeof(bool)), &g_simulation->m_manipulate_plh, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "cpd linear momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_linear_momentum, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "cpd angular momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_angular_momentum, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "fepr", TwType(sizeof(bool)), &g_simulation->m_use_fepr, " group='Demo' ");
 
-	//Constrained PD 
 
-	//TwAddVarRW(m_sim_bar, "Enable", TwType(sizeof(bool)), &g_simulation->m_enable_cpd, " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_cpd_threshold, " group='Constrained PD' ");
-	/*TwAddVarRW(m_sim_bar, "User Defined Quantities", TwType(sizeof(bool)), &g_simulation->m_enable_user_defined_quantities, " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Px_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_user.x(), " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Py_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_user.y(), " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Pz_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_user.z(), " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Lx_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_user.x(), " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Ly_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_user.y(), " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "Lz_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_user.z(), " group='Constrained PD' ");
-	TwAddVarRW(m_sim_bar, "H_usr", TW_TYPE_SCALAR_TYPE, &g_simulation->m_hamiltonian_user, " group='Constrained PD' ");*/
+
+	TwAddVarRW(m_sim_bar, "Angular momentum x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_lx, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "Angular momentum y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_ly, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "Angular momentum z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_lz, " group='Demo' ");
+
+	TwAddVarRW(m_sim_bar, "Linear momentum x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_px, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "Linear momentum y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_py, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "Linear momentum z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_pz, " group='Demo' ");
+
+	TwAddVarRW(m_sim_bar, "center of mass x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_com(0), " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "center of mass y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_com(1), " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "center of mass z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_com(2), " group='Demo' ");
+
+	TwAddVarRW(m_sim_bar, "hamiltonian ", TW_TYPE_SCALAR_TYPE, &g_simulation->m_total_energy, " group='Demo' ");
+
+
 	// !simulation settings bar
 
 	TwDefine(" TW_HELP visible=false ");
@@ -527,15 +538,6 @@ int AntTweakBarWrapper::Update()
 		TwDefine(" 'Simulation Settings'/'Beta' visible=false");
 		TwDefine(" 'Simulation Settings'/'Step Size' readonly=false");
 	}
-
-	/*if (g_simulation->m_enable_user_defined_quantities)
-	{
-		TwDefine(" 'Simulation Settings'/'Px_user' visible=true");
-	}
-	else
-	{
-		TwDefine(" 'Simulation Settings'/'Px_user' visible=false");
-	}*/
 	//if (g_simulation->m_animation_enable_swinging)
 	//{
 	//	TwDefine(" 'Simulation Settings'/'Swing Half Period' visible=true");

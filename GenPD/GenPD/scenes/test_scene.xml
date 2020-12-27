@@ -1,6 +1,6 @@
 <scene>
   <primitives>
-    <!--<plane nx="0.0" ny="1" nz="0.0" value="-10"></plane>-->
+    <plane nx="0.0" ny="1" nz="0.0" value="-10"></plane>
     <!--<sphere cx="-22.0" cy="-10.0" cz="0.0" radius="10"></sphere>-->
     <!--<sphere cx="0.0" cy="2.0" cz="0.0" radius="4"></sphere>-->
     <!--<torus cx="0.0" cy="2.0" cz="0.0" major="4" minor="1"></torus>-->
