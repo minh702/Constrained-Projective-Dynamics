@@ -201,7 +201,7 @@ int main(int argc, char ** argv)
     glutCloseFunc(cleanup);
     glutIdleFunc(display);
 
-	omp_set_num_threads(6);
+	omp_set_num_threads(10);
 
     glutMainLoop();
 

@@ -37,6 +37,14 @@
 #include "simulation.h"
 #include "timer_wrapper.h"
 
+#include <string.h>
+#include <fstream>
+#include <iostream>
+#include <chrono>
+
+using namespace std;
+using namespace chrono;
+
 #ifdef ENABLE_MATLAB_DEBUGGING
 #include "matlab_debugger.h"
 extern MatlabDebugger *g_debugger;
@@ -1836,19 +1844,22 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	ScalarType current_energy;
 	VectorX gf_k;
 
-	// set xk and gfk
-	if (m_ls_is_first_iteration || !m_enable_line_search)
-	{
-		current_energy = evaluateEnergyAndGradient(x, gf_k);
-	}
-	else
-	{
-		current_energy = m_ls_prefetched_energy;
-		gf_k = m_ls_prefetched_gradient;
-	}
-	//current_energy = evaluateEnergyAndGradient(x, gf_k);
+	system_clock::time_point start, end;
+	nanoseconds result;
 
-	if (m_lbfgs_need_update_H0) // first iteration
+	// set xk and gfk
+	//if (m_ls_is_first_iteration || !m_enable_line_search)
+	//{
+	//	current_energy = evaluateEnergyAndGradient(x, gf_k);
+	//}
+	//else
+	//{
+	//	current_energy = m_ls_prefetched_energy;
+	//	gf_k = m_ls_prefetched_gradient;
+	//}
+	current_energy = evaluateEnergyAndGradient(x, gf_k);
+
+	if (m_lbfgs_need_update_H0 = true) // first iteration
 	{
 		// clear sk and yk and alpha_k
 #ifdef USE_STL_QUEUE_IMPLEMENTATION
@@ -1880,20 +1891,38 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		g_lbfgs_timer.Pause();
 		// first iteration
 		VectorX r;
+		// measure computing overhead for this section:2
+		start = system_clock::now();
+
 		LBFGSKernelLinearSolve(r, gf_k, 1);
+
+		end = system_clock::now();
+		result = end - start;
+		
+
+		std::ofstream out("cloth.txt", std::ios::app);
+		//std::cout << result << std::endl;
+		if (out.is_open())
+		{
+			out << std::to_string(result.count()) +"\n";
+		}
+		out.close();
+
+		//
 		g_lbfgs_timer.Resume();
 
 		// update
 		VectorX p_k = -r;
 		g_lbfgs_timer.Pause();
 
-		if (-p_k.dot(gf_k) < EPSILON_SQUARE || p_k.norm() / x.norm() < LARGER_EPSILON)
+	/*	if (-p_k.dot(gf_k) < EPSILON_SQUARE || p_k.norm() / x.norm() < LARGER_EPSILON)
 		{
 			converged = true;
 		}
 
-		ScalarType alpha_k = linesearchWithPrefetchedEnergyAndGradientComputing(x, current_energy, gf_k, p_k, m_ls_prefetched_energy, m_ls_prefetched_gradient);
-		x += alpha_k * p_k;
+		ScalarType alpha_k = linesearchWithPrefetchedEnergyAndGradientComputing(x, current_energy, gf_k, p_k, 
+			m_ls_prefetched_energy, m_ls_prefetched_gradient);*/
+		x +=/* alpha_k * */p_k;
 
 		// final touch
 		m_lbfgs_need_update_H0 = false;
@@ -2210,6 +2239,10 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 	ScalarType energy_pure_constraints, energy;
 	ScalarType inertia_term = 0.5 * (x - m_y).transpose() * m_mesh->m_mass_matrix * (x - m_y);
 
+	system_clock::time_point start, end;
+	nanoseconds result;
+	std::ofstream out("cloth.txt", std::ios::app);
+
 	switch (m_integration_method)
 	{
 	case INTEGRATION_QUASI_STATICS:
@@ -2218,9 +2251,23 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 		gradient -= m_external_force;
 		break;//DO NOTHING
 	case INTEGRATION_IMPLICIT_EULER:
+
+		// measure computing overhead for this section:1 
+		start = system_clock::now();
+
 		energy_pure_constraints = evaluateEnergyAndGradientPureConstraint(x, m_external_force, gradient);
 		energy = inertia_term + h_square*energy_pure_constraints;
 		gradient = m_mesh->m_mass_matrix * (x - m_y) + h_square*gradient;
+
+		end = system_clock::now();
+		result = end - start;
+		//std::cout << result << std::endl;
+		if (out.is_open())
+		{
+			out << std::to_string(result.count()) +"\t";
+		}
+		out.close();
+		//
 		break;
 	case INTEGRATION_IMPLICIT_BDF2:
 		energy_pure_constraints = evaluateEnergyAndGradientPureConstraint(x, m_external_force, gradient);
