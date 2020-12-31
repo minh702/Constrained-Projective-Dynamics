@@ -320,9 +320,26 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "Damping Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_damping_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Restitution Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_restitution_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Friction Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_friction_coefficient, " min=0 group='Constants' ");
+
+	//
+
+	
+
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+	//Momentum
+	TwAddVarRW(m_sim_bar, "L x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.x(), " group='Demo' "); //here
+	TwAddVarRW(m_sim_bar, "L y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Demo' "); //here
+	TwAddVarRW(m_sim_bar, "L z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Demo' "); //here
+	// Scale
+	TwAddVarRW(m_sim_bar, "Scale X", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_x, " group='Scale' ");
+	TwAddVarRW(m_sim_bar, "Scale Y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_y, " group='Scale' ");
+	TwAddVarRW(m_sim_bar, "Scale Z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_z, " group='Scale' ");
+	TwDefine(" 'Simulation Settings'/'Scale' group='Demo'");
+
 	TwAddVarRW(m_sim_bar, "enable", TwType(sizeof(bool)), &g_simulation->m_enable_fepr, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_fepr_threshold, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "max iter", TW_TYPE_INT32, &g_simulation->m_fepr_max_iter, " group='FEPR' ");
 	TwAddVarRW(m_sim_bar, "verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_fepr_converge, " group='FEPR' ");
 	// !simulation settings bard
 

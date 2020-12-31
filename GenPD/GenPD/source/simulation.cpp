@@ -36,6 +36,12 @@
 
 #include "simulation.h"
 #include "timer_wrapper.h"
+#include <fstream>
+#include <iostream>
+#include <chrono>
+
+using namespace std;
+using namespace chrono;
 
 #ifdef ENABLE_MATLAB_DEBUGGING
 #include "matlab_debugger.h"
@@ -57,6 +63,7 @@ TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
+int flag = 0;
 // comparison function for sort
 
 bool compareTriplet(SparseMatrixTriplet i, SparseMatrixTriplet j)
@@ -171,17 +178,47 @@ void Simulation::Reset()
 	f.setZero();
 
 
+	//set Angular momenta 
+
+	//m_mesh->
+	EigenMatrix3 inertia;
+	inertia.setZero();
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		m_mesh->m_current_positions.block_vector(i) *= 1.2f;
+		//L / 
+		ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
+		EigenMatrix3 skewMat = vec2skew(xi);
+		inertia += mi * skewMat * skewMat;
 	}
 
+	//std::cout << inertia.determinant() << std::endl;
 
+	EigenVector3 angular_velocity = inertia.inverse() * m_angular_momentum_init;
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
+		m_mesh->m_current_velocities.block_vector(i) = xi.cross(angular_velocity);
+	}
+
+	//set scale 
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		m_mesh->m_current_positions.block_vector(i).x() *= (1 + fabs(m_scale_x));
+		m_mesh->m_current_positions.block_vector(i).y() *= (1 + fabs(m_scale_y));
+		m_mesh->m_current_positions.block_vector(i).z() *= (1 + fabs(m_scale_z));
+	}
+
+	//std::cout << m_angular_momentum_init<<std::endl;
+	//std::cout << angular_velocity << std::endl;
 
 	//Initialize P, L, H
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
-	m_current_linear_momentum.setZero();
-	m_current_angular_momentum.setZero();
+
+	m_current_angular_momentum = m_angular_momentum_init;
+	//m_current_linear_momentum.setZero();
+	//m_current_angular_momentum.setZero();
 
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
@@ -2732,7 +2769,7 @@ void Simulation::applyHessianForCGPureConstraint(const VectorX& x, VectorX& b)
 void Simulation::fepr()
 {
 
-	ScalarType threshold = 10e-5;
+	ScalarType threshold = 10e-3;
 	ScalarType inv_eps = 10e5;
 	int iter = 0;
 	ScalarType inv_h_squared = 1/(m_h * m_h);
@@ -2776,10 +2813,18 @@ void Simulation::fepr()
 	dcst.setZero();
 	ext_f.setZero();
 
+	system_clock::time_point start, end;
+	nanoseconds result;
+
 	m_current_angular_momentum = EigenVector3(0, 0, 0);
 	//iteratively optimize for q = (x^T,v^T,s,t)^T 
+
+	std::ofstream out("test.txt", std::ios::app);
+
 	while (true)
 	{
+		start = system_clock::now();
+
 		g_fepr_timer.Tic();
 		VectorX dcs(C_DIM);
 		VectorX dct(C_DIM);
@@ -2797,14 +2842,22 @@ void Simulation::fepr()
 			c(6) = evaluateEnergyAndGradientPureConstraint(qx, ext_f, dchx) + evaluateKineticEnergy(qv) - m_hamiltonian;
 
 		VectorX dchv = m_mesh->m_mass_matrix * qv;
+
+		// col1 
+
 		ScalarType c_norm = c.norm();
 
+		if (out.is_open()) 
+		{
+			out << std::to_string(c_norm) + "\t";
+		}
+		
 		//std::cout << c.transpose() << std::endl;
-		std::cout << st << std::endl;
-		//std::cout << c_norm << std::endl;
+		//std::cout << st << std::endl;
+		std::cout << c_norm << std::endl;
 		if (isnan(c_norm))
 			break;
-		else if (c_norm < threshold )
+		else if (c_norm < m_fepr_threshold || iter > m_fepr_max_iter)
 			break;
 
 	//compute dc(q)/dq 
@@ -2851,21 +2904,43 @@ void Simulation::fepr()
 
 	
 		iter++;
+		end = system_clock::now();
+		result = end - start;
+		if (out.is_open())
+		{
+			out << std::to_string(result.count()) + "\n";
+		}
 		g_fepr_timer.Toc();
 	}
 
+	// per frame 
+
+		// # of iterations per frame "iter"
+		// duration time per iteration 
+
+	//
+	// savs as .txt 
+
+	if (out.is_open())
+	{
+		out << std::to_string(flag++) + "a" + std::to_string(iter) + "\n";
+	}
+
+
 	m_mesh->m_current_positions = qx;
 	m_mesh->m_current_velocities = qv;
+
 	//std::cout << c(6) + m_hamiltonian << std::endl;
-	if (m_verbose_show_fepr_converge)
-	{
-		std::cout << "total iteration: " << iter <<std::endl;
-	}
+	//if (m_verbose_show_fepr_converge)
+	//{
+	//	std::cout << "total iteration: " << iter <<std::endl;
+	//}
 
-	if (m_verbose_show_fepr_optimization_time)
-	{
+	//if (m_verbose_show_fepr_optimization_time)
+	//{
 
-	}
+	//}
+	out.close();
 
 }
 
