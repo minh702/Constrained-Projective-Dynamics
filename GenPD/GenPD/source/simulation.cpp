@@ -37,6 +37,14 @@
 #include "simulation.h"
 #include "timer_wrapper.h"
 
+#include <string.h>
+#include <iostream>
+#include <fstream>
+#include <chrono>
+
+using namespace std;
+using namespace chrono;
+
 #ifdef ENABLE_MATLAB_DEBUGGING
 #include "matlab_debugger.h"
 extern MatlabDebugger *g_debugger;
@@ -514,6 +522,8 @@ void Simulation::UpdateAnimation(const int fn)
 
 void Simulation::Update()
 {
+	system_clock::time_point start, end;
+	nanoseconds result;
 	// update external force
 	calculateExternalForce();
 
@@ -523,9 +533,6 @@ void Simulation::Update()
 	m_last_descent_dir.resize(m_mesh->m_system_dimension);
 	m_last_descent_dir.setZero();
 	
-
-
-
 	if (m_manipulate_plh)
 	{
 		g_total_energy = m_total_energy;
@@ -540,7 +547,6 @@ void Simulation::Update()
 		m_manipulate_plh = false;
 	}
 	
-
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
 		// update inertia term
@@ -564,12 +570,26 @@ void Simulation::Update()
 
 
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
+
+		// duration 1 
+
+		start = system_clock::now();
 		if (m_use_cpd)
 		{
 			// update
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
+			set_prefactored_matrix();
 		}
+		end = system_clock::now();
+		result = end - start;
+		cout << result.count() << endl;
+		std::ofstream out("CPDOverhead.txt", std::ios::app);
+		if (out.is_open())
+		{
+			out << "a" + std::to_string(result.count()) + "\n";
+		}
+		out.close();
 
 		switch (m_integration_method)
 		{
@@ -2071,7 +2091,6 @@ void Simulation::integrateImplicitMethod()
 	m_ls_is_first_iteration = true;
 	bool first_hit = false;
 
-	set_prefactored_matrix();
 
 	ScalarType k = 0.01f;
 
@@ -2247,6 +2266,9 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	ScalarType current_energy;
 	VectorX gf_k;
 
+	system_clock::time_point start, end;
+	nanoseconds result;
+
 	// set xk and gfk
 	if (m_ls_is_first_iteration || !m_enable_line_search)
 	{
@@ -2297,6 +2319,9 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		//VectorX c(6);
 
 		VectorX p_k = -r;
+
+		///////////////////////
+		start = system_clock::now();
 		if (m_use_cpd)
 		{
 			Eigen::MatrixXf a(m_mesh->m_system_dimension,3);
@@ -2318,7 +2343,6 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			}
 		
 			//p_k -= b * l;
-
 			if (m_use_cpd_both_momenta)
 			{
 				Eigen::MatrixXf cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
@@ -2378,6 +2402,17 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		
 
 		}
+		end = system_clock::now();
+		result = end - start;
+
+
+		std::ofstream out("CPDOverhead.txt", std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(result.count()) + "\n";
+		}
+		out.close();
+		///////////////////////////////////////
 		g_lbfgs_timer.Pause();
 		x +=  p_k;
 
@@ -3309,7 +3344,7 @@ ScalarType Simulation::evaluateEnergyAndGradientCollision(const VectorX& x, Vect
 	ScalarType energy = 0.0;
 	gradient.resize(m_mesh->m_system_dimension);
 	gradient.setZero();
-
+	
 	if (!m_enable_openmp)
 	{
 		// constraints single thread
