@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         sphere
+TetFilePath         cube
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -35,7 +35,7 @@ GravityConstant     0
 DampingCoefficient  0
 RestiCoefficient    1
 FrictionCoefficient 0
-IterationsPerFrame  10
+IterationsPerFrame  5
 DefinitenessFix     1
 LSEnable            1
 LSExact             0

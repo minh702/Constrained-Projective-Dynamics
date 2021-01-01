@@ -1,20 +1,22 @@
 ﻿  simulation.cpp
 D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(174,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(316,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(316,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(320,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(320,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(1285,7): warning C4101: 'ignore' :참조되지 않은 지역 변수입니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2883,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2893,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2911,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2928,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2942,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2963,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(186,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(199,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(206,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(353,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(353,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(357,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(357,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(1322,7): warning C4101: 'ignore' :참조되지 않은 지역 변수입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2962,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2972,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(2990,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3007,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3021,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3042,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
   코드를 생성하고 있습니다.
-  79 of 24359 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
-    6 functions were new in current compilation
-    500 functions had inline decision re-evaluated but remain unchanged
+  447 of 24528 functions ( 1.8%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    674 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   GenPD.vcxproj -> C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\x64\Release\GenPD.exe

@@ -2816,7 +2816,7 @@ void Simulation::fepr()
 	system_clock::time_point start, end;
 	nanoseconds result;
 
-	m_current_angular_momentum = EigenVector3(0, 0, 0);
+	//m_current_angular_momentum = EigenVector3(0, 0, 0);
 	//iteratively optimize for q = (x^T,v^T,s,t)^T 
 
 	std::ofstream out("test.txt", std::ios::app);
@@ -2837,7 +2837,6 @@ void Simulation::fepr()
 		// compute c_L
 		c.block_vector(1) = evaluateAngularMomentumAndGradient(qx, qv, dclx, dclv) - (1 - st(1)) * m_current_angular_momentum - st(1) * m_previous_angular_momentum;
 		// compute C_H
-
 		if(C_DIM==7)
 			c(6) = evaluateEnergyAndGradientPureConstraint(qx, ext_f, dchx) + evaluateKineticEnergy(qv) - m_hamiltonian;
 
@@ -2854,7 +2853,7 @@ void Simulation::fepr()
 		
 		//std::cout << c.transpose() << std::endl;
 		//std::cout << st << std::endl;
-		std::cout << c_norm << std::endl;
+		//std::cout << c_norm << std::endl;
 		if (isnan(c_norm))
 			break;
 		else if (c_norm < m_fepr_threshold || iter > m_fepr_max_iter)
@@ -2924,6 +2923,11 @@ void Simulation::fepr()
 	if (out.is_open())
 	{
 		out << std::to_string(flag++) + "a" + std::to_string(iter) + "\n";
+	}
+
+	if (m_verbose_show_fepr_converge)
+	{
+		std::cout << "Total FEPR iteration: " << m_fepr_threshold << std::endl;
 	}
 
 
