@@ -280,6 +280,9 @@ protected:
 	// for optimization method
 	unsigned int m_current_iteration;
 
+
+	bool recordText = false;
+
 	// line search 
 	bool m_enable_line_search;
 	bool m_enable_exact_search;

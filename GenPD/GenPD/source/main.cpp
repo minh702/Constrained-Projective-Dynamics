@@ -269,9 +269,9 @@ void timeout(int value)
 		// grab screen
 		if (g_record)
 		{
-			char cap_filename[256];
+			/*char cap_filename[256];
 			sprintf_s(cap_filename, 256, "output/screenshots/ScreenCap%04d.png", g_current_frame);
-			grab_screen(cap_filename);
+			grab_screen(cap_filename);*/
 
 			if (g_export_obj)
 			{

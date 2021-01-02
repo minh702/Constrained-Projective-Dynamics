@@ -571,13 +571,16 @@ void Simulation::Update()
 		}
 		end = system_clock::now();
 		result = end - start;
-		cout << result.count() << endl;
-		std::ofstream out("CPDOverhead.txt", std::ios::app);
-		if (out.is_open())
+
+		if (recordText)
 		{
-			out << "a" + std::to_string(result.count()) + "\n";
+			std::ofstream out("CPDOverhead.txt", std::ios::app);
+			if (out.is_open())
+			{
+				out << "a" + std::to_string(result.count()) + "\n";
+			}
+			out.close();
 		}
-		out.close();
 
 		switch (m_integration_method)
 		{
@@ -2309,15 +2312,15 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		end = system_clock::now();
 		result = end - start;
 		
-
-		std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
-		//std::cout << result << std::endl;
-		if (out.is_open())
+		if (recordText)
 		{
-			out << std::to_string(result.count()) +"\n";
+			std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
+			if (out.is_open())
+			{
+				out << std::to_string(result.count()) + "\n";
+			}
+			out.close();
 		}
-		out.close();
-
 		//
 		g_lbfgs_timer.Resume();
 		
@@ -2410,13 +2413,15 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		end = system_clock::now();
 		result = end - start;
 
-
-		std::ofstream outOH("CPDOverhead.txt", std::ios::app);
-		if (outOH.is_open())
+		if (recordText)
 		{
-			outOH << std::to_string(result.count()) + "\n";
+			std::ofstream outOH("CPDOverhead.txt", std::ios::app);
+			if (outOH.is_open())
+			{
+				outOH << std::to_string(result.count()) + "\n";
+			}
+			outOH.close();
 		}
-		outOH.close();
 		///////////////////////////////////////
 		g_lbfgs_timer.Pause();
 		x +=  p_k;
@@ -2783,7 +2788,7 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 	system_clock::time_point start, end;
 	nanoseconds result;
 	string txt = ".txt";
-	std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app); 
+	
 
 	ScalarType inertia_term2 = 0.5 * (x - m_mesh->m_current_positions).transpose() * m_mesh->m_mass_matrix * (x - m_mesh->m_current_positions);
 
@@ -2805,12 +2810,15 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 
 		end = system_clock::now();
 		result = end - start;
-		//std::cout << result << std::endl;
-		if (out.is_open())
+		if (recordText)
 		{
-			out << std::to_string(result.count()) +"\t";
+			std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
+			if (out.is_open())
+			{
+				out << std::to_string(result.count()) + "\t";
+			}
+			out.close();
 		}
-		out.close();
 		//
 		break;
 	case INTEGRATION_IMPLICIT_BDF2:

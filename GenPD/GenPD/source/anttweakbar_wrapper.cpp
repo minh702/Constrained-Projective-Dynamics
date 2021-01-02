@@ -126,6 +126,10 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "Total Frames", TW_TYPE_INT32, &(g_total_frame), "group='Recording'");
 	TwAddVarRW(m_control_panel_bar, "Export OBJ", TwType(sizeof(bool)), &(g_export_obj), "group='Recording'");
 	TwDefine(" 'Control Panel'/'Recording' group='State Control'");
+	TwAddVarRW(m_control_panel_bar, "temporary check", TwType(sizeof(bool)), &g_simulation->recordText, "group='Data Recording'");
+	TwDefine(" 'Control Panel'/'Data Recording' group='State Control'");
+
+
 	TwAddSeparator(m_control_panel_bar, NULL, "");
 	// visualization
 	TwAddVarRW(m_control_panel_bar, "Mesh Body", TwType(sizeof(bool)), &(g_show_mesh), "group='Visualization'");
@@ -393,11 +397,13 @@ int AntTweakBarWrapper::Update()
 	if (g_record)
 	{
 		TwDefine(" 'Control Panel'/'Recording' visible=true");
+		TwDefine(" 'Control Panel'/'Data Recording' visible=true");
 	}
 	else
 	{
 		g_recording_limit = false;
 		TwDefine(" 'Control Panel'/'Recording' visible=false");
+		TwDefine(" 'Control Panel'/'Data Recording' visible=false");
 	}
 #ifdef ENABLE_MATLAB_DEBUGGING
 	// matlab settings display
