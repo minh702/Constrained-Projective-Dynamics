@@ -50,7 +50,6 @@
 //----------Core--------------//
 #include "mesh.h"
 #include "simulation.h"
-
 //----------Project Key Globals--------------//
 AntTweakBarWrapper* g_config_bar;
 Camera* g_camera;

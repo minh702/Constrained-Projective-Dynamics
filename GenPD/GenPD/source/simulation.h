@@ -208,6 +208,10 @@ protected:
 	ScalarType m_damping_coefficient;
 	ScalarType m_restitution_coefficient;
 	ScalarType m_friction_coefficient;
+	ScalarType m_scale_x;
+	ScalarType m_scale_y;
+	ScalarType m_scale_z;
+	EigenVector3 m_angular_momentum_init;
 
 	// integration and optimization method
 	IntegrationMethod m_integration_method;
@@ -257,6 +261,13 @@ protected:
 	VectorX m_qn_minus_two;
 	VectorX m_vn_minus_two;
 
+	//energy-momentum conservation
+
+	ScalarType m_hamiltonian;
+	EigenVector3 m_current_linear_momentum, m_previous_linear_momentum;
+	EigenVector3 m_current_angular_momentum, m_previous_angular_momentum;
+	ScalarType m_fepr_threshold;
+	int m_fepr_max_iter;
 	// constant term in optimization:
 	// 0.5(x-y)^2 M (x-y) + (c) * h^2 * E(x) - h^2 * x^T * z;
 	VectorX m_y;
@@ -437,7 +448,19 @@ private:
 	void evaluateLaplacianPureConstraint(SparseMatrix& laplacian_matrix);
 	void evaluateLaplacianPureConstraint1D(SparseMatrix& laplacian_matrix_1d);
 	void applyHessianForCGPureConstraint(const VectorX& x, VectorX& b); // b = H*x
+
+	//energy-momentum conservation
+	void fepr();
+	bool m_enable_fepr;
+	bool m_verbose_show_fepr_converge;
+	bool m_verbose_show_fepr_optimization_time;
+
 	
+	EigenVector3 evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix& clx, Matrix& clv);
+	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
+	EigenVector3 evaluateLinearMomentumAndGradient(const VectorX& v, Matrix& cpv);
+	EigenVector3 evaluateLinearMomentum(const VectorX& v);
+
 	// collision
 	ScalarType evaluateEnergyCollision(const VectorX& x);
 	void evaluateGradientCollision(const VectorX& x, VectorX& gradient);
