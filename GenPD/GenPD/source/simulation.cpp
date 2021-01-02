@@ -576,7 +576,16 @@ void Simulation::Update()
 
 		if (recordText)
 		{
-			std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
+			string fileName;
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "cloth" + txt;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txt;
+			}
+			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
 			{
 				out << "a" + std::to_string(result.count()) + "\n";
@@ -2257,6 +2266,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 	string txt = ".txt";
 	string txtForOverHead = "CPDOverHead.txt";
+	string fileName;
 	system_clock::time_point start, end;
 	nanoseconds result;
 
@@ -2317,7 +2327,15 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		
 		if (recordText)
 		{
-			std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "cloth" + txt;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txt;
+			}
+			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
 			{
 				out << std::to_string(result.count()) + "\n";
@@ -2418,7 +2436,15 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 		if (recordText)
 		{
-			std::ofstream outOH(m_mesh->m_tet_file_path + txt, std::ios::app);
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "cloth" + txtForOverHead;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txtForOverHead;
+			}
+			std::ofstream outOH(fileName, std::ios::app);
 			if (outOH.is_open())
 			{
 				outOH << std::to_string(result.count()) + "\n";
@@ -2815,7 +2841,16 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 		result = end - start;
 		if (recordText)
 		{
-			std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
+			string fileName;
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "cloth" + txt;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txt;
+			}
+			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
 			{
 				out << std::to_string(result.count()) + "\t";

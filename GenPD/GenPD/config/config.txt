@@ -4,12 +4,12 @@ MeshBody            1
 Wireframe           1
 Wireframe           1
 Texture             0
-ScreenWidth         1536
-ScreenHeight        801
+ScreenWidth         1920
+ScreenHeight        1017
 
 MeshType            0
 MeshMass            10
-TetFilePath         torus
+TetFilePath         hippo
 TetScaling          1
 TetFlip             0
 TetRotation         0
