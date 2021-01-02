@@ -32,7 +32,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <fstream>
 //----------Headers--------------//
 #include "global_headers.h"
 #include "math_headers.h"
@@ -167,11 +167,23 @@ void test()
 	return;
 }
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char ** argv){
 	//test();
 
     // gl init
+
+
+	Eigen::Matrix3f m;
+	m.setIdentity();
+	std::ofstream file("t.txt");
+
+	std::cout << m << std::endl;
+	if (file)
+	{
+		file << m ;
+	}
+	
+	file.close();
     glutInit(&argc, argv);
 #ifdef HIGH_PRECISION
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -918,7 +930,23 @@ void grab_screen(char* filename)
 
 void draw_overlay()
 {
-    // Draw Overlay
+    
+	
+	std::ofstream input("test.txt");
+
+	VectorX t(100);
+	t.setRandom();
+
+	if (input.is_open())
+	{
+
+		for (int i = 0; i < 10; i++)
+		{
+			t.setRandom();
+			input << t.transpose() << '\n';
+		}
+	}
+	// Draw Overlay
     glColor4d(0.0, 0.0, 0.0, 1.0);
     glPushAttrib(GL_LIGHTING_BIT);
     glDisable(GL_LIGHTING);

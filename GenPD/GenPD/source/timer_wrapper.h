@@ -91,7 +91,7 @@ public:
 				break;
 			case TIMER_OUTPUT_MILLISECONDS:
 				d = d * 0.001;
-				printf("%s, time elapse: %.3lf milliseconds.\n", msg, d);
+				printf("%%.3lf.\n", d);
 				break;
 			case TIMER_OUTPUT_SECONDS:
 				d = d * 0.000001;

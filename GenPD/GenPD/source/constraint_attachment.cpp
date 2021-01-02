@@ -76,7 +76,7 @@ ScalarType AttachmentConstraint::EvaluateEnergy(const VectorX& x)
 
 ScalarType AttachmentConstraint::GetEnergy()
 {
-	return m_energy;
+	return 0;//m_energy;
 }
 
 // attachment spring gradient: k*(current_length)*current_direction
