@@ -512,6 +512,8 @@ void Simulation::Update()
 {
 	system_clock::time_point start, end;
 	nanoseconds result;
+	string txt = "CPDOverHead.txt";
+
 	// update external force
 	calculateExternalForce();
 
@@ -574,7 +576,7 @@ void Simulation::Update()
 
 		if (recordText)
 		{
-			std::ofstream out("CPDOverhead.txt", std::ios::app);
+			std::ofstream out(m_mesh->m_tet_file_path + txt, std::ios::app);
 			if (out.is_open())
 			{
 				out << "a" + std::to_string(result.count()) + "\n";
@@ -2254,6 +2256,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	VectorX gf_k;
 
 	string txt = ".txt";
+	string txtForOverHead = "CPDOverHead.txt";
 	system_clock::time_point start, end;
 	nanoseconds result;
 
@@ -2415,7 +2418,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 		if (recordText)
 		{
-			std::ofstream outOH("CPDOverhead.txt", std::ios::app);
+			std::ofstream outOH(m_mesh->m_tet_file_path + txt, std::ios::app);
 			if (outOH.is_open())
 			{
 				outOH << std::to_string(result.count()) + "\n";
