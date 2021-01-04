@@ -276,9 +276,6 @@ void Simulation::Reset()
 	m_restshape_volume = getVolume(m_mesh->m_current_positions);
 	m_current_volume = m_restshape_volume;
 
-	EigenMatrix3 inertia;
-	inertia.setZero();
-
 	EigenVector3 com;
 	EigenVector3 trans = m_com;
 
@@ -306,83 +303,6 @@ void Simulation::Reset()
 
 	}
 
-	//g_fixed_positions.resize(12);
-
-
-	//g_fixed_indices(0) = 0;
-	//g_fixed_indices(1) = 59;
-	//g_fixed_indices(2) = 3540;
-	//g_fixed_indices(3) = 3599;
-
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	int idx = g_fixed_indices(i);
-	//	g_fixed_positions.block_vector(i) = m_mesh->m_current_positions.block_vector(idx);
-	//}
-
-	//for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	//{
-	//	ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
-	//	EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
-	//	com += mi * ri;
-	//}
-
-	//com /= m_mesh->m_total_mass;
-
-	//for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	//{
-	//	m_mesh->m_current_positions.block_vector(i)-= com;
-	//}
-	//g_angular_momentum = EigenVector3(100, 0, 0);
-	//g_linear_momentum = EigenVector3(0, 0, 0);
-	//Eigen::LLT<Eigen::Matrix3f> illt;
-	//illt.compute(inertia);
-	//EigenVector3 w = illt.solve(g_angular_momentum);
-	//std::cout << w << std::endl;
-	//EigenVector3 transv;
-
-
-	//transv.setZero();
-	//for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	//{
-
-	//	EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
-	//	ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
-	//	m_mesh->m_current_velocities.block_vector(i) = w.cross(r);
-
-	//	//std::cout << m_mesh->m_current_velocities.block_vector(i) << std::endl;
-	//	transv += mi * m_mesh->m_current_velocities.block_vector(i);
-
-	//}
-
-	g_rigid_energy = 242;
-	EigenVector3 box(0.5, 0.5, 0.5);
-
-	/*for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	{
-		EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
-
-		if (r.x() > box.x())
-			m_mesh->m_current_positions.block_vector(i).x() = box.x();
-
-		if (r.x() < -box.x())
-			m_mesh->m_current_positions.block_vector(i).x() = -box.x();
-
-
-		if (r.y() > box.y())
-			m_mesh->m_current_positions.block_vector(i).y() = box.y();
-
-		if (r.y() < -box.y())
-			m_mesh->m_current_positions.block_vector(i).y() = -box.y();
-
-
-		if (r.z() > box.z())
-			m_mesh->m_current_positions.block_vector(i).z() = box.z();
-
-		if (r.z() < -box.z())
-			m_mesh->m_current_positions.block_vector(i).z() = -box.z();
-	}*/
-
 	setWeightedLaplacianMatrix1D();
 
 
@@ -398,27 +318,7 @@ void Simulation::Reset()
 		g_Ainv_gcm.col(i) = g_Ainv_gcp.col(i) = g_Ainv_gck.col(i) = rt;
 	}
 
-	//std::cout << g_gcm.transpose() * g_Ainv_gcm << std::endl;
 
-
-	g_com = m_com * m_mesh->m_total_mass;
-
-
-	g_system_energy = (g_com.y() - g_bot)* m_gravity_constant;
-
-	VectorX f(m_mesh->m_system_dimension);
-	f.setZero();
-	
-	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f) + g_rigid_energy;
-
-
-	//g_total_energy = 20000;
-	std::cout << g_system_energy << std::endl;
-	std::cout << g_rigid_energy << std::endl;
-	std::cout << g_total_energy << std::endl;
-	std::cout << g_angular_momentum << std::endl;
-	std::cout << g_linear_momentum << std::endl;
-	// animation
 	m_keyframe_handle_unit_translation_total_segments = 0;
 	m_keyframe_handle_unit_rotation_total_segments = 0;
 
@@ -487,67 +387,6 @@ void Simulation::set_prefactored_matrix()
 	}
 }
 
-void Simulation::fepr()
-{
-
-	VectorX x = m_mesh->m_current_positions;
-	VectorX v = m_mesh->m_current_velocities;
-
-	VectorX gce(m_mesh->m_system_dimension);
-	VectorX gcv(m_mesh->m_system_dimension);
-	VectorX f(m_mesh->m_system_dimension);
-
-	f.setZero();
-	ScalarType lambda;
-	ScalarType c;
-
-	ScalarType inv_squrared_h = 1/m_h*m_h;
-	int i = 0;
-	for ( ; ; i++)
-	{
-
-		/*c =	evaluateEnergyAndGradientPureConstraint(x, f, gce) + evaluateKineticEnergy(v) - g_total_energy;
-	
-
-		if (fabsf(c) < 0.01)
-			break;
-
-		ScalarType cTc = gce.transpose() * m_mesh->m_inv_mass_matrix * gce;
-		cTc += inv_squrared_h * v.transpose() * m_mesh->m_mass_matrix * v;
-		ScalarType lambda = c / cTc;
-
-
-
-		x -= m_mesh->m_inv_mass_matrix * gce * lambda;
-		v -= inv_squrared_h * v * lambda;*/
-
-		VectorX ghx_k(m_mesh->m_vertices_number * 3), ghv_k(m_mesh->m_vertices_number * 3);
-		VectorX f(m_mesh->m_vertices_number * 3);
-		f.setZero();
-		ScalarType h_square = 1/ m_h * m_h;
-		ScalarType c_h, lambda;
-		c_h = evaluateEnergyAndGradientPureConstraint(x, f, ghx_k) + evaluateKineticEnergy(v) - m_total_energy;
-
-		std::cout << c_h + m_total_energy << std::endl;
-		if (fabsf(c_h)/ m_total_energy < 0.01)
-			break;
-
-		ghv_k = m_mesh->m_mass_matrix * v;
-		lambda = h_square * ghv_k.transpose() * m_mesh->m_inv_mass_matrix * ghv_k;
-		lambda += ghx_k.transpose() * m_mesh->m_inv_mass_matrix * ghx_k;
-		lambda = c_h / lambda;
-		x -= m_mesh->m_inv_mass_matrix * ghx_k * lambda;
-		v -= h_square * m_mesh->m_inv_mass_matrix * ghv_k * lambda;
-
-	}
-
-	//std::cout << i << std::endl;
-
-	m_mesh->m_current_positions = x;
-	m_mesh->m_current_velocities = v;
-
-
-}
 
 void Simulation::UpdateAnimation(const int fn)
 {
@@ -3449,8 +3288,6 @@ void Simulation::fepr()
 
 	system_clock::time_point start, end;
 	nanoseconds result;
-
-	//m_current_angular_momentum = EigenVector3(0, 0, 0);
 	//iteratively optimize for q = (x^T,v^T,s,t)^T 
 
 	std::ofstream out("test.txt", std::ios::app);
@@ -3556,7 +3393,7 @@ void Simulation::fepr()
 
 	if (out.is_open())
 	{
-		out << std::to_string(flag++) + "a" + std::to_string(iter) + "\n";
+		out <<  "a" + std::to_string(iter) + "\n";
 	}
 
 	if (m_verbose_show_fepr_converge)

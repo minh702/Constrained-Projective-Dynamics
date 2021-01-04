@@ -467,9 +467,6 @@ private:
 	ScalarType evaluateEnergyAndGradientCollision(const VectorX& x, VectorX& gradient);
 	void evaluateHessianCollision(const VectorX& x, SparseMatrix& hessian_matrix);
 
-	// FEPR 
-	void FEPR();
-
 
 	// line search
 	ScalarType lineSearch(const VectorX& x, const VectorX& gradient_dir, const VectorX& descent_dir);
@@ -482,7 +479,6 @@ private:
 	void setWeightedLaplacianMatrix1D();
 	void prefactorize();
 
-	void fepr();
 
 	// newton solver
 	void analyzeNewtonSolverPattern(const SparseMatrix& A);
