@@ -462,16 +462,17 @@ void Simulation::Update()
 		end = system_clock::now();
 		result = end - start;
 
-		if (recordText)
+		if (recordTextCPD)
 		{
 			string fileName;
 			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 			{
-				fileName = "cloth" + txt;
+				fileName = "./TextData/cloth" + txt;
 			}
 			else
 			{
 				fileName = m_mesh->m_tet_file_path + txt;
+				fileName = "./TextData/" + fileName;
 			}
 			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
@@ -2209,15 +2210,16 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		end = system_clock::now();
 		result = end - start;
 		
-		if (recordText)
+		if (recordTextPD)
 		{
 			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 			{
-				fileName = "cloth" + txt;
+				fileName = "./TextData/cloth" + txt;
 			}
 			else
 			{
-				fileName = m_mesh->m_tet_file_path + txt;
+				fileName =  m_mesh->m_tet_file_path + txt;
+				fileName = "./TextData/" + fileName;
 			}
 			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
@@ -2318,15 +2320,16 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		end = system_clock::now();
 		result = end - start;
 
-		if (recordText)
+		if (recordTextCPD)
 		{
 			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 			{
-				fileName = "cloth" + txtForOverHead;
+				fileName = "./TextData/cloth" + txtForOverHead;
 			}
 			else
 			{
 				fileName = m_mesh->m_tet_file_path + txtForOverHead;
+				fileName = "./TextData/" + fileName;
 			}
 			std::ofstream outOH(fileName, std::ios::app);
 			if (outOH.is_open())
@@ -2723,16 +2726,17 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 
 		end = system_clock::now();
 		result = end - start;
-		if (recordText)
+		if (recordTextPD)
 		{
 			string fileName;
 			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 			{
-				fileName = "cloth" + txt;
+				fileName = "./TextData/cloth" + txt;
 			}
 			else
 			{
 				fileName = m_mesh->m_tet_file_path + txt;
+				fileName = "./TextData/" + fileName;
 			}
 			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
@@ -3271,9 +3275,19 @@ void Simulation::fepr()
 
 	system_clock::time_point start, end;
 	nanoseconds result;
+	string fileName = "feprLossnOverhead.txt";
 	//iteratively optimize for q = (x^T,v^T,s,t)^T 
 
-	std::ofstream out("test.txt", std::ios::app);
+	if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+	{
+		fileName = "cloth" + fileName;
+	}
+	else
+	{
+		fileName = m_mesh->m_tet_file_path + fileName;
+	}
+
+	std::ofstream out("./TextData/" + std::to_string(m_iterations_per_frame) + fileName, std::ios::app);
 
 	while (true)
 	{
@@ -3300,11 +3314,13 @@ void Simulation::fepr()
 
 		ScalarType c_norm = c.norm();
 
-		if (out.is_open()) 
+		if (recordTextFEPR)
 		{
-			out << std::to_string(c_norm) + "\t";
+			if (out.is_open())
+			{
+				out << std::to_string(c_norm) + "\t";
+			}
 		}
-		
 		//std::cout << c.transpose() << std::endl;
 		//std::cout << st << std::endl;
 		//std::cout << c_norm << std::endl;
@@ -3351,12 +3367,18 @@ void Simulation::fepr()
 		st = st - inv_eps * dcst * lambda;
 	
 		iter++;
+
 		end = system_clock::now();
 		result = end - start;
-		if (out.is_open())
+
+		if (recordTextFEPR)
 		{
-			out << std::to_string(result.count()) + "\n";
+			if (out.is_open())
+			{
+				out << std::to_string(result.count()) + "\n";
+			}
 		}
+
 		g_fepr_timer.Toc();
 	}
 
@@ -3371,19 +3393,20 @@ void Simulation::fepr()
 
 	//
 	// savs as .txt 
-
-	if (out.is_open())
+	if (recordTextFEPR)
 	{
-		out <<  "a" + std::to_string(iter) + "\n";
+		if (out.is_open())
+		{
+			out << "a" + std::to_string(iter) + "\n";
+		}
 	}
+	out.close();
 
 	if (m_verbose_show_fepr_converge)
 	{
 		std::cout << "Total FEPR iteration: " << iter - 1 << std::endl;
 	}
-
-	out.close();
-
+	
 }
 
 EigenVector3 Simulation::evaluateLinearMomentumAndGradient(const VectorX& v, Matrix& cpv)

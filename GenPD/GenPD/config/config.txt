@@ -13,7 +13,7 @@ TetFilePath         cube
 TetScaling          1
 TetFlip             0
 TetRotation         0
-ClothDimension      11 11
+ClothDimension      60 60
 ClothCorners        -5 8 -5 5 -1.85 -3.26
 
 HandleColor         0.3 1 0.3
