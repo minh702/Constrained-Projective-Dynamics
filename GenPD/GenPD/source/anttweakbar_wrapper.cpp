@@ -351,7 +351,6 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "manipulate plh", TwType(sizeof(bool)), &g_simulation->m_manipulate_plh, " group='Demo' ");
 	TwAddVarRW(m_sim_bar, "cpd linear momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_linear_momentum, " group='Demo' ");
 	TwAddVarRW(m_sim_bar, "cpd angular momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_angular_momentum, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "fepr", TwType(sizeof(bool)), &g_simulation->m_use_fepr, " group='Demo' ");
 
 
 

@@ -261,9 +261,6 @@ void Simulation::Reset()
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
 	m_current_angular_momentum = m_angular_momentum_init;
-	//m_current_linear_momentum.setZero();
-	//m_current_angular_momentum.setZero();
-
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
@@ -2016,7 +2013,6 @@ void Simulation::integrateImplicitMethod()
 
 	for (m_current_iteration = 0; !converge && m_current_iteration < m_iterations_per_frame; ++m_current_iteration)
 	{
-		cout << "a" + std::to_string(m_current_iteration) << endl;
 		g_integration_timer.Tic();
 		switch (m_optimization_method)
 		{
@@ -3345,11 +3341,11 @@ void Simulation::fepr()
 			dcv.block(0, 6, m_mesh->m_system_dimension, 1) = dchv;
 
 		// dc/ds 
-		dcs.block_vector(0) = m_previous_linear_momentum - m_current_linear_momentum;
+		dcs.block_vector(0) = m_current_linear_momentum - m_previous_linear_momentum;
 		dcst.row(0) = dcs;
 
 		// dc/dt
-		dct.block_vector(1) = m_previous_angular_momentum - m_current_angular_momentum;
+		dct.block_vector(1) = m_current_angular_momentum - m_previous_angular_momentum;
 		dcst.row(1) = dct;
 		
 	//compute Schur complement 
@@ -3366,12 +3362,6 @@ void Simulation::fepr()
 		qx = qx - m_mesh->m_inv_mass_matrix * dcx * lambda;
 		qv = qv - inv_h_squared * m_mesh->m_inv_mass_matrix * dcv * lambda;
 		st = st - inv_eps * dcst * lambda;
-
-		/*Matrix sch = dchx.transpose() * m_mesh->m_inv_mass_matrix * dchx + inv_h_squared * dchv.transpose() * m_mesh->m_inv_mass_matrix * dchv;
-		VectorX lh = sch.inverse() * c(6);
-		qx = qx - m_mesh->m_inv_mass_matrix * dchx * lh;
-		qv = qv - inv_h_squared * m_mesh->m_inv_mass_matrix * dchv * lh;*/
-
 	
 		iter++;
 		end = system_clock::now();
@@ -3382,6 +3372,10 @@ void Simulation::fepr()
 		}
 		g_fepr_timer.Toc();
 	}
+
+	// update q 
+	m_mesh->m_current_positions = qx;
+	m_mesh->m_current_velocities = qv;
 
 	// per frame 
 
@@ -3398,23 +3392,9 @@ void Simulation::fepr()
 
 	if (m_verbose_show_fepr_converge)
 	{
-		std::cout << "Total FEPR iteration: " << m_fepr_threshold << std::endl;
+		std::cout << "Total FEPR iteration: " << iter - 1 << std::endl;
 	}
 
-
-	m_mesh->m_current_positions = qx;
-	m_mesh->m_current_velocities = qv;
-
-	//std::cout << c(6) + m_hamiltonian << std::endl;
-	//if (m_verbose_show_fepr_converge)
-	//{
-	//	std::cout << "total iteration: " << iter <<std::endl;
-	//}
-
-	//if (m_verbose_show_fepr_optimization_time)
-	//{
-
-	//}
 	out.close();
 
 }
