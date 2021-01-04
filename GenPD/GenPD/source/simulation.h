@@ -318,8 +318,7 @@ protected:
 	EigenVector3 m_com;
 
 	ScalarType m_total_energy;
-	bool m_use_fepr;
-	bool m_use_cpd;
+	bool m_enable_cpd;
 	bool m_manipulate_plh;
 	bool m_use_cpd_both_momenta;
 	bool m_use_cpd_angular_momentum;

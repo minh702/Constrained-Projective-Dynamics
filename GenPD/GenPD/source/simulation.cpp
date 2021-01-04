@@ -85,6 +85,7 @@ ScalarType g_bot = -10;
 
 VectorX g_fixed_positions;
 Eigen::Vector4i g_fixed_indices;
+
 // comparison function for sort
 
 bool compareTriplet(SparseMatrixTriplet i, SparseMatrixTriplet j)
@@ -172,9 +173,6 @@ Simulation::~Simulation()
 void Simulation::Reset()
 {	
 
-	EigenMatrixx3 rhs_n3(m_mesh->m_current_positions.size() / 3, 3);
-	Vector3mx1ToMatrixmx3(m_mesh->m_current_positions, rhs_n3);
-
 	m_y.resize(m_mesh->m_system_dimension);
 	m_external_force.resize(m_mesh->m_system_dimension);
 
@@ -195,8 +193,6 @@ void Simulation::Reset()
 	g_Ainv_gcp.resize(m_mesh->m_system_dimension, 3);
 
 
-	g_Ainv_gca.resize(m_mesh->m_system_dimension, 4);
-	g_Ainv_gca.resize(m_mesh->m_system_dimension, 4);
 	// handles
 	if (!m_handles.empty())
 		m_handles.clear();
@@ -290,17 +286,9 @@ void Simulation::Reset()
 		g_gcm(3 * i + 2, 2) = g_gcp(3 * i + 2, 2) = g_gck(3 * i + 2, 2) = mi;
 
 
-
-
-		rx << 0, r.z(), -r.y(),
-			-r.z(), 0, r.x(),
-			r.y(), -r.x(), 0;
-
-		inertia += mi * rx * rx.transpose();
-
 	}
 
-	setWeightedLaplacianMatrix1D();
+	//setWeightedLaplacianMatrix1D();
 
 
 
@@ -357,7 +345,6 @@ void Simulation::set_prefactored_matrix()
 		gravity_potential += mi * ri.y();
 	}
 	gravity_potential *= m_gravity_constant;
-
 	gravity_potential = (g_com.y() - g_bot) * m_gravity_constant * m_mesh->m_total_mass;
 
 
@@ -424,7 +411,7 @@ void Simulation::Update()
 	m_last_descent_dir.resize(m_mesh->m_system_dimension);
 	m_last_descent_dir.setZero();
 	
-	if (m_manipulate_plh)
+	/*if (m_manipulate_plh)
 	{
 		g_total_energy = m_total_energy;
 		g_angular_momentum(0) = m_lx;
@@ -436,7 +423,7 @@ void Simulation::Update()
 		g_linear_momentum(2) = m_pz;
 
 		m_manipulate_plh = false;
-	}
+	}*/
 	
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
@@ -445,17 +432,17 @@ void Simulation::Update()
 
 	
 
-		if (!m_use_cpd_both_momenta)
+		/*if (!m_use_cpd_both_momenta)
 		{
 			g_linear_momentum = g_gcp.transpose() * m_mesh->m_current_velocities;
 			g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 			g_angular_momentum = g_gcl.transpose() * m_mesh->m_current_velocities;
 		}
-		if (m_use_cpd_both_momenta && m_use_cpd)
+		if (m_use_cpd_both_momenta && m_enable_cpd)
 		{
 			g_com += g_linear_momentum * m_h + 0.5*gravity * m_h * m_h * m_mesh->m_total_mass;
 			g_linear_momentum += gravity * m_h * m_mesh->m_total_mass;
-		}
+		}*/
 		computeConstantVectorsYandZ();
 
 
@@ -465,7 +452,7 @@ void Simulation::Update()
 		// duration 1 
 
 		start = system_clock::now();
-		if (m_use_cpd)
+		if (m_enable_cpd)
 		{
 			// update
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
@@ -1804,7 +1791,7 @@ void Simulation::setupConstraints()
 void Simulation::dampVelocity()
 {
 
-	if (m_use_cpd)
+	if (m_enable_cpd)
 	{
 		g_total_energy = g_total_energy - m_damping_coefficient * (g_total_energy - g_rigid_energy);
 	}
@@ -2248,28 +2235,28 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 		///////////////////////
 		start = system_clock::now();
-		if (m_use_cpd)
+		if (m_enable_cpd)
 		{
 			Eigen::MatrixXf a(m_mesh->m_system_dimension,3);
 			Eigen::MatrixXf b(m_mesh->m_system_dimension, 3);
 
 	
-			if (m_integration_method == INTEGRATION_IMPLICIT_EULER)
-			{
-				a.col(2) = g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+			//if (m_integration_method == INTEGRATION_IMPLICIT_EULER)
+			//{
+			//	a.col(2) = g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 
-				b.col(2) = g_Ainv_gck.col(6) = g_Ainv_gch = r + g_Ainv_vn;
-				// update
-			}
-			else
-			{
-				g_gck.col(6) = g_gch;
+			//	b.col(2) = g_Ainv_gck.col(6) = g_Ainv_gch = r + g_Ainv_vn;
+			//	// update
+			//}
+			//else
+			//{
+			g_gck.col(6) = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 
-				g_Ainv_gck.col(6) = g_Ainv_gch;
-			}
+			g_Ainv_gck.col(6) = r + g_Ainv_vn ;
+			//}
 		
 			//p_k -= b * l;
-			if (m_use_cpd_both_momenta)
+			/*if (m_use_cpd_both_momenta)
 			{
 				Eigen::MatrixXf cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
 				Eigen::LLT<Eigen::MatrixXf> llt;
@@ -2310,7 +2297,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				p_k -= g_Ainv_gcp * lambda;
 			}
 			else
-			{
+			{*/
 
 				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
 				Eigen::LLT<Eigen::MatrixXf> llt;
@@ -2323,7 +2310,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gck * lambda;
 
-			}
+			//}
 				
 		
 
@@ -2773,7 +2760,7 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 		break;
 	}
 
-	if (m_use_cpd &&  m_integration_method != INTEGRATION_IMPLICIT_EULER)
+	if (m_enable_cpd &&  m_integration_method != INTEGRATION_IMPLICIT_EULER)
 	{
 		ScalarType ep = evaluateEnergyAndGradientPureConstraint(x, m_external_force, gradient);
 
