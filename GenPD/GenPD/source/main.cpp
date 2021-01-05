@@ -33,6 +33,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <string>
 //----------Headers--------------//
 #include "global_headers.h"
 #include "math_headers.h"
@@ -71,10 +72,11 @@ int g_screen_width = DEFAULT_SCREEN_WIDTH;
 int g_screen_height = DEFAULT_SCREEN_HEIGHT;
 glm::vec3 g_handle_color;
 bool g_random_handle_color;
+std::string config_text_name;
 
 //----------State Control--------------------//
 bool g_only_show_sim = false;
-bool g_record = false;
+bool g_record = true;
 bool g_pause = true;
 bool g_show_mesh = true;
 bool g_show_wireframe = false;
@@ -174,6 +176,8 @@ int main(int argc, char ** argv){
     glutInitDisplayMode(GLUT_RGBA);
 #endif
 
+    config_text_name = argv[1];
+
     glutCreateWindow("Mass-Spring System Simulation T.L.");
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -183,6 +187,9 @@ int main(int argc, char ** argv){
     // user init
     init();
     glutReshapeWindow(g_screen_width, g_screen_height);
+
+    //use cmd if not, true.
+    g_pause = false;
 
     // bind function callbacks
     glutDisplayFunc(display);
@@ -199,6 +206,7 @@ int main(int argc, char ** argv){
     omp_set_num_threads(10);
 
     glutMainLoop();
+
 
     return 0;
 }
