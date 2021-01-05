@@ -1,5 +1,5 @@
 HasEnd              0
-TotalFrame          1000
+TotalFrame          10
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -50,3 +50,11 @@ AnimAmp             2
 AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
+
+AngularMomentum     0 0 0
+LinearMomentum      0 0 10
+Scale               0 0 0
+
+FEPREnable          0
+FEPRThreshold       0
+FEPRMaxIter         0

@@ -211,10 +211,20 @@ void Simulation::Reset()
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
 
+	//set Linear momentum
+	m_mesh->m_current_velocities.setZero();
+
+	EigenVector3 linear_velocity = m_linear_momentum_init / m_mesh->m_total_mass;
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		//ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		m_mesh->m_current_velocities.block_vector(i) += linear_velocity;
+	}
+
 
 	//set Angular momenta 
 
-	//m_mesh->
 	EigenMatrix3 inertia;
 	inertia.setZero();
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -226,14 +236,12 @@ void Simulation::Reset()
 		inertia += mi * skewMat * skewMat;
 	}
 
-	//std::cout << inertia.determinant() << std::endl;
-
 	EigenVector3 angular_velocity = inertia.inverse() * m_angular_momentum_init;
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
-		m_mesh->m_current_velocities.block_vector(i) = xi.cross(angular_velocity);
+		m_mesh->m_current_velocities.block_vector(i) += xi.cross(angular_velocity);
 	}
 
 	//set scale 
@@ -251,8 +259,8 @@ void Simulation::Reset()
 
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
-	g_angular_momentum = m_current_angular_momentum = m_angular_momentum_init;
-	m_current_linear_momentum = evaluateLinearMomentumAndGradient(m_mesh->m_current_velocities, g_dcpv);
+	m_current_angular_momentum = m_angular_momentum_init;
+	m_current_linear_momentum = m_linear_momentum_init;
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
