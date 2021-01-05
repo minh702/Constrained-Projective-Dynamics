@@ -5,11 +5,11 @@ Wireframe           1
 Wireframe           1
 Texture             0
 ScreenWidth         1920
-ScreenHeight        1017
+ScreenHeight        1041
 
 MeshType            1
 MeshMass            10
-TetFilePath         cube
+TetFilePath         torus
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -19,9 +19,9 @@ ClothCorners        -5 8 -5 5 -1.85 -3.26
 HandleColor         0.3 1 0.3
 RandomHandleColor   0
 
-SimMethod           0
+SimMethod           2
 OptimizationMethod  2
-Timestep            0.0333
+Timestep            0.03
 SubStepping         1
 OpenMP              1
 TetConstraintType   0

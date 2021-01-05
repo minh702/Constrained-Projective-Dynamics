@@ -174,7 +174,8 @@ int main(int argc, char ** argv){
     glutInitDisplayMode(GLUT_RGBA);
 #endif
 
-    glutCreateWindow("Mass-Spring System Simulation T.L.");
+
+    glutCreateWindow("Projective Dynamics");
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glutInitWindowSize(g_screen_width, g_screen_height);
@@ -196,7 +197,7 @@ int main(int argc, char ** argv){
     glutCloseFunc(cleanup);
     glutIdleFunc(display);
 
-    omp_set_num_threads(10);
+    omp_set_num_threads(20);
 
     glutMainLoop();
 
