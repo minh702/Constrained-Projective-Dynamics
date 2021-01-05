@@ -176,6 +176,10 @@ int main(int argc, char ** argv){
     glutInitDisplayMode(GLUT_RGBA);
 #endif
 
+    if (argc == 1)
+        config_text_name = DEFAULT_CONFIG_FILE;
+    else
+        config_text_name = argv[1];
 
     glutCreateWindow("Projective Dynamics");
     glEnable(GL_DEPTH_TEST);
