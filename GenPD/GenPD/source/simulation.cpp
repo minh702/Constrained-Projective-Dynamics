@@ -260,7 +260,7 @@ void Simulation::Reset()
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
 	m_current_angular_momentum = m_angular_momentum_init;
-	m_current_linear_momentum = m_linear_momentum_init;
+	m_current_linear_momentum = evaluateLinearMomentumAndGradient(m_mesh->m_current_velocities, g_dcpv);
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
@@ -355,6 +355,7 @@ void Simulation::Update()
 	system_clock::time_point start, end;
 	nanoseconds result;
 	string txt = "CPDOverHead.txt";
+	string filePath = "./TextData/";
 
 	// update external force
 	calculateExternalForce();
@@ -467,8 +468,37 @@ void Simulation::Update()
 		EigenVector3 L = evaluateAngularMomentum(x, v);
 		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
 
-		//std::ofstream out(fileName, std::ios::app);
+		string fileName;
+		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+		{
+			fileName = "cloth";
+		}
+		else
+		{
+			fileName = m_mesh->m_tet_file_path;
+		}
 
+		if (m_enable_cpd)
+		{
+			fileName = fileName + "CPDQuantities.txt";
+		}
+		else if (m_enable_fepr)
+		{
+			fileName = fileName + "FEPRQuantities.txt";
+		}
+		else
+		{
+			fileName = '\0';
+		}
+
+		std::ofstream out(filePath + fileName, std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(P.x()) + " " + std::to_string(P.y()) + " " + std::to_string(P.z())<< endl;
+			out << std::to_string(L.x()) + " " + std::to_string(L.y()) + " " + std::to_string(L.z())<< endl;
+			out << std::to_string(H) << endl;
+		}
+		out.close();
 	}
 
 	//// volume
