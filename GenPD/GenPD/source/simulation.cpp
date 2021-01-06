@@ -51,7 +51,6 @@ using namespace chrono;
 extern MatlabDebugger *g_debugger;
 #endif
 
-
 ScalarType smooth;
 //#define USE_STL_QUEUE_IMPLEMENTATION
 //#define OUTPUT_LS_ITERATIONS
@@ -61,7 +60,7 @@ ScalarType g_total_ls_iterations;
 int g_total_iterations;
 #endif
 
-#define C_DIM 7
+#define C_DIM 6
 TimerWrapper g_integration_timer;
 TimerWrapper g_lbfgs_timer;
 TimerWrapper g_fepr_timer;
@@ -181,12 +180,15 @@ void Simulation::Reset()
 	m_y.resize(m_mesh->m_system_dimension);
 	m_external_force.resize(m_mesh->m_system_dimension);
 
-	g_dck.resize(m_mesh->m_system_dimension, 7);
+	g_dck.resize(m_mesh->m_system_dimension, C_DIM); g_Ainv_dck.resize(m_mesh->m_system_dimension, C_DIM);
+	g_dcp.resize(m_mesh->m_system_dimension, 3); g_Ainv_dcp.resize(m_mesh->m_system_dimension, 3);
+	g_dcl.resize(m_mesh->m_system_dimension, 3); g_Ainv_dcl.resize(m_mesh->m_system_dimension, 3);
+	g_dch.resize(m_mesh->m_system_dimension); g_Ainv_dch.resize(m_mesh->m_system_dimension);
+
 	g_dcpx.resize(m_mesh->m_system_dimension, 3);
 	g_dcpx.setZero();
 
 	g_dcpv.resize(m_mesh->m_system_dimension, 3);
-
 	// handles
 	if (!m_handles.empty())
 		m_handles.clear();
@@ -260,7 +262,7 @@ void Simulation::Reset()
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
 	m_current_angular_momentum = m_angular_momentum_init;
-	m_current_linear_momentum = m_linear_momentum_init;
+	m_current_linear_momentum = evaluateLinearMomentumAndGradient(m_mesh->m_current_velocities, g_dcpv);
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
@@ -284,6 +286,7 @@ void Simulation::Reset()
 	for (int i = 0; i < 3; i++)
 	{
 		VectorX rt;
+
 		LBFGSKernelLinearSolve(rt, g_dcp.col(i), 1);
 		g_Ainv_dcp.col(i) = rt;
 	}
@@ -384,19 +387,6 @@ void Simulation::Update()
 		// update inertia term
 		EigenVector3 gravity(0, -m_gravity_constant, 0);
 
-	
-
-		/*if (!m_use_cpd_both_momenta)
-		{
-			g_linear_momentum = g_gcp.transpose() * m_mesh->m_current_velocities;
-			g_com = g_gcp.transpose() * m_mesh->m_current_positions;
-			g_angular_momentum = g_gcl.transpose() * m_mesh->m_current_velocities;
-		}
-		if (m_use_cpd_both_momenta && m_enable_cpd)
-		{
-			g_com += g_linear_momentum * m_h + 0.5*gravity * m_h * m_h * m_mesh->m_total_mass;
-			g_linear_momentum += gravity * m_h * m_mesh->m_total_mass;
-		}*/
 		computeConstantVectorsYandZ();
 
 
@@ -409,6 +399,7 @@ void Simulation::Update()
 		if (m_enable_cpd)
 		{
 			// update
+			g_com += g_current_linear_momentum * m_h;
 			VectorX hMv_n = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_hMv_n, hMv_n, 1);
 			set_prefactored_matrix();
@@ -2124,22 +2115,9 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	system_clock::time_point start, end;
 	nanoseconds result;
 
-	// set xk and gfk
 
-	//if (m_ls_is_first_iteration || !m_enable_line_search)
-	//{
-	//	current_energy = evaluateEnergyAndGradient(x, gf_k);
-	//}
-	//else
-	//{
-	//	current_energy = m_ls_prefetched_energy;
-	//	gf_k = m_ls_prefetched_gradient;
-	//}
 	current_energy = evaluateEnergyAndGradient(x, gf_k);
-
-	//current_energy = evaluateEnergyAndGradient(x, gf_k);
-
-	if (1/*m_lbfgs_need_update_H0*/) // first iteration
+	if (1/*m_lbfgs_need_update_H0*/) 
 	{
 		// clear sk and yk and alpha_k
 #ifdef USE_STL_QUEUE_IMPLEMENTATION
@@ -2208,25 +2186,37 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		start = system_clock::now();
 		if (m_enable_cpd)
 		{
-			
+
+			VectorX ck(7);
+			ck.block_vector(0) = g_dcp.transpose() * (x - r) - g_com;
+			ck.block_vector(1) = g_dcl.transpose() * (x - r) - m_current_angular_momentum * m_h;
+			if (C_DIM == 7)
+				ck(6) = current_energy - m_hamiltonian * m_h * m_h;
+
+
 			g_dch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_dch = r + g_Ainv_hMv_n ;
 
 			g_dck.block(0, 0, m_mesh->m_system_dimension, 3) = g_dcp;
 			g_dck.block(0, 3, m_mesh->m_system_dimension, 3) = g_dcl;
-			g_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_dch;
+			if(C_DIM == 7)
+				g_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_dch;
+
+
 			g_Ainv_dck.block(0, 0, m_mesh->m_system_dimension, 3) = g_Ainv_dcp;
 			g_Ainv_dck.block(0, 3, m_mesh->m_system_dimension, 3) = g_Ainv_dcl;
-			g_Ainv_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_Ainv_dch;
+			if (C_DIM == 7)
+				g_Ainv_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_Ainv_dch;
 
 			Eigen::MatrixXf schur = g_dck.transpose() * g_Ainv_dck;
-	
-			VectorX ck(7);
-			ck.block_vector(0) = g_dcp.transpose() * x - g_com;
-			ck.block_vector(1) = g_dcl.transpose() * x - g_angular_momentum * m_h; 
-			ck(6) = current_energy - m_hamiltonian * m_h * m_h;
+			
+			std::cout << ck.norm() << std::endl;
+			if (ck.norm() < m_cpd_threshold)
+				return true;
+
+
 			VectorX lambda = schur.inverse() * ck; 
-			x -= g_Ainv_dck * lambda;
+			x -= (r + g_Ainv_dck * lambda);
 
 		}
 		end = system_clock::now();

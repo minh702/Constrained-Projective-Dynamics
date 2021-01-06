@@ -1,11 +1,11 @@
-HasEnd              1
+HasEnd              0
 TotalFrame          100
 MeshBody            1
-Wireframe           0
+Wireframe           1
 Wireframe           1
 Texture             0
-ScreenWidth         1024
-ScreenHeight        768
+ScreenWidth         1920
+ScreenHeight        1017
 
 MeshType            1
 MeshMass            1
@@ -23,7 +23,7 @@ SimMethod           0
 OptimizationMethod  2
 Timestep            0.0333
 SubStepping         1
-OpenMP              0
+OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 120
 StretchStiffness    80
@@ -35,7 +35,7 @@ GravityConstant     0
 DampingCoefficient  0.001
 RestiCoefficient    1
 FrictionCoefficient 0.001
-IterationsPerFrame  10
+IterationsPerFrame  100
 DefinitenessFix     1
 LSEnable            1
 LSExact             0
@@ -51,9 +51,9 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
 
-AngularMomentum     10 0 0
-LinearMomentum      10 0 0
-Scale               10 0 0
+AngularMomentum     100 0 0
+LinearMomentum      0 0 0
+Scale               0 0 0
 Process Colision    0
 
 FEPREnable          0
@@ -63,3 +63,4 @@ FEPRMaxIter         0
 RecordPD            0
 RecordCPD           0
 RecordFEPR          0
+RecordQuantities    0
