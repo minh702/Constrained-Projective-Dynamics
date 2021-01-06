@@ -126,6 +126,12 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "Total Frames", TW_TYPE_INT32, &(g_total_frame), "group='Recording'");
 	TwAddVarRW(m_control_panel_bar, "Export OBJ", TwType(sizeof(bool)), &(g_export_obj), "group='Recording'");
 	TwDefine(" 'Control Panel'/'Recording' group='State Control'");
+	TwAddVarRW(m_control_panel_bar, "PD", TwType(sizeof(bool)), &g_simulation->recordTextPD, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "CPD", TwType(sizeof(bool)), &g_simulation->recordTextCPD, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->recordTextFEPR, "group='Recording To Text'");
+	TwDefine(" 'Control Panel'/'Recording To Text' group='State Control'");
+
+
 	TwAddSeparator(m_control_panel_bar, NULL, "");
 	// visualization
 	TwAddVarRW(m_control_panel_bar, "Mesh Body", TwType(sizeof(bool)), &(g_show_mesh), "group='Visualization'");
@@ -320,8 +326,38 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "Damping Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_damping_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Restitution Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_restitution_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Friction Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_friction_coefficient, " min=0 group='Constants' ");
+
+	//
+
+	
+
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+	//Momentum
+	TwAddVarRW(m_sim_bar, "a-x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.x(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "a-y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "a-z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Angular Momentum' "); //here
+	TwDefine(" 'Simulation Settings'/'Angular Momentum' group='Demo'");
+
+	// Scale
+	TwAddVarRW(m_sim_bar, "s-x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_x, " group='Scale' ");
+	TwAddVarRW(m_sim_bar, "s-y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_y, " group='Scale' ");
+	TwAddVarRW(m_sim_bar, "s-z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_z, " group='Scale' ");
+	TwDefine(" 'Simulation Settings'/'Scale' group='Demo'");
+
+	TwAddVarRW(m_sim_bar, "enable FEPR", TwType(sizeof(bool)), &g_simulation->m_enable_fepr, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_fepr_threshold, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR max iter", TW_TYPE_INT32, &g_simulation->m_fepr_max_iter, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_fepr_converge, " group='FEPR' ");
+	// !simulation settings bard
+
+
+	TwAddVarRW(m_sim_bar, "enable CPD", TwType(sizeof(bool)), &g_simulation->m_enable_cpd, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_cpd_threshold, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_cpd_converge, " group='CPD' ");
+
+
+
 	// !simulation settings bar
 
 	TwDefine(" TW_HELP visible=false ");
@@ -369,11 +405,13 @@ int AntTweakBarWrapper::Update()
 	if (g_record)
 	{
 		TwDefine(" 'Control Panel'/'Recording' visible=true");
+		TwDefine(" 'Control Panel'/'Recording To Text' visible=true");
 	}
 	else
 	{
 		g_recording_limit = false;
 		TwDefine(" 'Control Panel'/'Recording' visible=false");
+		TwDefine(" 'Control Panel'/'Recording To Text' visible=false");
 	}
 #ifdef ENABLE_MATLAB_DEBUGGING
 	// matlab settings display

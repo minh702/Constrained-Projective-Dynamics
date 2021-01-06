@@ -65,6 +65,7 @@ typedef Eigen::Quaternion<ScalarType, Eigen::DontAlign> EigenQuaternion;
 
 // eigen vector accessor
 #define block_vector(a) block<3,1>(3*(a), 0)
+#define block_matrix(a) block<3,3>(3*(a), 0)
 
 // eigen 2 glm, glm 2 eigen
 glm::vec3 Eigen2GLM(const EigenVector3& eigen_vector);
