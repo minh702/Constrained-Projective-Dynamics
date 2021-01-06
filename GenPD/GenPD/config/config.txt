@@ -1,5 +1,5 @@
-HasEnd              0
-TotalFrame          100
+HasEnd              1
+TotalFrame          299
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -35,7 +35,7 @@ GravityConstant     0
 DampingCoefficient  0.001
 RestiCoefficient    1
 FrictionCoefficient 0.001
-IterationsPerFrame  100
+IterationsPerFrame  10
 DefinitenessFix     1
 LSEnable            1
 LSExact             0
@@ -51,15 +51,16 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
 
-AngularMomentum     100 0 0
+AngularMomentum     100 200 500
 LinearMomentum      0 0 0
 Scale               0 0 0
-Process Colision    0
+Process Colision    1
 
 FEPREnable          0
 FEPRThreshold       0
 FEPRMaxIter         0
 
+ExportOBJ           0
 RecordPD            0
 RecordCPD           0
 RecordFEPR          0

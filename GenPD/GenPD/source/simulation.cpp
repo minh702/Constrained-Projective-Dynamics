@@ -358,6 +358,7 @@ void Simulation::Update()
 	system_clock::time_point start, end;
 	nanoseconds result;
 	string txt = "CPDOverHead.txt";
+	string filePath = "./TextData/";
 
 	// update external force
 	calculateExternalForce();
@@ -458,8 +459,37 @@ void Simulation::Update()
 		EigenVector3 L = evaluateAngularMomentum(x, v);
 		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
 
-		//std::ofstream out(fileName, std::ios::app);
+		string fileName;
+		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+		{
+			fileName = "cloth";
+		}
+		else
+		{
+			fileName = m_mesh->m_tet_file_path;
+		}
 
+		if (m_enable_cpd)
+		{
+			fileName = fileName + "CPDQuantities.txt";
+		}
+		else if (m_enable_fepr)
+		{
+			fileName = fileName + "FEPRQuantities.txt";
+		}
+		else
+		{
+			fileName = '\0';
+		}
+
+		std::ofstream out(filePath + fileName, std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(P.x()) + " " + std::to_string(P.y()) + " " + std::to_string(P.z())<< endl;
+			out << std::to_string(L.x()) + " " + std::to_string(L.y()) + " " + std::to_string(L.z())<< endl;
+			out << std::to_string(H) << endl;
+		}
+		out.close();
 	}
 
 	//// volume

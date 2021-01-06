@@ -99,7 +99,7 @@ int g_timestep = 1000 / g_max_fps;
 bool g_recording_limit = false;
 int g_current_frame = 0;
 int g_total_frame = 0;
-bool g_export_obj = true;
+bool g_export_obj;
 
 //----------glut function handlers-----------//
 void resize(int, int);
@@ -827,7 +827,7 @@ void TW_CALL reset_handle(void*)
 void TW_CALL reset_simulation(void*)
 {
     // save current setting before reset
-    AntTweakBarWrapper::SaveSettings(g_config_bar);
+    //AntTweakBarWrapper::SaveSettings(g_config_bar);
 
     // reset frame#
     g_current_frame = 0;

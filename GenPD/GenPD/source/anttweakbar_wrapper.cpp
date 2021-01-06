@@ -729,6 +729,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "FEPRMaxIter         " << g_simulation->m_fepr_max_iter << std::endl;
 		outfile << std::endl;
 		//Record
+		outfile << "ExportOBJ           " << g_export_obj << std::endl;
 		outfile << "RecordPD            " << g_simulation->recordTextPD << std::endl;
 		outfile << "RecordCPD           " << g_simulation->recordTextCPD << std::endl;
 		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
@@ -829,7 +830,6 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_lbfgs_m;
 
 		//Demo
-		
 		infile >> ignoreToken >> g_simulation->m_angular_momentum_init.x() \
 							  >> g_simulation->m_angular_momentum_init.y() \
 							  >> g_simulation->m_angular_momentum_init.z();
@@ -838,7 +838,7 @@ void AntTweakBarWrapper::LoadSettings()
 							  >> g_simulation->m_linear_momentum_init.z();
 		infile >> ignoreToken >> g_simulation->m_scale_x \
 							  >> g_simulation->m_scale_y \
-							  >> g_simulation->m_scale_z;
+							  >> g_simulation->m_scale_z; //helpppp
 		infile >> ignoreToken >> g_simulation->m_processing_collision;
 
 		//FEPR
@@ -847,6 +847,7 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_fepr_max_iter;
 
 		//Record
+		infile >> ignoreToken >> g_export_obj;
 		infile >> ignoreToken >> g_simulation->recordTextPD;
 		infile >> ignoreToken >> g_simulation->recordTextCPD;
 		infile >> ignoreToken >> g_simulation->recordTextFEPR;
