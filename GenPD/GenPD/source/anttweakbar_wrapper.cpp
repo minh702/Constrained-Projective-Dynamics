@@ -346,14 +346,15 @@ void AntTweakBarWrapper::Init()
 	TwDefine(" 'Simulation Settings'/'Scale' group='Demo'");
 
 	TwAddVarRW(m_sim_bar, "enable FEPR", TwType(sizeof(bool)), &g_simulation->m_enable_fepr, " group='FEPR' ");
-	TwAddVarRW(m_sim_bar, "threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_fepr_threshold, " group='FEPR' ");
-	TwAddVarRW(m_sim_bar, "max iter", TW_TYPE_INT32, &g_simulation->m_fepr_max_iter, " group='FEPR' ");
-	TwAddVarRW(m_sim_bar, "verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_fepr_converge, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_fepr_threshold, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR max iter", TW_TYPE_INT32, &g_simulation->m_fepr_max_iter, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_fepr_converge, " group='FEPR' ");
 	// !simulation settings bard
 
 
 	TwAddVarRW(m_sim_bar, "enable CPD", TwType(sizeof(bool)), &g_simulation->m_enable_cpd, " group='CPD' ");
-
+	TwAddVarRW(m_sim_bar, "CPD threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_cpd_threshold, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_cpd_converge, " group='CPD' ");
 
 
 

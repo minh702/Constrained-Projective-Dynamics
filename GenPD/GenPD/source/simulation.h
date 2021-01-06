@@ -320,11 +320,11 @@ protected:
 	EigenVector3 m_com;
 
 	ScalarType m_total_energy;
+	ScalarType m_cpd_threshold;
 	bool m_enable_cpd;
+	bool m_verbose_show_cpd_converge;
 	bool m_manipulate_plh;
-	bool m_use_cpd_both_momenta;
-	bool m_use_cpd_angular_momentum;
-	bool m_use_cpd_linear_momentum;
+
 	bool m_precomputing_flag;
 	bool m_prefactorization_flag;
 	bool m_prefactorization_flag_newton;
