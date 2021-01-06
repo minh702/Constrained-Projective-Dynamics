@@ -260,6 +260,7 @@ void timeout(int value)
 
     if (g_recording_limit && g_current_frame > g_total_frame)
     {
+        PostQuitMessage(0);
         g_pause = true;
     }
 

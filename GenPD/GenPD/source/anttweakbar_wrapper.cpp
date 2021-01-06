@@ -130,6 +130,7 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "PD", TwType(sizeof(bool)), &g_simulation->recordTextPD, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "CPD", TwType(sizeof(bool)), &g_simulation->recordTextCPD, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->recordTextFEPR, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "Quantities", TwType(sizeof(bool)), &g_simulation->m_record_quantities, "group='Recording To Text'");
 	TwDefine(" 'Control Panel'/'Recording To Text' group='State Control'");
 
 
@@ -730,6 +731,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "RecordPD            " << g_simulation->recordTextPD << std::endl;
 		outfile << "RecordCPD           " << g_simulation->recordTextCPD << std::endl;
 		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
+		outfile << "RecordQuantities    " << g_simulation->m_record_quantities << std::endl;
 
 		outfile.close();
 	}
@@ -847,6 +849,7 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->recordTextPD;
 		infile >> ignoreToken >> g_simulation->recordTextCPD;
 		infile >> ignoreToken >> g_simulation->recordTextFEPR;
+		infile >> ignoreToken >> g_simulation->m_record_quantities;
 
 		//CPD
 
