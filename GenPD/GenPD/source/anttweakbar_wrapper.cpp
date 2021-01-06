@@ -709,6 +709,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "LBFGSWindowSize     " << g_simulation->m_lbfgs_m << std::endl;
 		outfile << std::endl;
 		//Demo
+		
 		outfile << "AngularMomentum     " << g_simulation->m_angular_momentum_init.x() << " " \
 										  << g_simulation->m_angular_momentum_init.y() << " " \
 										  << g_simulation->m_angular_momentum_init.z() << std::endl;
@@ -718,6 +719,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "Scale               " << g_simulation->m_scale_x << " " \
 										  << g_simulation->m_scale_y << " " \
 										  << g_simulation->m_scale_z << std::endl;
+		outfile << "Process Colision    " << g_simulation->m_processing_collision << std::endl;
 		outfile << std::endl;
 		//FEPR
 		outfile << "FEPREnable          " << g_simulation->m_enable_fepr << std::endl;
@@ -824,6 +826,7 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_lbfgs_m;
 
 		//Demo
+		
 		infile >> ignoreToken >> g_simulation->m_angular_momentum_init.x() \
 							  >> g_simulation->m_angular_momentum_init.y() \
 							  >> g_simulation->m_angular_momentum_init.z();
@@ -833,6 +836,7 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_scale_x \
 							  >> g_simulation->m_scale_y \
 							  >> g_simulation->m_scale_z;
+		infile >> ignoreToken >> g_simulation->m_processing_collision;
 
 		//FEPR
 		infile >> ignoreToken >> g_simulation->m_enable_fepr;
