@@ -61,7 +61,7 @@ ScalarType g_total_ls_iterations;
 int g_total_iterations;
 #endif
 
-#define C_DIM 6
+#define C_DIM 7
 TimerWrapper g_integration_timer;
 TimerWrapper g_lbfgs_timer;
 TimerWrapper g_fepr_timer;
@@ -181,17 +181,12 @@ void Simulation::Reset()
 	m_y.resize(m_mesh->m_system_dimension);
 	m_external_force.resize(m_mesh->m_system_dimension);
 
-
+	g_dck.resize(m_mesh->m_system_dimension, 7);
 	g_dcpx.resize(m_mesh->m_system_dimension, 3);
 	g_dcpx.setZero();
 
 	g_dcpv.resize(m_mesh->m_system_dimension, 3);
 
-	g_dck.resize(m_mesh->m_system_dimension, C_DIM);	g_Ainv_dck.resize(m_mesh->m_system_dimension, C_DIM);
-	g_dcp.resize(m_mesh->m_system_dimension, 3);		g_Ainv_dcp.resize(m_mesh->m_system_dimension, 3);
-	g_dcl.resize(m_mesh->m_system_dimension, 3);		g_Ainv_dcl.resize(m_mesh->m_system_dimension, 3);
-	g_dch.resize(m_mesh->m_system_dimension);			g_Ainv_dch.resize(m_mesh->m_system_dimension);
-	g_Ainv_dck.setZero();
 	// handles
 	if (!m_handles.empty())
 		m_handles.clear();
@@ -216,10 +211,20 @@ void Simulation::Reset()
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
 
+	//set Linear momentum
+	m_mesh->m_current_velocities.setZero();
+
+	EigenVector3 linear_velocity = m_linear_momentum_init / m_mesh->m_total_mass;
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		//ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		m_mesh->m_current_velocities.block_vector(i) += linear_velocity;
+	}
+
 
 	//set Angular momenta 
 
-	//m_mesh->
 	EigenMatrix3 inertia;
 	inertia.setZero();
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -231,14 +236,12 @@ void Simulation::Reset()
 		inertia += mi * skewMat * skewMat;
 	}
 
-	//std::cout << inertia.determinant() << std::endl;
-
 	EigenVector3 angular_velocity = inertia.inverse() * m_angular_momentum_init;
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
-		m_mesh->m_current_velocities.block_vector(i) = xi.cross(angular_velocity);
+		m_mesh->m_current_velocities.block_vector(i) += xi.cross(angular_velocity);
 	}
 
 	//set scale 
@@ -249,12 +252,15 @@ void Simulation::Reset()
 		m_mesh->m_current_positions.block_vector(i).z() *= (1 + fabs(m_scale_z));
 	}
 
+	//std::cout << m_angular_momentum_init<<std::endl;
+	//std::cout << angular_velocity << std::endl;
+
 	//Initialize P, L, H
 
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
-	g_angular_momentum = m_current_angular_momentum = m_angular_momentum_init;
-	g_linear_momentum = m_current_linear_momentum = evaluateLinearMomentumAndGradient(m_mesh->m_current_velocities, g_dcpv);
+	m_current_angular_momentum = m_angular_momentum_init;
+	m_current_linear_momentum = m_linear_momentum_init;
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
@@ -274,14 +280,15 @@ void Simulation::Reset()
 	g_dcp = g_dcpv;
 
 	prefactorize();
+
 	for (int i = 0; i < 3; i++)
 	{
 		VectorX rt;
 		LBFGSKernelLinearSolve(rt, g_dcp.col(i), 1);
-		g_Ainv_dcp.row(i) = rt;
+		g_Ainv_dcp.col(i) = rt;
 	}
 
-	//std::cout << g_dcp << std::endl;
+
 	m_keyframe_handle_unit_translation_total_segments = 0;
 	m_keyframe_handle_unit_rotation_total_segments = 0;
 
@@ -299,7 +306,8 @@ void Simulation::Reset()
 
 void Simulation::set_prefactored_matrix()
 {
-
+	
+	g_dcl.resize(m_mesh->m_system_dimension, 3);
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		ScalarType mi =m_mesh->m_mass_matrix_1d.coeff(i, i);
@@ -307,7 +315,7 @@ void Simulation::set_prefactored_matrix()
 		g_dcl.block_matrix(i) = mi * vec2skew(xi);
 	}
 
-	std::cout << g_dcl << std::endl;
+
 	for (int i = 0; i < 3; i++)
 	{
 		// first iteration
@@ -357,18 +365,50 @@ void Simulation::Update()
 	m_last_descent_dir.resize(m_mesh->m_system_dimension);
 	m_last_descent_dir.setZero();
 	
+	/*if (m_manipulate_plh)
+	{
+		g_total_energy = m_total_energy;
+		g_angular_momentum(0) = m_lx;
+		g_angular_momentum(1) = m_ly;
+		g_angular_momentum(2) = m_lz;
+
+		g_linear_momentum(0) = m_px;
+		g_linear_momentum(1) = m_py;
+		g_linear_momentum(2) = m_pz;
+
+		m_manipulate_plh = false;
+	}*/
 	
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
 		// update inertia term
+		EigenVector3 gravity(0, -m_gravity_constant, 0);
+
+	
+
+		/*if (!m_use_cpd_both_momenta)
+		{
+			g_linear_momentum = g_gcp.transpose() * m_mesh->m_current_velocities;
+			g_com = g_gcp.transpose() * m_mesh->m_current_positions;
+			g_angular_momentum = g_gcl.transpose() * m_mesh->m_current_velocities;
+		}
+		if (m_use_cpd_both_momenta && m_enable_cpd)
+		{
+			g_com += g_linear_momentum * m_h + 0.5*gravity * m_h * m_h * m_mesh->m_total_mass;
+			g_linear_momentum += gravity * m_h * m_mesh->m_total_mass;
+		}*/
 		computeConstantVectorsYandZ();
+
+
+
+		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
+
 		// duration 1 
 
 		start = system_clock::now();
 		if (m_enable_cpd)
 		{
 			// update
-			g_com = g_dcp.transpose() * m_mesh->m_current_positions + g_linear_momentum * m_h;
 			VectorX hMv_n = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_hMv_n, hMv_n, 1);
 			set_prefactored_matrix();
@@ -413,7 +453,22 @@ void Simulation::Update()
 		
 
 		// damping
-	
+	}
+
+
+	if (m_record_quantities) //per frame
+	{
+		VectorX x = m_mesh->m_current_positions;
+		VectorX v = m_mesh->m_current_velocities;
+		VectorX f(m_mesh->m_system_dimension);
+		f.setZero();
+
+		EigenVector3 P = evaluateLinearMomentum(v);
+		EigenVector3 L = evaluateAngularMomentum(x, v);
+		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
+
+		//std::ofstream out(fileName, std::ios::app);
+
 	}
 
 	//// volume
@@ -1933,8 +1988,6 @@ void Simulation::integrateImplicitMethod()
 		m_ls_is_first_iteration = false;
 		g_integration_timer.Toc();
 
-	
-
 		if (m_verbose_show_converge)
 		{
 			if (converge && m_current_iteration != 0)
@@ -1954,11 +2007,6 @@ void Simulation::integrateImplicitMethod()
 			g_debugger->SendData(x, energy, gradient_norm, m_current_iteration + 1, total_time);
 #endif // ENABLE_MATLAB_DEBUGGING
 		}
-	}
-
-	if (m_verbose_show_cpd_converge)
-	{
-		std::cout << "Total CPD iteration: " << m_current_iteration - 1 << std::endl;
 	}
 
 	t_optimization.Toc();
@@ -2159,44 +2207,28 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		///////////////////////
 		start = system_clock::now();
 		if (m_enable_cpd)
-		{	
-			g_Ainv_dck.setZero();
-			g_dck.setZero();
+		{
+			
 			g_dch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_dch = r + g_Ainv_hMv_n ;
 
 			g_dck.block(0, 0, m_mesh->m_system_dimension, 3) = g_dcp;
 			g_dck.block(0, 3, m_mesh->m_system_dimension, 3) = g_dcl;
-			if(C_DIM == 7)
-				g_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_dch;
-
+			g_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_dch;
 			g_Ainv_dck.block(0, 0, m_mesh->m_system_dimension, 3) = g_Ainv_dcp;
 			g_Ainv_dck.block(0, 3, m_mesh->m_system_dimension, 3) = g_Ainv_dcl;
-			if (C_DIM == 7)
-				g_Ainv_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_Ainv_dch;
+			g_Ainv_dck.block(0, 6, m_mesh->m_system_dimension, 1) = g_Ainv_dch;
 
-			Matrix schur = g_dck.transpose() * g_Ainv_dck;
-			//std::cout << schur <<std::endl;
-			VectorX ck(C_DIM);
-			
-			ck.block_vector(0) = -g_com;
-			ck.block_vector(1) = -g_angular_momentum * m_h;
-			ck = g_dck.transpose() *(x - r);
-
-			std::cout << ck.norm() << std::endl;
-			if (ck.norm() < m_cpd_threshold)
-				return true;
-
-			if (C_DIM == 7)
-				ck(6) = current_energy - m_h * m_h * m_hamiltonian;
-
-			std::cout << schur.determinant() << std::endl;
+			Eigen::MatrixXf schur = g_dck.transpose() * g_Ainv_dck;
+	
+			VectorX ck(7);
+			ck.block_vector(0) = g_dcp.transpose() * x - g_com;
+			ck.block_vector(1) = g_dcl.transpose() * x - g_angular_momentum * m_h; 
+			ck(6) = current_energy - m_hamiltonian * m_h * m_h;
 			VectorX lambda = schur.inverse() * ck; 
-			x = x -(r + g_Ainv_dck * lambda);
+			x -= g_Ainv_dck * lambda;
 
-			return false;
 		}
-
 		end = system_clock::now();
 		result = end - start;
 
