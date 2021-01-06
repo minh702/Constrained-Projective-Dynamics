@@ -177,9 +177,15 @@ int main(int argc, char ** argv){
 #endif
 
     if (argc == 1)
+    {
         config_text_name = DEFAULT_CONFIG_FILE;
+        std::cout << "config text path error" << std::endl;
+    }
     else
+    {
         config_text_name = argv[1];
+        std::cout << "correct" << std::endl;
+    }
 
     glutCreateWindow("Projective Dynamics");
     glEnable(GL_DEPTH_TEST);
@@ -191,7 +197,7 @@ int main(int argc, char ** argv){
     init();
     glutReshapeWindow(g_screen_width, g_screen_height);
 
-    //use cmd if not, true.
+    //for use cmd. if not, use true.
     g_pause = false;
 
     // bind function callbacks
@@ -254,6 +260,7 @@ void timeout(int value)
 
     if (g_recording_limit && g_current_frame > g_total_frame)
     {
+        PostQuitMessage(0);
         g_pause = true;
     }
 

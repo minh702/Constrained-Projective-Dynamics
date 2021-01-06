@@ -422,7 +422,22 @@ void Simulation::Update()
 		
 
 		// damping
-	
+	}
+
+
+	if (m_record_quantities) //per frame
+	{
+		VectorX x = m_mesh->m_current_positions;
+		VectorX v = m_mesh->m_current_velocities;
+		VectorX f(m_mesh->m_system_dimension);
+		f.setZero();
+
+		EigenVector3 P = evaluateLinearMomentum(v);
+		EigenVector3 L = evaluateAngularMomentum(x, v);
+		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
+
+		//std::ofstream out(fileName, std::ios::app);
+
 	}
 
 	//// volume

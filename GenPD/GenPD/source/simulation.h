@@ -293,9 +293,10 @@ protected:
 	unsigned int m_current_iteration;
 
 
-	bool recordTextPD = true;
-	bool recordTextCPD = true;
-	bool recordTextFEPR = true;
+	bool recordTextPD;
+	bool recordTextCPD;
+	bool recordTextFEPR;
+	bool m_record_quantities;
 
 	// line search 
 	bool m_enable_line_search;

@@ -1,7 +1,7 @@
 HasEnd              1
-TotalFrame          1000
+TotalFrame          100
 MeshBody            1
-Wireframe           1
+Wireframe           0
 Wireframe           1
 Texture             0
 <<<<<<< HEAD
@@ -21,7 +21,7 @@ ScreenHeight        768
 
 MeshType            1
 MeshMass            1
-TetFilePath         cube86
+TetFilePath         cube
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -54,7 +54,7 @@ IterationsPerFrame  1
 KappaStiffness      100
 AutoLaplacian       0
 LaplacianStiffness  180
-GravityConstant     100
+GravityConstant     0
 DampingCoefficient  0.001
 RestiCoefficient    1
 FrictionCoefficient 0.001
@@ -75,9 +75,10 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
 
-AngularMomentum     0 0 0
-LinearMomentum      0 0 0
-Scale               0 0 0
+AngularMomentum     10 0 0
+LinearMomentum      10 0 0
+Scale               10 0 0
+Process Colision    0
 
 FEPREnable          0
 FEPRThreshold       0
