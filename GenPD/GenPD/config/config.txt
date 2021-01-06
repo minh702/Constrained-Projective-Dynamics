@@ -1,4 +1,4 @@
-HasEnd              1
+HasEnd              0
 TotalFrame          299
 MeshBody            1
 Wireframe           1
@@ -10,7 +10,7 @@ ScreenHeight        1017
 MeshType            1
 MeshMass            1
 TetFilePath         cube
-TetScaling          1
+TetScaling       1
 TetFlip             0
 TetRotation         0
 ClothDimension      21 21
@@ -51,14 +51,14 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
 
-AngularMomentum     100 200 500
+AngularMomentum     0 0 500
 LinearMomentum      0 0 0
 Scale               0 0 0
-Process Colision    1
+Process Colision    0
 
-FEPREnable          0
-FEPRThreshold       0
-FEPRMaxIter         0
+FEPREnable          1
+FEPRThreshold       0.001
+FEPRMaxIter         100
 
 ExportOBJ           0
 RecordPD            0
