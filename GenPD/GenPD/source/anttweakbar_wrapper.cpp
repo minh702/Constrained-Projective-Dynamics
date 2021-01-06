@@ -52,6 +52,7 @@ extern int g_screen_width;
 extern int g_screen_height;
 extern glm::vec3 g_handle_color;
 extern bool g_random_handle_color;
+extern std::string config_text_name;
 
 //----------State Control--------------------//
 extern bool g_only_show_sim;
@@ -334,10 +335,14 @@ void AntTweakBarWrapper::Init()
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
 	//Momentum
-	TwAddVarRW(m_sim_bar, "a-x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.x(), " group='Angular Momentum' "); //here
-	TwAddVarRW(m_sim_bar, "a-y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Angular Momentum' "); //here
-	TwAddVarRW(m_sim_bar, "a-z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "a-x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.x(), " group='Angular Momentum' "); 
+	TwAddVarRW(m_sim_bar, "a-y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Angular Momentum' "); 
+	TwAddVarRW(m_sim_bar, "a-z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Angular Momentum' "); 
 	TwDefine(" 'Simulation Settings'/'Angular Momentum' group='Demo'");
+	TwAddVarRW(m_sim_bar, "l-x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.x(), " group='Linear Momentum' ");
+	TwAddVarRW(m_sim_bar, "l-y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.y(), " group='Linear Momentum' ");
+	TwAddVarRW(m_sim_bar, "l-z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.z(), " group='Linear Momentum' ");
+	TwDefine(" 'Simulation Settings'/'Linear Momentum' group='Demo'");
 
 	// Scale
 	TwAddVarRW(m_sim_bar, "s-x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_x, " group='Scale' ");
@@ -680,7 +685,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "DampingCoefficient  " << g_simulation->m_damping_coefficient << std::endl;
 		outfile << "RestiCoefficient    " << g_simulation->m_restitution_coefficient << std::endl;
 		outfile << "FrictionCoefficient " << g_simulation->m_friction_coefficient << std::endl;
-
+		
 		outfile << "IterationsPerFrame  " << g_simulation->m_iterations_per_frame << std::endl;
 		//outfile << "JacobiIterations    " << g_simulation->m_jacobi_iterations << std::endl;
 		outfile << "DefinitenessFix     " << g_simulation->m_definiteness_fix << std::endl;
@@ -703,6 +708,27 @@ void AntTweakBarWrapper::SaveSettings()
 
 		outfile << "LBFGSType           " << g_simulation->m_lbfgs_H0_type << std::endl;
 		outfile << "LBFGSWindowSize     " << g_simulation->m_lbfgs_m << std::endl;
+		outfile << std::endl;
+		//Demo
+		outfile << "AngularMomentum     " << g_simulation->m_angular_momentum_init.x() << " " \
+										  << g_simulation->m_angular_momentum_init.y() << " " \
+										  << g_simulation->m_angular_momentum_init.z() << std::endl;
+		outfile << "LinearMomentum      " << g_simulation->m_linear_momentum_init.x() << " " \
+										  << g_simulation->m_linear_momentum_init.y() << " " \
+										  << g_simulation->m_linear_momentum_init.z() << std::endl;
+		outfile << "Scale               " << g_simulation->m_scale_x << " " \
+										  << g_simulation->m_scale_y << " " \
+										  << g_simulation->m_scale_z << std::endl;
+		outfile << std::endl;
+		//FEPR
+		outfile << "FEPREnable          " << g_simulation->m_enable_fepr << std::endl;
+		outfile << "FEPRThreshold       " << g_simulation->m_fepr_threshold << std::endl;
+		outfile << "FEPRMaxIter         " << g_simulation->m_fepr_max_iter << std::endl;
+		outfile << std::endl;
+		//Record
+		outfile << "RecordPD            " << g_simulation->recordTextPD << std::endl;
+		outfile << "RecordCPD           " << g_simulation->recordTextCPD << std::endl;
+		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
 
 		outfile.close();
 	}
@@ -718,7 +744,7 @@ void AntTweakBarWrapper::LoadSettings()
 
 	//read file
 	std::ifstream infile;
-	infile.open(DEFAULT_CONFIG_FILE, std::ifstream::in);
+	infile.open(config_text_name, std::ifstream::in);
 	if (successfulRead = infile.is_open())
 	{
 		int tempEnum;
@@ -798,6 +824,31 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> tempEnum; g_simulation->m_lbfgs_H0_type = LBFGSH0Type(tempEnum);
 		infile >> ignoreToken >> g_simulation->m_lbfgs_m;
 
+		//Demo
+		infile >> ignoreToken >> g_simulation->m_angular_momentum_init.x() \
+							  >> g_simulation->m_angular_momentum_init.y() \
+							  >> g_simulation->m_angular_momentum_init.z();
+		infile >> ignoreToken >> g_simulation->m_linear_momentum_init.x() \
+							  >> g_simulation->m_linear_momentum_init.y() \
+							  >> g_simulation->m_linear_momentum_init.z();
+		infile >> ignoreToken >> g_simulation->m_scale_x \
+							  >> g_simulation->m_scale_y \
+							  >> g_simulation->m_scale_z;
+
+		//FEPR
+		infile >> ignoreToken >> g_simulation->m_enable_fepr;
+		infile >> ignoreToken >> g_simulation->m_fepr_threshold;
+		infile >> ignoreToken >> g_simulation->m_fepr_max_iter;
+
+		//Record
+		infile >> ignoreToken >> g_simulation->recordTextPD;
+		infile >> ignoreToken >> g_simulation->recordTextCPD;
+		infile >> ignoreToken >> g_simulation->recordTextFEPR;
+
+		//CPD
+
+
+
 		infile.close();
 	}
 
@@ -824,7 +875,7 @@ void AntTweakBarWrapper::DefaultSettings()
 	g_show_texture = false;
 	g_screen_width = 1024;
 	g_screen_height = 768;
-
+	
 	// mesh settings
 	g_mesh->m_mesh_type = MESH_TYPE_CLOTH;
 	g_mesh->m_total_mass = 1.0;

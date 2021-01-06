@@ -212,6 +212,7 @@ protected:
 	ScalarType m_scale_y;
 	ScalarType m_scale_z;
 	EigenVector3 m_angular_momentum_init;
+	EigenVector3 m_linear_momentum_init;
 
 	// integration and optimization method
 	IntegrationMethod m_integration_method;
@@ -292,9 +293,9 @@ protected:
 	unsigned int m_current_iteration;
 
 
-	bool recordTextPD = false;
-	bool recordTextCPD = false;
-	bool recordTextFEPR = false;
+	bool recordTextPD = true;
+	bool recordTextCPD = true;
+	bool recordTextFEPR = true;
 
 	// line search 
 	bool m_enable_line_search;
