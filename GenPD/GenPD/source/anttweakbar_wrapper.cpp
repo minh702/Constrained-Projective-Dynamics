@@ -721,19 +721,26 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "Scale               " << g_simulation->m_scale_x << " " \
 										  << g_simulation->m_scale_y << " " \
 										  << g_simulation->m_scale_z << std::endl;
-		outfile << "Process Colision    " << g_simulation->m_processing_collision << std::endl;
+		//outfile << "Process Colision    " << g_simulation->m_processing_collision << std::endl;
 		outfile << std::endl;
 		//FEPR
 		outfile << "FEPREnable          " << g_simulation->m_enable_fepr << std::endl;
 		outfile << "FEPRThreshold       " << g_simulation->m_fepr_threshold << std::endl;
 		outfile << "FEPRMaxIter         " << g_simulation->m_fepr_max_iter << std::endl;
 		outfile << std::endl;
+		//CPD
+		outfile << "CPDEnable           " << g_simulation->m_enable_cpd << std::endl;
+		outfile << "CPDThreshold        " << g_simulation->m_cpd_threshold << std::endl;
+		outfile << std::endl;
+
 		//Record
 		outfile << "ExportOBJ           " << g_export_obj << std::endl;
 		outfile << "RecordPD            " << g_simulation->recordTextPD << std::endl;
 		outfile << "RecordCPD           " << g_simulation->recordTextCPD << std::endl;
 		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
 		outfile << "RecordQuantities    " << g_simulation->m_record_quantities << std::endl;
+
+		//CPD
 
 		outfile.close();
 	}
@@ -839,12 +846,16 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_scale_x \
 							  >> g_simulation->m_scale_y \
 							  >> g_simulation->m_scale_z; //helpppp
-		infile >> ignoreToken >> g_simulation->m_processing_collision;
+		//infile >> ignoreToken >> g_simulation->m_processing_collision;
 
 		//FEPR
 		infile >> ignoreToken >> g_simulation->m_enable_fepr;
 		infile >> ignoreToken >> g_simulation->m_fepr_threshold;
 		infile >> ignoreToken >> g_simulation->m_fepr_max_iter;
+
+		//CPD
+		infile >> ignoreToken >> g_simulation->m_enable_cpd;
+		infile >> ignoreToken >> g_simulation->m_cpd_threshold;
 
 		//Record
 		infile >> ignoreToken >> g_export_obj;
@@ -852,9 +863,6 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->recordTextCPD;
 		infile >> ignoreToken >> g_simulation->recordTextFEPR;
 		infile >> ignoreToken >> g_simulation->m_record_quantities;
-
-		//CPD
-
 
 
 		infile.close();

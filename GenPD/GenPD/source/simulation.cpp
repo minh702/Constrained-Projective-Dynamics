@@ -158,7 +158,8 @@ Simulation::Simulation()
 {
 	m_lbfgs_queue = NULL;
 
-	m_processing_collision = true;
+	//testttt
+	m_processing_collision = false;
 
 	m_verbose_show_converge = false;
 	m_verbose_show_optimization_time = false;

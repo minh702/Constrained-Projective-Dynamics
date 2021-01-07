@@ -827,7 +827,7 @@ void TW_CALL reset_handle(void*)
 void TW_CALL reset_simulation(void*)
 {
     // save current setting before reset
-    //AntTweakBarWrapper::SaveSettings(g_config_bar);
+    AntTweakBarWrapper::SaveSettings(g_config_bar);
 
     // reset frame#
     g_current_frame = 0;
