@@ -84,6 +84,18 @@ VectorX g_fixed_positions;
 Eigen::Vector4i g_fixed_indices;
 Eigen::MatrixXf S;
 Eigen::MatrixXf D;
+
+
+EigenMatrix3 vec2skew(EigenVector3& vec)
+{
+	EigenMatrix3 skewMat;
+	skewMat << 0, -vec.z(), vec.y(),
+		vec.z(), 0, -vec.x(),
+		-vec.y(), vec.x(), 0;
+
+	return skewMat;
+}
+
 // comparison function for sort
 bool compareTriplet(SparseMatrixTriplet i, SparseMatrixTriplet j)
 { 
@@ -220,7 +232,8 @@ void Simulation::Reset()
 
 	EigenVector3 com;
 	EigenVector3 trans = m_com;
-
+	EigenMatrix3 iden3;
+	iden3.setIdentity();
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		m_mesh->m_current_positions.block_vector(i).x() *= 1.f;
@@ -230,12 +243,7 @@ void Simulation::Reset()
 		EigenMatrix3 rx;
 
 
-		g_gcm(3 * i + 0, 0) = g_gcp(3 * i + 0, 0) = g_gck(3 * i + 0, 0) = mi;
-		g_gcm(3 * i + 1, 1) = g_gcp(3 * i + 1, 1) = g_gck(3 * i + 1, 1) = mi;
-		g_gcm(3 * i + 2, 2) = g_gcp(3 * i + 2, 2) = g_gck(3 * i + 2, 2) = mi;
-
-
-
+		g_gcm.block_matrix(i) = g_gcp.block_matrix(i) = g_gck.block_matrix(i) = mi * iden3;
 
 		rx << 0, r.z(), -r.y(),
 			-r.z(), 0, r.x(),
@@ -294,7 +302,7 @@ void Simulation::Reset()
 
 	//}
 
-	g_rigid_energy = 242;
+	//g_rigid_energy = 242;
 	EigenVector3 box(0.5, 0.5, 0.5);
 
 	/*for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -351,6 +359,8 @@ void Simulation::Reset()
 	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f) + g_rigid_energy;
 
 
+	g_total_energy = 0;
+
 	//g_total_energy = 20000;
 	std::cout << g_system_energy << std::endl;
 	std::cout << g_rigid_energy << std::endl;
@@ -382,26 +392,11 @@ void Simulation::set_prefactored_matrix()
 		ScalarType mi =m_mesh->m_mass_matrix_1d.coeff(i, i);
 		EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
 		// x - angular momentum gradient
-		g_gcl(3 * i + 0, 0) = g_gcm(3 * i + 0, 3) =g_gck(3 * i + 0, 3) = 0.f;
-		g_gcl(3 * i + 1, 0) = g_gcm(3 * i + 1, 3) =g_gck(3 * i + 1, 3) = -mi * ri.z();
-		g_gcl(3 * i + 2, 0) = g_gcm(3 * i + 2, 3) =g_gck(3 * i + 2, 3) = mi * ri.y();
+		g_gcl.block_matrix(i) = mi * vec2skew(ri);
 
-		// y - angular momentum gradient
-		g_gcl(3 * i + 0, 1) = g_gcm(3 * i + 0, 4) = g_gck(3 * i + 0, 4) = mi * ri.z();
-		g_gcl(3 * i + 1, 1) = g_gcm(3 * i + 1, 4) = g_gck(3 * i + 1, 4) = 0.f;
-		g_gcl(3 * i + 2, 1) = g_gcm(3 * i + 2, 4) = g_gck(3 * i + 2, 4) = -mi * ri.x();
-
-		// z - angular momentum gradient		
-		g_gcl(3 * i + 0, 2) = g_gcm(3 * i + 0, 5) = g_gck(3 * i + 0, 5) = -mi * ri.y();
-		g_gcl(3 * i + 1, 2) = g_gcm(3 * i + 1, 5) = g_gck(3 * i + 1, 5) = mi * ri.x();
-		g_gcl(3 * i + 2, 2) = g_gcm(3 * i + 2, 5) = g_gck(3 * i + 2, 5) = 0.f;
-		//m_bl -= m_com.cross
-		gravity_potential += mi * ri.y();
 	}
-	gravity_potential *= m_gravity_constant;
 
-	gravity_potential = (g_com.y() - g_bot) * m_gravity_constant * m_mesh->m_total_mass;
-
+	g_gck.block(0, 3, m_mesh->m_system_dimension, 3) = g_gcl;
 
 
 	//g_total_energy = g_system_energy - gravity_potential;
@@ -545,20 +540,6 @@ void Simulation::Update()
 	{
 		// update inertia term
 		EigenVector3 gravity(0, -m_gravity_constant, 0);
-
-	
-
-		if (!m_use_cpd_both_momenta)
-		{
-			g_linear_momentum = g_gcp.transpose() * m_mesh->m_current_velocities;
-			g_com = g_gcp.transpose() * m_mesh->m_current_positions;
-			g_angular_momentum = g_gcl.transpose() * m_mesh->m_current_velocities;
-		}
-		if (m_use_cpd_both_momenta && m_use_cpd)
-		{
-			g_com += g_linear_momentum * m_h + 0.5*gravity * m_h * m_h * m_mesh->m_total_mass;
-			g_linear_momentum += gravity * m_h * m_mesh->m_total_mass;
-		}
 		computeConstantVectorsYandZ();
 
 
@@ -566,6 +547,7 @@ void Simulation::Update()
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_use_cpd)
 		{
+			g_com += g_linear_momentum * m_h + 0.5 * gravity * m_h * m_h * m_mesh->m_total_mass;
 			// update
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
@@ -2332,36 +2314,9 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gcm * lambda;
 			}
-
-			else if (m_use_cpd_angular_momentum)
-			{
-				Eigen::Matrix3f cTAinv_c = g_gcl.transpose() * g_Ainv_gcl;
-				Eigen::LLT<Eigen::Matrix3f> llt;
-				llt.compute(cTAinv_c);
-				EigenVector3 cl;
-				
-				cl = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h;
-
-				
-				EigenVector3 lambda = llt.solve(cl);
-				p_k -= g_Ainv_gcl * lambda;
-			}
-			else if (m_use_cpd_linear_momentum)
-			{
-				Eigen::Matrix3f cTAinv_c = g_gcp.transpose() * g_Ainv_gcp;
-				Eigen::LLT<Eigen::Matrix3f> llt;
-				llt.compute(cTAinv_c);
-				EigenVector3 cp;
-
-				cp = g_gcp.transpose() * (x + p_k) - g_linear_momentum * m_h;
-
-
-				EigenVector3 lambda = llt.solve(cp);
-				p_k -= g_Ainv_gcp * lambda;
-			}
 			else
 			{
-
+				std::cout << "test" << std::endl;
 				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
 				Eigen::LLT<Eigen::MatrixXf> llt;
 				llt.compute(cTAinv_c);
