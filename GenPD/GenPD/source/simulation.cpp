@@ -330,7 +330,7 @@ void Simulation::Reset()
 			m_mesh->m_current_positions.block_vector(i).z() = -box.z();
 	}*/
 
-	setWeightedLaplacianMatrix1D();
+	//setWeightedLaplacianMatrix1D();
 
 
 
@@ -342,31 +342,18 @@ void Simulation::Reset()
 	{
 		VectorX rt;
 		LBFGSKernelLinearSolve(rt, g_gcp.col(i), 1);
-		g_Ainv_gcm.col(i) = g_Ainv_gcp.col(i) = g_Ainv_gck.col(i) = rt;
+		g_Ainv_gcp.col(i) = g_Ainv_gck.col(i) = rt;
 	}
 
 	//std::cout << g_gcm.transpose() * g_Ainv_gcm << std::endl;
 
 
-	g_com = m_com * m_mesh->m_total_mass;
-
-
-	g_system_energy = (g_com.y() - g_bot)* m_gravity_constant;
-
+	g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
-	
-	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f) + g_rigid_energy;
 
 
-	g_total_energy = 0;
-
-	//g_total_energy = 20000;
-	std::cout << g_system_energy << std::endl;
-	std::cout << g_rigid_energy << std::endl;
-	std::cout << g_total_energy << std::endl;
-	std::cout << g_angular_momentum << std::endl;
-	std::cout << g_linear_momentum << std::endl;
+	//g_total_energy = 20000
 	// animation
 	m_keyframe_handle_unit_translation_total_segments = 0;
 	m_keyframe_handle_unit_rotation_total_segments = 0;
@@ -399,25 +386,14 @@ void Simulation::set_prefactored_matrix()
 	g_gck.block(0, 3, m_mesh->m_system_dimension, 3) = g_gcl;
 
 
-	//g_total_energy = g_system_energy - gravity_potential;
 	
-	switch (m_lbfgs_H0_type)
-	{
-	case LBFGS_H0_LAPLACIAN:
-		prefactorize();
-		break;
-	default:
-		//prefactorize();
-		break;
-	}
-
 	for (int i = 3; i < 6; i++)
 	{
 		// first iteration
 		VectorX r;
 		LBFGSKernelLinearSolve(r, g_gck.col(i), 1);
 
-		 g_Ainv_gcl.col(i - 3) = g_Ainv_gcm.col(i) = g_Ainv_gck.col(i) = r;
+		 g_Ainv_gcl.col(i - 3) = g_Ainv_gck.col(i) = r;
 	}
 }
 
@@ -2281,56 +2257,25 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		VectorX p_k = -r;
 		if (m_use_cpd)
 		{
-			Eigen::MatrixXf a(m_mesh->m_system_dimension,3);
-			Eigen::MatrixXf b(m_mesh->m_system_dimension, 3);
-
 	
-			if (m_integration_method == INTEGRATION_IMPLICIT_EULER)
-			{
-				a.col(2) = g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
-
-				b.col(2) = g_Ainv_gck.col(6) = g_Ainv_gch = r + g_Ainv_vn;
-				// update
-			}
-			else
-			{
-				g_gck.col(6) = g_gch;
-
-				g_Ainv_gck.col(6) = g_Ainv_gch;
-			}
+			g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+			g_Ainv_gck.col(6) = r + g_Ainv_vn;
+			
 		
 			//p_k -= b * l;
 
-			if (m_use_cpd_both_momenta)
-			{
-				Eigen::MatrixXf cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
-				Eigen::LLT<Eigen::MatrixXf> llt;
-				llt.compute(cTAinv_c);
-				VectorX c(3);
-				VectorX ck(6);
-				ck.block_vector(0) = g_gcp.transpose() * (x + p_k) - g_com;
-				ck.block_vector(1) = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h;
-
-				VectorX lambda = llt.solve(ck);
-				p_k -= g_Ainv_gcm * lambda;
-			}
-			else
-			{
-				std::cout << "test" << std::endl;
-				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
-				Eigen::LLT<Eigen::MatrixXf> llt;
-				llt.compute(cTAinv_c);
-				
-				VectorX ck(7);
-				ck.block_vector(0) = g_gcp.transpose() * (x + p_k) - g_com;
-				ck.block_vector(1) = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h; 
-				ck(6) = g_gch.dot(p_k) + current_energy;
-				VectorX lambda = llt.solve(ck);
-				p_k -= g_Ainv_gck * lambda;
-
-			}
-				
 		
+			std::cout << "test" << std::endl;
+			Matrix cTAinv_c = g_gck.transpose() * g_Ainv_gck;
+			Eigen::LLT<Eigen::MatrixXf> llt;
+			llt.compute(cTAinv_c);
+				
+			VectorX ck(7);
+			ck.block_vector(0) = g_gcp.transpose() * (x + p_k) - g_com;
+			ck.block_vector(1) = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h; 
+			ck(6) = g_gch.dot(p_k) + current_energy;
+			VectorX lambda = llt.solve(ck);
+			p_k -= g_Ainv_gck * lambda;
 
 		}
 		g_lbfgs_timer.Pause();

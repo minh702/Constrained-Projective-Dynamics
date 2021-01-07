@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            1
-TetFilePath         bar
+TetFilePath         cube
 TetScaling          1
 TetFlip             0
 TetRotation         180
