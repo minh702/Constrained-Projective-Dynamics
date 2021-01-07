@@ -1,4 +1,4 @@
-HasEnd              1
+HasEnd              0
 TotalFrame          299
 MeshBody            1
 Wireframe           1
@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            1
-TetFilePath         cube
+TetFilePath         bar
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -34,8 +34,8 @@ LaplacianStiffness  180
 GravityConstant     0
 DampingCoefficient  0.001
 RestiCoefficient    1
-FrictionCoefficient 1.001
-IterationsPerFrame  10
+FrictionCoefficient 0.001
+IterationsPerFrame  1
 DefinitenessFix     1
 LSEnable            1
 LSExact             0
@@ -51,7 +51,7 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
 
-AngularMomentum     100 200 500
+AngularMomentum     100 0 0
 LinearMomentum      0 0 0
 Scale               0 0 0
 
@@ -59,7 +59,7 @@ FEPREnable          0
 FEPRThreshold       0.001
 FEPRMaxIter         100
 
-CPDEnable           0
+CPDEnable           1
 CPDThreshold        0.001
 
 ExportOBJ           0
