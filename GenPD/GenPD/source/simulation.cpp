@@ -261,7 +261,10 @@ void Simulation::Reset()
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
+	m_Hrb = fabs(0.5f * m_linear_momentum_init.dot(linear_velocity)) + 0.5f * fabs(m_angular_momentum_init.dot(angular_velocity));
 
+	std::cout << m_hamiltonian << std::endl;
+	std::cout << m_Hrb << std::endl;
 	m_current_angular_momentum = m_angular_momentum_init;
 	m_current_linear_momentum = m_linear_momentum_init;
 	// lbfgs
@@ -275,8 +278,8 @@ void Simulation::Reset()
 	// volume
 	m_restshape_volume = getVolume(m_mesh->m_current_positions);
 	m_current_volume = m_restshape_volume;
-	//init cpd variables 
-	g_dcpv;
+	//init cpd variables  
+	g_dcpv = g_dcp;
 	//std::cout << g_dcp << std::endl;
 
 
@@ -406,7 +409,7 @@ void Simulation::Update()
 		// duration 1 
 
 		start = system_clock::now();
-		if (m_enable_cpd)
+		if (m_enable_cpd && m_optimization_method != OPTIMIZATION_METHOD_NEWTON)
 		{
 			// update
 			g_com += m_current_linear_momentum * m_h;
@@ -2038,6 +2041,11 @@ void Simulation::integrateImplicitMethod()
 		}
 	}
 
+
+	if (m_verbose_show_cpd_converge && m_enable_cpd)
+	{
+		std::cout << "CPD iteration: " << m_current_iteration << std::endl;
+	}
 	t_optimization.Toc();
 	t_optimization.Report("Optimization", m_verbose_show_optimization_time);
 	g_lbfgs_timer.Resume();
@@ -2082,7 +2090,7 @@ bool Simulation::performNewtonsMethodOneIteration(VectorX& x)
 	TimerWrapper timer; timer.Tic();
 	// evaluate gradient direction
 	VectorX gradient;
-	evaluateGradient(x, gradient, true);
+	ScalarType current_energy = evaluateEnergyAndGradient(x, gradient) - m_hamiltonian * m_h * m_h;
 
 	//QSEvaluateGradient(x, gradient, m_ss->m_quasi_static);
 #ifdef ENABLE_MATLAB_DEBUGGING
@@ -2113,18 +2121,42 @@ bool Simulation::performNewtonsMethodOneIteration(VectorX& x)
 
 	descent_dir = -descent_dir;
 
+
+	if (m_enable_cpd)
+	{
+		g_dck.col(6) = g_dch = gradient + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+		VectorX ck(7);
+		ck.block_vector(0) = g_dcp.transpose() * (x + descent_dir) - g_com;
+		ck.block_vector(1) = g_dcl.transpose() * (x + descent_dir) - m_current_angular_momentum * m_h;
+		ck(6) = g_dch.dot(descent_dir) + current_energy;
+
+		for (int i = 0; i < 7; i++)
+		{
+			VectorX r;
+			linearSolve(r, hessian, g_dck.col(i));
+			g_Ainv_dck.col(i) = r;
+		}
+
+		Matrix cTAinv_c = g_dck.transpose() * g_Ainv_dck;
+		Eigen::LLT<Matrix> llt;
+		llt.compute(cTAinv_c);
+		VectorX lambda = llt.solve(ck);
+		descent_dir -= g_Ainv_dck * lambda;
+
+	}
+
 	timer.TocAndReport("solve time", m_verbose_show_converge);
 	timer.Tic();
 
 	// line search
-	ScalarType step_size = lineSearch(x, gradient, descent_dir);
+	//ScalarType step_size = lineSearch(x, gradient, descent_dir);
 	//if (step_size < EPSILON)
 	//{
 	//	std::cout << "correct step size to 1" << std::endl;
 	//	step_size = 1;
 	//}
 	// update x
-	x = x + descent_dir * step_size;
+	x = x + descent_dir;
 
 	//if (step_size < EPSILON)
 	//{
@@ -2153,7 +2185,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	system_clock::time_point start, end;
 	nanoseconds result;
 
-	m_hamiltonian = 10000;
+	//m_hamiltonian = 10000;
 	current_energy = evaluateEnergyAndGradient(x, gf_k) - m_hamiltonian * m_h *m_h;
 	if (1/*m_lbfgs_need_update_H0*/) 
 	{
@@ -2225,16 +2257,18 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		{
 			g_dck.col(6) = g_dch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_dck.col(6) = r + g_Ainv_hMv_n;
-			//p_k -= b * l;
-			std::cout << "test" << std::endl;
-			Matrix cTAinv_c = g_dck.transpose() * g_Ainv_dck;
-			Eigen::LLT<Matrix> llt;
-			llt.compute(cTAinv_c);
-
 			VectorX ck(7);
 			ck.block_vector(0) = g_dcp.transpose() * (x + p_k) - g_com;
 			ck.block_vector(1) = g_dcl.transpose() * (x + p_k) - m_current_angular_momentum * m_h;
 			ck(6) = g_dch.dot(p_k) + current_energy;
+
+			std::cout << ck.norm() << std::endl;
+			if (ck.norm() < m_cpd_threshold)
+				return true;
+
+			Matrix cTAinv_c = g_dck.transpose() * g_Ainv_dck;
+			Eigen::LLT<Matrix> llt;
+			llt.compute(cTAinv_c);
 			VectorX lambda = llt.solve(ck);
 			p_k -= g_Ainv_dck * lambda;
 		
