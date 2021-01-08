@@ -20,7 +20,7 @@ HandleColor         0.3 1 0.3
 RandomHandleColor   0
 
 SimMethod           0
-OptimizationMethod  2
+OptimizationMethod  1
 Timestep            0.0333
 SubStepping         1
 OpenMP              1
@@ -35,7 +35,7 @@ GravityConstant     0
 DampingCoefficient  0.001
 RestiCoefficient    1
 FrictionCoefficient 0.001
-IterationsPerFrame  1
+IterationsPerFrame  10
 DefinitenessFix     1
 LSEnable            1
 LSExact             0
@@ -60,7 +60,7 @@ FEPRThreshold       0.001
 FEPRMaxIter         100
 
 CPDEnable           1
-CPDThreshold        0.001
+CPDThreshold        0.01
 
 ExportOBJ           0
 RecordPD            0
