@@ -369,6 +369,7 @@ void Simulation::Update()
 	nanoseconds result;
 	string txt = "CPDOverHead.txt";
 	string filePath = "./TextData/";
+	string fileName;
 
 	// update external force
 	calculateExternalForce();
@@ -419,7 +420,6 @@ void Simulation::Update()
 
 		if (recordTextCPD)
 		{
-			string fileName;
 			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 			{
 				fileName = "./TextData/cloth" + txt;
@@ -432,7 +432,7 @@ void Simulation::Update()
 			std::ofstream out(fileName, std::ios::app);
 			if (out.is_open())
 			{
-				out << "a" + std::to_string(result.count()) + "\n";
+				out << "a" + std::to_string(result.count()) << endl;
 			}
 			out.close();
 		}
@@ -447,6 +447,16 @@ void Simulation::Update()
 		case INTEGRATION_IMPLICIT_NEWMARK_BETA:
 			integrateImplicitMethod();
 			break;
+		}
+
+		if (recordTextCPD)
+		{
+			std::ofstream out(fileName, std::ios::app);
+			if (out.is_open())
+			{
+				out << std::to_string(m_cpd_threshold) + "b" + std::to_string(m_current_iteration) << endl;
+			}
+			out.close();
 		}
 
 		if (m_enable_fepr) 
