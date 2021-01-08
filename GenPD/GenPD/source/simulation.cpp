@@ -2191,6 +2191,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 	string txt = ".txt";
 	string txtForOverHead = "CPDOverHead.txt";
+	string txtForLoss = "CPDLoss.txt";
 	string fileName;
 	system_clock::time_point start, end;
 	nanoseconds result;
@@ -2271,6 +2272,31 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			ck.block_vector(0) = g_dcp.transpose() * (x + p_k) - g_com;
 			ck.block_vector(1) = g_dcl.transpose() * (x + p_k) - m_current_angular_momentum * m_h;
 			ck(6) = g_dch.dot(p_k) + current_energy;
+
+			if (recordTextCPDLoss)
+			{
+				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+				{
+					fileName = "./TextData/cloth" + txtForLoss;
+				}
+				else
+				{
+
+					fileName = m_mesh->m_tet_file_path + txtForLoss;
+					fileName = "./TextData/" + fileName;
+				}
+				std::ofstream outLoss(fileName, std::ios::app);
+				if (outLoss.is_open())
+				{
+					string token = "\t";
+					if (ck.norm() < m_cpd_threshold)
+					{
+						token = "\n";
+					}
+					outLoss << std::to_string(ck.norm()) + token;
+				}
+				outLoss.close();
+			}
 
 			//std::cout << ck.norm() << std::endl;
 			if (ck.norm() < m_cpd_threshold)
