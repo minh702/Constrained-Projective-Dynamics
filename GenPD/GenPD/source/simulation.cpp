@@ -67,8 +67,6 @@ TimerWrapper g_lbfgs_timer;
 TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
-
-
 //for cpd
 
 EigenVector3 g_angular_momentum, g_linear_momentum;
@@ -260,13 +258,13 @@ void Simulation::Reset()
 
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
-	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
+	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities) + 10;
 	m_Hrb = fabs(0.5f * m_linear_momentum_init.dot(linear_velocity)) + 0.5f * fabs(m_angular_momentum_init.dot(angular_velocity));
 
 	std::cout << m_hamiltonian << std::endl;
 	std::cout << m_Hrb << std::endl;
-	m_current_angular_momentum = m_angular_momentum_init;
-	m_current_linear_momentum = m_linear_momentum_init;
+	g_angular_momentum = m_current_angular_momentum = m_angular_momentum_init;
+	g_linear_momentum =  m_current_linear_momentum = m_linear_momentum_init;
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
@@ -321,7 +319,7 @@ void Simulation::set_prefactored_matrix()
 		ScalarType mi =m_mesh->m_mass_matrix_1d.coeff(i, i);
 		EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
 		// x - angular momentum gradient
-		g_dcl.block_matrix(i) = mi * vec2skew(ri);
+		g_dcl.block_matrix(i) = - mi * vec2skew(ri);
 
 	}
 
@@ -402,18 +400,14 @@ void Simulation::Update()
 		// update inertia term
 		EigenVector3 gravity(0, -m_gravity_constant, 0);
 		computeConstantVectorsYandZ();
-
-
-
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
-
 		// duration 1 
 
 		start = system_clock::now();
 		if (m_enable_cpd && m_optimization_method != OPTIMIZATION_METHOD_NEWTON)
 		{
 			// update
-			g_com += m_current_linear_momentum * m_h;
+			g_com += g_linear_momentum * m_h;
 			VectorX hMv_n = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_hMv_n, hMv_n, 1);
 			set_prefactored_matrix();
@@ -2137,7 +2131,7 @@ bool Simulation::performNewtonsMethodOneIteration(VectorX& x)
 		g_dck.col(6) = g_dch = gradient + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 		VectorX ck(7);
 		ck.block_vector(0) = g_dcp.transpose() * (x + descent_dir) - g_com;
-		ck.block_vector(1) = g_dcl.transpose() * (x + descent_dir) - m_current_angular_momentum * m_h;
+		ck.block_vector(1) = g_dcl.transpose() * (x + descent_dir) - g_angular_momentum * m_h;
 		ck(6) = g_dch.dot(descent_dir) + current_energy;
 
 		for (int i = 0; i < 7; i++)
@@ -2269,10 +2263,13 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			g_dck.col(6) = g_dch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_dck.col(6) = r + g_Ainv_hMv_n;
 			VectorX ck(7);
-			ck.block_vector(0) = g_dcp.transpose() * (x + p_k) - g_com;
-			ck.block_vector(1) = g_dcl.transpose() * (x + p_k) - m_current_angular_momentum * m_h;
-			ck(6) = g_dch.dot(p_k) + current_energy;
-
+			ck.block_vector(0) = g_dcp.transpose() * x - g_com;
+			ck.block_vector(1) = g_dcl.transpose() * x - m_current_angular_momentum * m_h;
+			ck(6) = current_energy;
+			VectorX c(7);
+			c.block_vector(0) = ck.block_vector(0);
+			c.block_vector(1) = ck.block_vector(1);
+			c(6) = ck(6);
 			if (recordTextCPDLoss)
 			{
 				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
@@ -2290,7 +2287,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				{
 					string token = "\t";
 					if (ck.norm() < m_cpd_threshold)
-					{
+					{ 
 						token = "\n";
 					}
 					outLoss << std::to_string(ck.norm()) + token;
@@ -2298,14 +2295,14 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				outLoss.close();
 			}
 
-			//std::cout << ck.norm() << std::endl;
-			if (ck.norm() < m_cpd_threshold)
+			std::cout << c.norm() << std::endl;
+			if (c.norm() < m_cpd_threshold)
 				return true;
 
 			Matrix cTAinv_c = g_dck.transpose() * g_Ainv_dck;
 			Eigen::LLT<Matrix> llt;
 			llt.compute(cTAinv_c);
-			VectorX lambda = llt.solve(ck);
+			VectorX lambda = llt.solve(ck + g_dck.transpose() * p_k);
 			p_k -= g_Ainv_dck * lambda;
 		
 		}
