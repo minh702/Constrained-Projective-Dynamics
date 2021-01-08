@@ -295,6 +295,7 @@ protected:
 
 	bool recordTextPD;
 	bool recordTextCPD;
+	bool recordTextCPDLoss;
 	bool recordTextFEPR;
 	bool m_record_quantities;
 
