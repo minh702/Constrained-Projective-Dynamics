@@ -2272,7 +2272,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			ck.block_vector(1) = g_dcl.transpose() * (x + p_k) - m_current_angular_momentum * m_h;
 			ck(6) = g_dch.dot(p_k) + current_energy;
 
-			std::cout << ck.norm() << std::endl;
+			//std::cout << ck.norm() << std::endl;
 			if (ck.norm() < m_cpd_threshold)
 				return true;
 
