@@ -320,33 +320,41 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "Damping Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_damping_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Restitution Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_restitution_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Friction Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_friction_coefficient, " min=0 group='Constants' ");
+
+	//
+
+	
+
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "Constrained PD", TwType(sizeof(bool)), &g_simulation->m_use_cpd, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "cpd both momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_both_momenta, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "manipulate plh", TwType(sizeof(bool)), &g_simulation->m_manipulate_plh, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "cpd linear momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_linear_momentum, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "cpd angular momenta only", TwType(sizeof(bool)), &g_simulation->m_use_cpd_angular_momentum, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "fepr", TwType(sizeof(bool)), &g_simulation->m_use_fepr, " group='Demo' ");
+	//Linear Momentum
+	TwAddVarRW(m_sim_bar, "P x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.x(), " group='Linear Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "P y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.y(), " group='Linear Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "P z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.z(), " group='Linear Momentum' "); //here
+	TwDefine(" 'Simulation Settings'/'Linear Momentum' group='Demo'");
+	//Angular Momentum
+	TwAddVarRW(m_sim_bar, "L x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.x(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "L y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "L z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Angular Momentum' "); //here
+	TwDefine(" 'Simulation Settings'/'Angular Momentum' group='Demo'");
+	// Scale
+	TwAddVarRW(m_sim_bar, "Scale X", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_x, " group='Scale' ");
+	TwAddVarRW(m_sim_bar, "Scale Y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_y, " group='Scale' ");
+	TwAddVarRW(m_sim_bar, "Scale Z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_z, " group='Scale' ");
+	TwDefine(" 'Simulation Settings'/'Scale' group='Demo'");
+
+	TwAddVarRW(m_sim_bar, "FEPR on/off", TwType(sizeof(bool)), &g_simulation->m_enable_fepr, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_fepr_threshold, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR max iter", TW_TYPE_INT32, &g_simulation->m_fepr_max_iter, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_fepr_converge, " group='FEPR' ");
+
+	TwAddVarRW(m_sim_bar, "CPD on/off", TwType(sizeof(bool)), &g_simulation->m_enable_cpd, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_cpd_threshold, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD max iter", TW_TYPE_INT32, &g_simulation->m_cpd_max_iter, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_cpd_converge, " group='CPD' ");
 
 
-
-	TwAddVarRW(m_sim_bar, "Angular momentum x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_lx, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "Angular momentum y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_ly, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "Angular momentum z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_lz, " group='Demo' ");
-
-	TwAddVarRW(m_sim_bar, "Linear momentum x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_px, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "Linear momentum y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_py, " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "Linear momentum z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_pz, " group='Demo' ");
-
-	TwAddVarRW(m_sim_bar, "center of mass x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_com(0), " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "center of mass y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_com(1), " group='Demo' ");
-	TwAddVarRW(m_sim_bar, "center of mass z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_com(2), " group='Demo' ");
-
-	TwAddVarRW(m_sim_bar, "hamiltonian ", TW_TYPE_SCALAR_TYPE, &g_simulation->m_total_energy, " group='Demo' ");
-
-
-	// !simulation settings bar
+	// !simulation settings bard
 
 	TwDefine(" TW_HELP visible=false ");
 }
