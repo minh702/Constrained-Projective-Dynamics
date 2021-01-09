@@ -223,8 +223,8 @@ void Simulation::Reset()
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		m_mesh->m_current_positions.block_vector(i).x() *= 1.f;
-		m_mesh->m_current_positions.block_vector(i).z() *= 1.f;
+		m_mesh->m_current_positions.block_vector(i).x() *= 1.5f;
+		m_mesh->m_current_positions.block_vector(i).z() *= 1.5f;
 		ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i,i);
 		EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
 		EigenMatrix3 rx;
@@ -265,7 +265,7 @@ void Simulation::Reset()
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
 	
-	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f) + g_rigid_energy;
+	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f);
 
 
 	//g_total_energy = 20000;
@@ -2228,7 +2228,12 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			}
 			else
 			{
-				ScalarType inv_eps = 10e7;
+				ScalarType inv_eps;
+				if (g_total_energy < m_Hrb)
+					inv_eps = 10e7;
+				else
+					inv_eps = 0.f;
+
 				ScalarType dh = m_h * m_h * (g_total_energy - m_Hrb);
 				g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 				g_Ainv_gck.col(6) = g_Ainv_gch = r + g_Ainv_vn;
@@ -2246,7 +2251,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				ck += g_gck.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gck * lambda;
-				m_alpha -= inv_eps * dh * lambda(6);
+					m_alpha -= inv_eps * dh * lambda(6);
 
 			}
 				
