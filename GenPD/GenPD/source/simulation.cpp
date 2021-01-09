@@ -68,22 +68,24 @@ VectorX g_gch;
 VectorX g_Ainv_gch;
 VectorX g_Ainv_vn;
 VectorX g_ck;
-Eigen::MatrixXf g_Ainv_gck, g_gck, g_gcl, g_gcp, g_gcm, g_Ainv_gcl, g_Ainv_gcp, g_Ainv_gcm, g_Ainv_gca, g_gca;
+Matrix g_gcpx;
+Matrix g_Ainv_gck, g_gck, g_gcl, g_gcp, g_gcm, g_Ainv_gcl, g_Ainv_gcp, g_Ainv_gcm, g_Ainv_gca, g_gca;
 
-ScalarType g_bot = -10;
-Eigen::IOFormat iof(5, 1, " ");
-std::ofstream g_input("input.txt");
-std::ofstream g_output("output");
-std::ofstream g_A("A.txt");
-std::ofstream g_M("M.txt");
-std::ofstream g_L("L.txt");
-std::ofstream g_S("S.txt");
-std::ofstream g_D("D.txt");
-std::ofstream g_x("x.txt");
+
 VectorX g_fixed_positions;
 Eigen::Vector4i g_fixed_indices;
-Eigen::MatrixXf S;
-Eigen::MatrixXf D;
+
+
+EigenMatrix3 vec2skew(EigenVector3& vec)
+{
+	EigenMatrix3 skewMat;
+	skewMat << 0, -vec.z(), vec.y(),
+		vec.z(), 0, -vec.x(),
+		-vec.y(), vec.x(), 0;
+
+	return skewMat;
+}
+
 // comparison function for sort
 bool compareTriplet(SparseMatrixTriplet i, SparseMatrixTriplet j)
 { 
@@ -159,9 +161,6 @@ void Simulation::Reset()
 
 	EigenMatrixx3 rhs_n3(m_mesh->m_current_positions.size() / 3, 3);
 	Vector3mx1ToMatrixmx3(m_mesh->m_current_positions, rhs_n3);
-
-
-	g_x.close();
 	m_y.resize(m_mesh->m_system_dimension);
 	m_external_force.resize(m_mesh->m_system_dimension);
 
@@ -169,7 +168,8 @@ void Simulation::Reset()
 	g_gcm.resize(m_mesh->m_system_dimension, 6);
 	g_gcl.resize(m_mesh->m_system_dimension, 3);
 	g_gcp.resize(m_mesh->m_system_dimension, 3);
-
+	g_gcpx.resize(m_mesh->m_system_dimension, 3);
+	g_gcpx.setZero();
 
 	g_gcp.setZero();
 	g_gcl.setZero();
@@ -223,8 +223,8 @@ void Simulation::Reset()
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		m_mesh->m_current_positions.block_vector(i).x() *= 1.5f;
-		m_mesh->m_current_positions.block_vector(i).z() *= 1.5f;
+		m_mesh->m_current_positions.block_vector(i).x() *= 1.1f;
+		m_mesh->m_current_positions.block_vector(i).z() *= 1.1f;
 		ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i,i);
 		EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
 		EigenMatrix3 rx;
@@ -260,13 +260,12 @@ void Simulation::Reset()
 	g_com = m_com * m_mesh->m_total_mass;
 
 
-	g_system_energy = (g_com.y() - g_bot)* m_gravity_constant;
-
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
 	
-	g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f);
-
+	m_hamiltonian = g_total_energy = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f);
+	m_current_linear_momentum = evaluateLinearMomentum(m_mesh->m_current_velocities);
+	m_current_angular_momentum = evaluateAngularMomentum(m_mesh->m_current_positions, m_mesh->m_current_velocities);
 
 	//g_total_energy = 20000;
 	std::cout << g_system_energy << std::endl;
@@ -313,11 +312,7 @@ void Simulation::set_prefactored_matrix()
 		g_gcl(3 * i + 1, 2) = g_gcm(3 * i + 1, 5) = g_gck(3 * i + 1, 5) = mi * ri.x();
 		g_gcl(3 * i + 2, 2) = g_gcm(3 * i + 2, 5) = g_gck(3 * i + 2, 5) = 0.f;
 		//m_bl -= m_com.cross
-		gravity_potential += mi * ri.y();
 	}
-	gravity_potential *= m_gravity_constant;
-
-	gravity_potential = (g_com.y() - g_bot) * m_gravity_constant * m_mesh->m_total_mass;
 
 
 
@@ -343,64 +338,155 @@ void Simulation::set_prefactored_matrix()
 	}
 }
 
+EigenVector3 Simulation::evaluateLinearMomentum(const VectorX& v)
+{
+	EigenVector3 vi;
+	ScalarType mi;
+	EigenVector3 linear_momentum(0, 0, 0);
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		vi = v.block_vector(i);
+		mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		linear_momentum += mi * vi;
+	}
+	return linear_momentum;
+}
+
+EigenVector3 Simulation::evaluateLinearMomentumAndGradient(const VectorX& v, Matrix& cpv)
+{
+	EigenVector3 vi;
+	ScalarType mi;
+	EigenVector3 linear_momentum(0, 0, 0);
+	EigenMatrix3 iden3x3;
+
+	iden3x3.setIdentity();
+
+	if (!m_enable_openmp)
+	{
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			vi = v.block_vector(i);
+			mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+			linear_momentum += mi * vi;
+			cpv.block_matrix(i) = mi * iden3x3;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			vi = v.block_vector(i);
+			mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+			linear_momentum += mi * vi;
+			cpv.block_matrix(i) = mi * iden3x3;
+		}
+	}
+
+	return  linear_momentum;
+}
+
+EigenVector3 Simulation::evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix& clx, Matrix& clv)
+{
+	EigenVector3 xi, vi;
+	ScalarType mi;
+	EigenVector3 angular_momentum(0, 0, 0);
+
+	if (!m_enable_openmp)
+	{
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			vi = v.block_vector(i);
+			xi = x.block_vector(i);
+			mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+
+			clx.block_matrix(i) = -mi * vec2skew(vi);
+			clv.block_matrix(i) = mi * vec2skew(xi);
+
+			angular_momentum += mi * xi.cross(vi);
+		}
+	}
+	else
+	{
+		//#pragma omp parallel
+		//{
+		//	#pragma omp for
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			vi = v.block_vector(i);
+			xi = x.block_vector(i);
+			mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+
+			clx.block_matrix(i) = mi * vec2skew(vi);
+			clv.block_matrix(i) = -mi * vec2skew(xi);
+		}
+		//}
+
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			vi = v.block_vector(i);
+			xi = x.block_vector(i);
+			mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+			angular_momentum += mi * xi.cross(vi);
+		}
+	}
+	return angular_momentum;
+}
+
+EigenVector3 Simulation::evaluateAngularMomentum(const VectorX& x, const VectorX& v)
+{
+	EigenVector3 xi, vi;
+	ScalarType mi;
+	EigenVector3 angular_momentum(0, 0, 0);
+
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		xi = x.block_vector(i);
+		vi = v.block_vector(i);
+		mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+		angular_momentum += mi * xi.cross(vi);
+	}
+	return angular_momentum;
+}
+
+ScalarType Simulation::evaluateEnergyCollision(const VectorX& x)
+{
+	ScalarType energy = 0.0;
+
+	if (!m_enable_openmp)
+	{
+		for (std::vector<CollisionSpringConstraint>::iterator it = m_collision_constraints.begin(); it != m_collision_constraints.end(); ++it)
+		{
+			energy += it->EvaluateEnergy(x);
+		}
+	}
+	else
+	{
+		// openmp get all energy
+		int i;
+#pragma omp parallel
+		{
+#pragma omp for
+			for (i = 0; i < m_collision_constraints.size(); i++)
+			{
+				m_collision_constraints[i].EvaluateEnergy(x);
+			}
+		}
+
+		// reduction
+		for (std::vector<CollisionSpringConstraint>::iterator it = m_collision_constraints.begin(); it != m_collision_constraints.end(); ++it)
+		{
+			energy += it->GetEnergy();
+		}
+	}
+
+	return energy;
+}
+
+
 void Simulation::fepr()
 {
 
-	VectorX x = m_mesh->m_current_positions;
-	VectorX v = m_mesh->m_current_velocities;
-
-	VectorX gce(m_mesh->m_system_dimension);
-	VectorX gcv(m_mesh->m_system_dimension);
-	VectorX f(m_mesh->m_system_dimension);
-
-	f.setZero();
-	ScalarType lambda;
-	ScalarType c;
-
-	ScalarType inv_squrared_h = 1/m_h*m_h;
-	int i = 0;
-	for ( ; ; i++)
-	{
-
-		/*c =	evaluateEnergyAndGradientPureConstraint(x, f, gce) + evaluateKineticEnergy(v) - g_total_energy;
-	
-
-		if (fabsf(c) < 0.01)
-			break;
-
-		ScalarType cTc = gce.transpose() * m_mesh->m_inv_mass_matrix * gce;
-		cTc += inv_squrared_h * v.transpose() * m_mesh->m_mass_matrix * v;
-		ScalarType lambda = c / cTc;
-
-
-
-		x -= m_mesh->m_inv_mass_matrix * gce * lambda;
-		v -= inv_squrared_h * v * lambda;*/
-
-		VectorX ghx_k(m_mesh->m_vertices_number * 3), ghv_k(m_mesh->m_vertices_number * 3);
-		VectorX f(m_mesh->m_vertices_number * 3);
-		f.setZero();
-		ScalarType h_square = 1/ m_h * m_h;
-		ScalarType c_h, lambda;
-		c_h = evaluateEnergyAndGradientPureConstraint(x, f, ghx_k) + evaluateKineticEnergy(v) - m_total_energy;
-
-		std::cout << c_h + m_total_energy << std::endl;
-		if (fabsf(c_h)/ m_total_energy < 0.01)
-			break;
-
-		ghv_k = m_mesh->m_mass_matrix * v;
-		lambda = h_square * ghv_k.transpose() * m_mesh->m_inv_mass_matrix * ghv_k;
-		lambda += ghx_k.transpose() * m_mesh->m_inv_mass_matrix * ghx_k;
-		lambda = c_h / lambda;
-		x -= m_mesh->m_inv_mass_matrix * ghx_k * lambda;
-		v -= h_square * m_mesh->m_inv_mass_matrix * ghv_k * lambda;
-
-	}
-
-	//std::cout << i << std::endl;
-
-	m_mesh->m_current_positions = x;
-	m_mesh->m_current_velocities = v;
 
 
 }
@@ -459,6 +545,8 @@ void Simulation::Update()
 		v = g_linear_momentum / m_mesh->m_total_mass;
 		w = m_rest_inertia.inverse() * g_angular_momentum;
 		m_Hrb = 0.5f * v.dot(g_linear_momentum) + 0.5f* w.dot(g_angular_momentum);
+		m_current_angular_momentum = g_angular_momentum;
+		m_current_linear_momentum = g_linear_momentum;
 		m_manipulate_plh = false;
 	}
 	
@@ -2090,11 +2178,6 @@ bool Simulation::performNewtonsMethodOneIteration(VectorX& x)
 	// evaluate gradient direction
 	VectorX gradient;
 	evaluateGradient(x, gradient, true);
-
-	if (g_input)
-	{
-		g_input << gradient << '\n';
-	}
 	//QSEvaluateGradient(x, gradient, m_ss->m_quasi_static);
 #ifdef ENABLE_MATLAB_DEBUGGING
 	g_debugger->SendVector(gradient, "g");
@@ -2832,12 +2915,6 @@ void Simulation::evaluateLaplacian1D(SparseMatrix & laplacian_matrix_1d)
 {
 	evaluateLaplacianPureConstraint1D(laplacian_matrix_1d);
 
-	if (g_L.is_open())
-	{
-		g_L << laplacian_matrix_1d;
-	}
-	g_L.close();
-
 	ScalarType h_square = m_h*m_h;
 	switch (m_integration_method)
 	{
@@ -3117,39 +3194,6 @@ void Simulation::applyHessianForCGPureConstraint(const VectorX& x, VectorX& b)
 	}
 }
 
-ScalarType Simulation::evaluateEnergyCollision(const VectorX& x)
-{
-	ScalarType energy = 0.0;
-
-	if (!m_enable_openmp)
-	{
-		for (std::vector<CollisionSpringConstraint>::iterator it = m_collision_constraints.begin(); it != m_collision_constraints.end(); ++it)
-		{
-			energy += it->EvaluateEnergy(x);
-		}
-	}
-	else
-	{
-		// openmp get all energy
-		int i;
-#pragma omp parallel
-		{
-#pragma omp for
-			for (i = 0; i < m_collision_constraints.size(); i++)
-			{
-				m_collision_constraints[i].EvaluateEnergy(x);
-			}
-		}
-
-		// reduction
-		for (std::vector<CollisionSpringConstraint>::iterator it = m_collision_constraints.begin(); it != m_collision_constraints.end(); ++it)
-		{
-			energy += it->GetEnergy();
-		}
-	}
-
-	return energy;
-}
 void Simulation::evaluateGradientCollision(const VectorX& x, VectorX& gradient)
 {
 	gradient.resize(m_mesh->m_system_dimension);

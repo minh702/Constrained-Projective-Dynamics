@@ -276,6 +276,10 @@ protected:
 	// external force (gravity, wind, etc...)
 	VectorX m_external_force;
 
+
+	EigenVector3 m_current_linear_momentum, m_previous_linear_momentum;
+	EigenVector3 m_current_angular_momentum, m_previous_angular_momentum;
+	ScalarType m_hamiltonian;
 	// for optimization method, number of iterations
 	unsigned int m_iterations_per_frame;
 
@@ -445,8 +449,10 @@ private:
 
 	// FEPR 
 	void FEPR();
-
-
+	EigenVector3 evaluateLinearMomentum(const VectorX& v);
+	EigenVector3 evaluateLinearMomentumAndGradient(const VectorX& v, Matrix& cpv);
+	EigenVector3 evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix& clx, Matrix& clv);
+	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
 	// line search
 	ScalarType lineSearch(const VectorX& x, const VectorX& gradient_dir, const VectorX& descent_dir);
 	ScalarType linesearchWithPrefetchedEnergyAndGradientComputing(const VectorX& x, const ScalarType current_energy, const VectorX& gradient_dir, const VectorX& descent_dir, ScalarType& next_energy, VectorX& next_gradient_dir);
