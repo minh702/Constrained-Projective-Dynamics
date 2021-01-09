@@ -2874,11 +2874,11 @@ void Simulation::fepr()
 			dcv.block(0, 6, m_mesh->m_system_dimension, 1) = dchv;
 
 		// dc/ds 
-		dcs.block_vector(0) = m_previous_linear_momentum - m_current_linear_momentum;
+		dcs.block_vector(0) =  m_current_linear_momentum - m_previous_linear_momentum;
 		dcst.row(0) = dcs;
 
 		// dc/dt
-		dct.block_vector(1) = m_previous_angular_momentum - m_current_angular_momentum;
+		dct.block_vector(1) = m_current_angular_momentum - m_previous_angular_momentum;
 		dcst.row(1) = dct;
 		
 	//compute Schur complement 
