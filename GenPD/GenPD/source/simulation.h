@@ -270,7 +270,9 @@ protected:
 	ScalarType m_py;
 	ScalarType m_pz;
 
-
+	EigenMatrix3 m_rest_inertia;
+	ScalarType m_alpha;
+	ScalarType m_Hrb;
 	// external force (gravity, wind, etc...)
 	VectorX m_external_force;
 

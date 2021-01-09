@@ -181,7 +181,7 @@ void Simulation::Reset()
 	g_Ainv_gcl.resize(m_mesh->m_system_dimension, 3);
 	g_Ainv_gcp.resize(m_mesh->m_system_dimension, 3);
 
-
+	
 	g_Ainv_gca.resize(m_mesh->m_system_dimension, 4);
 	g_Ainv_gca.resize(m_mesh->m_system_dimension, 4);
 	// handles
@@ -234,98 +234,15 @@ void Simulation::Reset()
 		g_gcm(3 * i + 1, 1) = g_gcp(3 * i + 1, 1) = g_gck(3 * i + 1, 1) = mi;
 		g_gcm(3 * i + 2, 2) = g_gcp(3 * i + 2, 2) = g_gck(3 * i + 2, 2) = mi;
 
-
-
-
 		rx << 0, r.z(), -r.y(),
 			-r.z(), 0, r.x(),
 			r.y(), -r.x(), 0;
 
 		inertia += mi * rx * rx.transpose();
-
 	}
+	m_rest_inertia = inertia;
 
-	//g_fixed_positions.resize(12);
-
-
-	//g_fixed_indices(0) = 0;
-	//g_fixed_indices(1) = 59;
-	//g_fixed_indices(2) = 3540;
-	//g_fixed_indices(3) = 3599;
-
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	int idx = g_fixed_indices(i);
-	//	g_fixed_positions.block_vector(i) = m_mesh->m_current_positions.block_vector(idx);
-	//}
-
-	//for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	//{
-	//	ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
-	//	EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
-	//	com += mi * ri;
-	//}
-
-	//com /= m_mesh->m_total_mass;
-
-	//for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	//{
-	//	m_mesh->m_current_positions.block_vector(i)-= com;
-	//}
-	//g_angular_momentum = EigenVector3(100, 0, 0);
-	//g_linear_momentum = EigenVector3(0, 0, 0);
-	//Eigen::LLT<Eigen::Matrix3f> illt;
-	//illt.compute(inertia);
-	//EigenVector3 w = illt.solve(g_angular_momentum);
-	//std::cout << w << std::endl;
-	//EigenVector3 transv;
-
-
-	//transv.setZero();
-	//for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	//{
-
-	//	EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
-	//	ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
-	//	m_mesh->m_current_velocities.block_vector(i) = w.cross(r);
-
-	//	//std::cout << m_mesh->m_current_velocities.block_vector(i) << std::endl;
-	//	transv += mi * m_mesh->m_current_velocities.block_vector(i);
-
-	//}
-
-	g_rigid_energy = 242;
-	EigenVector3 box(0.5, 0.5, 0.5);
-
-	/*for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	{
-		EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
-
-		if (r.x() > box.x())
-			m_mesh->m_current_positions.block_vector(i).x() = box.x();
-
-		if (r.x() < -box.x())
-			m_mesh->m_current_positions.block_vector(i).x() = -box.x();
-
-
-		if (r.y() > box.y())
-			m_mesh->m_current_positions.block_vector(i).y() = box.y();
-
-		if (r.y() < -box.y())
-			m_mesh->m_current_positions.block_vector(i).y() = -box.y();
-
-
-		if (r.z() > box.z())
-			m_mesh->m_current_positions.block_vector(i).z() = box.z();
-
-		if (r.z() < -box.z())
-			m_mesh->m_current_positions.block_vector(i).z() = -box.z();
-	}*/
-
-	setWeightedLaplacianMatrix1D();
-
-
-
+	
 	prefactorize();
 
 
@@ -537,6 +454,11 @@ void Simulation::Update()
 		g_linear_momentum(1) = m_py;
 		g_linear_momentum(2) = m_pz;
 
+		EigenVector3 v, w;
+
+		v = g_linear_momentum / m_mesh->m_total_mass;
+		w = m_rest_inertia.inverse() * g_angular_momentum;
+		m_Hrb = 0.5f * v.dot(g_linear_momentum) + 0.5f* w.dot(g_angular_momentum);
 		m_manipulate_plh = false;
 	}
 	
@@ -547,26 +469,15 @@ void Simulation::Update()
 		EigenVector3 gravity(0, -m_gravity_constant, 0);
 
 	
-
-		if (!m_use_cpd_both_momenta)
-		{
-			g_linear_momentum = g_gcp.transpose() * m_mesh->m_current_velocities;
-			g_com = g_gcp.transpose() * m_mesh->m_current_positions;
-			g_angular_momentum = g_gcl.transpose() * m_mesh->m_current_velocities;
-		}
-		if (m_use_cpd_both_momenta && m_use_cpd)
-		{
-			g_com += g_linear_momentum * m_h + 0.5*gravity * m_h * m_h * m_mesh->m_total_mass;
-			g_linear_momentum += gravity * m_h * m_mesh->m_total_mass;
-		}
 		computeConstantVectorsYandZ();
-
-
-
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_use_cpd)
 		{
+			m_alpha = 0;
+			//m_Hrb = g_total_energy;
 			// update
+			g_com += g_linear_momentum * m_h + 0.5 * gravity * m_h * m_h * m_mesh->m_total_mass;
+			g_linear_momentum += gravity * m_h * m_mesh->m_total_mass;
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
 		}
@@ -2247,10 +2158,13 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	ScalarType current_energy;
 	VectorX gf_k;
 
+
+	ScalarType Hblend = (1 - m_alpha) * g_total_energy + m_alpha * m_Hrb;
 	// set xk and gfk
 	if (m_ls_is_first_iteration || !m_enable_line_search)
 	{
-		current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * g_total_energy;
+		current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
+		//m_Hrb = current_energy + Hblend /(m_h * m_h);
 	}
 	else
 	{
@@ -2299,83 +2213,43 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		VectorX p_k = -r;
 		if (m_use_cpd)
 		{
-			Eigen::MatrixXf a(m_mesh->m_system_dimension,3);
-			Eigen::MatrixXf b(m_mesh->m_system_dimension, 3);
-
-	
-			if (m_integration_method == INTEGRATION_IMPLICIT_EULER)
-			{
-				a.col(2) = g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
-
-				b.col(2) = g_Ainv_gck.col(6) = g_Ainv_gch = r + g_Ainv_vn;
-				// update
-			}
-			else
-			{
-				g_gck.col(6) = g_gch;
-
-				g_Ainv_gck.col(6) = g_Ainv_gch;
-			}
-		
-			//p_k -= b * l;
-
 			if (m_use_cpd_both_momenta)
 			{
-				Eigen::MatrixXf cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
+				Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
 				Eigen::LLT<Eigen::MatrixXf> llt;
 				llt.compute(cTAinv_c);
-				VectorX c(3);
 				VectorX ck(6);
-				ck.block_vector(0) = g_gcp.transpose() * (x + p_k) - g_com;
-				ck.block_vector(1) = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h;
-
+				ck.block_vector(0) = g_gcp.transpose() * x - g_com;
+				ck.block_vector(1) = g_gcl.transpose() * x - g_angular_momentum * m_h;
+				std::cout << ck.norm() << std::endl;
+				ck += g_gcm.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gcm * lambda;
 			}
-
-			else if (m_use_cpd_angular_momentum)
-			{
-				Eigen::Matrix3f cTAinv_c = g_gcl.transpose() * g_Ainv_gcl;
-				Eigen::LLT<Eigen::Matrix3f> llt;
-				llt.compute(cTAinv_c);
-				EigenVector3 cl;
-				
-				cl = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h;
-
-				
-				EigenVector3 lambda = llt.solve(cl);
-				p_k -= g_Ainv_gcl * lambda;
-			}
-			else if (m_use_cpd_linear_momentum)
-			{
-				Eigen::Matrix3f cTAinv_c = g_gcp.transpose() * g_Ainv_gcp;
-				Eigen::LLT<Eigen::Matrix3f> llt;
-				llt.compute(cTAinv_c);
-				EigenVector3 cp;
-
-				cp = g_gcp.transpose() * (x + p_k) - g_linear_momentum * m_h;
-
-
-				EigenVector3 lambda = llt.solve(cp);
-				p_k -= g_Ainv_gcp * lambda;
-			}
 			else
 			{
-
+				ScalarType inv_eps = 10e7;
+				ScalarType dh = m_h * m_h * (g_total_energy - m_Hrb);
+				g_gck.col(6) = g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+				g_Ainv_gck.col(6) = g_Ainv_gch = r + g_Ainv_vn;
 				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
+				cTAinv_c(6, 6) += inv_eps * dh * dh;
 				Eigen::LLT<Eigen::MatrixXf> llt;
 				llt.compute(cTAinv_c);
 				
 				VectorX ck(7);
-				ck.block_vector(0) = g_gcp.transpose() * (x + p_k) - g_com;
-				ck.block_vector(1) = g_gcl.transpose() * (x + p_k) - g_angular_momentum * m_h; 
-				ck(6) = g_gch.dot(p_k) + current_energy;
+				ck.block_vector(0) = g_gcp.transpose() * x - g_com;
+				ck.block_vector(1) = g_gcl.transpose() * x - g_angular_momentum * m_h; 
+				ck(6) = current_energy;
+				std::cout << m_alpha << std::endl;
+				//std::cout << ck.norm() << std::endl;
+				ck += g_gck.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gck * lambda;
+				m_alpha -= inv_eps * dh * lambda(6);
 
 			}
 				
-		
 
 		}
 		g_lbfgs_timer.Pause();
