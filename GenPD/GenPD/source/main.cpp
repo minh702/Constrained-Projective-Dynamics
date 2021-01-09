@@ -72,6 +72,9 @@ int g_screen_width = DEFAULT_SCREEN_WIDTH;
 int g_screen_height = DEFAULT_SCREEN_HEIGHT;
 glm::vec3 g_handle_color;
 bool g_random_handle_color;
+char ** config_name_list;
+int config_num;
+int config_limit;
 std::string config_text_name;
 
 //----------State Control--------------------//
@@ -176,14 +179,18 @@ int main(int argc, char ** argv){
     glutInitDisplayMode(GLUT_RGBA);
 #endif
 
-    if (argc == 1)
+    config_name_list = argv;
+    config_limit = argc;
+
+    if (config_limit == 1)
     {
         config_text_name = DEFAULT_CONFIG_FILE;
         std::cout << "config text path error" << std::endl;
     }
     else
     {
-        config_text_name = argv[1];
+        config_num = 1;
+        config_text_name = config_name_list[config_num++];
         std::cout << "correct" << std::endl;
     }
 
@@ -197,7 +204,7 @@ int main(int argc, char ** argv){
     init();
     glutReshapeWindow(g_screen_width, g_screen_height);
 
-    //for use cmd. if not, use true.
+    //for data extract. if used to test, convert 'true'.
     g_pause = false;
 
     // bind function callbacks
@@ -260,8 +267,18 @@ void timeout(int value)
 
     if (g_recording_limit && g_current_frame > g_total_frame)
     {
-        PostQuitMessage(0);
-        g_pause = true;
+        //PostQuitMessage(0);
+        //here
+        if (config_limit == 1 || config_num == config_limit)
+        {
+               PostQuitMessage(0);
+        }
+        else
+        {
+            config_text_name = config_name_list[config_num++];
+            reset_simulation(NULL);
+            g_pause = false;
+        }
     }
 
     // simulation update
@@ -827,6 +844,7 @@ void TW_CALL reset_handle(void*)
 void TW_CALL reset_simulation(void*)
 {
     // save current setting before reset
+    // didnt use while data extracting
     AntTweakBarWrapper::SaveSettings(g_config_bar);
 
     // reset frame#

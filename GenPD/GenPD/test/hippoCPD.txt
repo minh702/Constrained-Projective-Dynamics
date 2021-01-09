@@ -1,5 +1,5 @@
 HasEnd              1
-TotalFrame          299
+TotalFrame          10
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            1
-TetFilePath         torus
+TetFilePath         hippo
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -62,9 +62,9 @@ FEPRMaxIter         100
 CPDEnable           1
 CPDThreshold        1e-05
 
-ExportOBJ           0
+ExportOBJ           1
 RecordPD            0
 RecordCPD           0
-RecordCPDLoss       1
+RecordCPDLoss       0
 RecordFEPR          0
 RecordQuantities    0
