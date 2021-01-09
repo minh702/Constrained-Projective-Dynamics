@@ -61,7 +61,7 @@ int g_total_iterations;
 #endif
 
 #define F_DIM 7
-#define C_DIM 7
+#define C_DIM 6
 TimerWrapper g_integration_timer;
 TimerWrapper g_lbfgs_timer;
 TimerWrapper g_fepr_timer;
@@ -258,7 +258,7 @@ void Simulation::Reset()
 
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
-	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities) + 10;
+	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 	m_Hrb = fabs(0.5f * m_linear_momentum_init.dot(linear_velocity)) + 0.5f * fabs(m_angular_momentum_init.dot(angular_velocity));
 
 	std::cout << m_hamiltonian << std::endl;
@@ -319,7 +319,7 @@ void Simulation::set_prefactored_matrix()
 		ScalarType mi =m_mesh->m_mass_matrix_1d.coeff(i, i);
 		EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
 		// x - angular momentum gradient
-		g_dcl.block_matrix(i) = - mi * vec2skew(ri);
+		g_dcl.block_matrix(i) = -mi * vec2skew(ri);
 
 	}
 
@@ -402,12 +402,19 @@ void Simulation::Update()
 		computeConstantVectorsYandZ();
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		// duration 1 
-
 		start = system_clock::now();
 		if (m_enable_cpd && m_optimization_method != OPTIMIZATION_METHOD_NEWTON)
 		{
+
+			m_Hk = m_hamiltonian;
 			// update
 			g_com += g_linear_momentum * m_h;
+			VectorX f(m_mesh->m_system_dimension);
+			VectorX fn;
+			f.setZero();
+			//m_Hy = evaluateEnergyPureConstraint(m_y, f); 
+			//std::cout << m_Hy << std::endl;
+			m_alpha = 0.f;
 			VectorX hMv_n = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_hMv_n, hMv_n, 1);
 			set_prefactored_matrix();
@@ -2182,16 +2189,17 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	bool converged = false;
 	ScalarType current_energy;
 	VectorX gf_k;
-
+	ScalarType inv_eps = 10e5;
 	string txt = ".txt";
 	string txtForOverHead = "CPDOverHead.txt";
 	string txtForLoss = "CPDLoss.txt";
 	string fileName;
 	system_clock::time_point start, end;
 	nanoseconds result;
-
+	ScalarType H = (1.f - m_alpha) * m_hamiltonian + m_alpha * (m_Hk);
 	//m_hamiltonian = 10000;
-	current_energy = evaluateEnergyAndGradient(x, gf_k) - m_hamiltonian * m_h *m_h;
+	current_energy = evaluateEnergyAndGradient(x, gf_k) - H * m_h *m_h;
+	m_Hk = current_energy/(m_h * m_h) + H;
 	if (1/*m_lbfgs_need_update_H0*/) 
 	{
 		// clear sk and yk and alpha_k
@@ -2260,16 +2268,21 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		start = system_clock::now();
 		if (m_enable_cpd)
 		{
-			g_dck.col(6) = g_dch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
-			g_Ainv_dck.col(6) = r + g_Ainv_hMv_n;
-			VectorX ck(7);
+			if (C_DIM == 7)
+			{
+				g_dck.col(6) = g_dch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+				g_Ainv_dck.col(6) = r + g_Ainv_hMv_n;
+			}
+			VectorX ck(C_DIM);
 			ck.block_vector(0) = g_dcp.transpose() * x - g_com;
 			ck.block_vector(1) = g_dcl.transpose() * x - m_current_angular_momentum * m_h;
-			ck(6) = current_energy;
-			VectorX c(7);
+			if (C_DIM == 7)
+				ck(6) = current_energy;
+			VectorX c(C_DIM);
 			c.block_vector(0) = ck.block_vector(0);
 			c.block_vector(1) = ck.block_vector(1);
-			c(6) = ck(6);
+			if (C_DIM == 7)
+				c(6) = ck(C_DIM);
 			if (recordTextCPDLoss)
 			{
 				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
@@ -2294,16 +2307,21 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				}
 				outLoss.close();
 			}
-
+			//std::cout << m_alpha << std::endl;
 			std::cout << c.norm() << std::endl;
 			if (c.norm() < m_cpd_threshold)
 				return true;
 
 			Matrix cTAinv_c = g_dck.transpose() * g_Ainv_dck;
+			if (C_DIM == 7)
+				cTAinv_c(6, 6) += (inv_eps * (m_hamiltonian - m_Hk) * (m_hamiltonian - m_Hk));
 			Eigen::LLT<Matrix> llt;
 			llt.compute(cTAinv_c);
-			VectorX lambda = llt.solve(ck + g_dck.transpose() * p_k);
+			ck += g_dck.transpose() * p_k;
+			VectorX lambda = llt.solve(ck);
 			p_k -= g_Ainv_dck * lambda;
+			if (C_DIM == 7)
+				m_alpha -= inv_eps * (m_hamiltonian - m_Hk)*lambda(6);
 		
 		}
 		end = system_clock::now();

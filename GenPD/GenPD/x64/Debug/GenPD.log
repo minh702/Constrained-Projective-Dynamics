@@ -1,23 +1,315 @@
-﻿  simulation.cpp
+﻿  anttweakbar_wrapper.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+  camera.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\camera.cpp(52,15): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\camera.cpp(211,10): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\camera.cpp(218,12): warning C4244: '초기화 중': 'genType'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              genType=double
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\camera.cpp(315,10): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\camera.cpp(322,12): warning C4244: '초기화 중': 'genType'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              genType=double
+          ]
+  constraint.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+  constraint_attachment.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_attachment.cpp(71,17): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_attachment.cpp(109,30): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_attachment.cpp(192,38): warning C4267: '+=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  constraint_penalty.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_penalty.cpp(90,18): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_penalty.cpp(147,31): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  constraint_spring.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_spring.cpp(81,18): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_spring.cpp(133,51): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_spring.cpp(167,36): warning C4305: '초기화 중': 'double'에서 'ScalarType'(으)로 잘립니다.
+  constraint_tet.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(69,15): warning C4244: 'return': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(81,20): warning C4244: 'return': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(105,30): warning C4244: 'return': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(155,18): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(228,32): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(235,37): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(263,39): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(270,33): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(283,20): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(289,49): warning C4244: '+=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(294,18): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(298,43): warning C4244: '+=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(455,36): warning C4305: '초기화 중': 'double'에서 'ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(514,20): warning C4244: '초기화 중': 'Eigen::EigenBase<Derived>::Index'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::Matrix<float,-1,1,0,-1,1>
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(521,33): warning C4305: '인수': 'double'에서 'const float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(522,33): warning C4305: '인수': 'double'에서 'const float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(523,33): warning C4305: '인수': 'double'에서 'const float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(633,26): warning C4244: 'return': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(689,29): warning C4305: '=': 'double'에서 'ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(719,44): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(787,38): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(823,20): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(824,23): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(825,25): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(897,18): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(898,21): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(931,39): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(939,33): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(955,20): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(963,49): warning C4244: '+=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(968,18): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(969,21): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(978,43): warning C4244: '+=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1052,33): warning C4305: '인수': 'double'에서 'const float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1053,33): warning C4305: '인수': 'double'에서 'const float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1054,33): warning C4305: '인수': 'double'에서 'const float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1065,69): warning C4244: '+=': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1072,19): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1076,63): warning C4244: '인수': 'double'에서 'const Scalar'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Scalar=ScalarType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1077,71): warning C4244: '인수': 'double'에서 'const Scalar'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Scalar=ScalarType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1078,71): warning C4244: '인수': 'double'에서 'const Scalar'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Scalar=ScalarType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1081,58): warning C4244: '인수': 'double'에서 'const Scalar'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Scalar=ScalarType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint_tet.cpp(1314,68): warning C4267: '인수': 'size_t'에서 'GLsizei'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  fps.cpp
+  glsl_wrapper.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\glsl_wrapper.cpp(192,63): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  handle.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\handle.cpp(186,16): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\handle.cpp(210,89): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\handle.cpp(277,11): warning C4244: '초기화 중': 'Eigen::EigenBase<Derived>::Index'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::Matrix<float,-1,1,0,-1,1>
+          ]
+  io_mesh.cpp
+  main.cpp
 D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\timer_wrapper.h(94,25): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
 C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\timer_wrapper.h(94,25): message : 자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(221,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(232,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(243,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(250,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(313,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(480,22): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(519,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(519,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(523,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(523,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(1488,7): warning C4101: 'ignore' :참조되지 않은 지역 변수입니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3310,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3320,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3338,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3355,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3372,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3383,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
-C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3400,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+  math_headers.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(43,30): warning C4267: '초기화 중': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(56,30): warning C4267: '초기화 중': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(90,51): warning C4244: '인수': 'Eigen::EigenBase<Derived>::Index'에서 'const StorageIndex'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::SparseMatrix<ScalarType,0,int>
+          ]
+          and
+          [
+              StorageIndex=IndexType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(97,16): warning C4244: '초기화 중': 'Eigen::EigenBase<Derived>::Index'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::SparseMatrix<ScalarType,0,int>
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(98,16): warning C4244: '초기화 중': 'Eigen::EigenBase<Derived>::Index'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::SparseMatrix<ScalarType,0,int>
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(115,21): warning C4244: '=': 'const StorageIndex'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              StorageIndex=IndexType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(118,6): warning C4244: '인수': 'ScalarType'에서 'Eigen::EigenBase<Derived>::Index'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::Matrix<float,-1,1,0,-1,1>
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(130,16): warning C4244: '초기화 중': 'Eigen::EigenBase<Derived>::Index'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::SparseMatrix<ScalarType,0,int>
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(131,16): warning C4244: '초기화 중': 'Eigen::EigenBase<Derived>::Index'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::SparseMatrix<ScalarType,0,int>
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(146,21): warning C4244: '=': 'const StorageIndex'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              StorageIndex=IndexType
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(143,18): warning C4101: 'val' :참조되지 않은 지역 변수입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(163,36): warning C4267: '초기화 중': 'size_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(176,36): warning C4267: '초기화 중': 'size_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(198,37): warning C4244: '인수': 'Eigen::EigenBase<Derived>::Index'에서 '_Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::Matrix<float,-1,-1,0,-1,-1>
+          ]
+          and
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(215,37): warning C4244: '인수': 'Eigen::EigenBase<Derived>::Index'에서 '_Ty'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::Matrix<float,-1,1,0,-1,1>
+          ]
+          and
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\math_headers.cpp(233,59): warning C4244: '인수': 'Eigen::EigenBase<Derived>::Index'에서 'const StorageIndex'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+          with
+          [
+              Derived=Eigen::SparseMatrix<ScalarType,0,int>
+          ]
+          and
+          [
+              StorageIndex=int
+          ]
+  matlab_debugger.cpp
+  mesh.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(127,14): warning C4244: '인수': 'int'에서 'GLfloat'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(289,16): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(290,16): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(291,16): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(354,27): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(378,19): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(379,19): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\mesh.cpp(615,27): warning C4244: '초기화 중': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  primitive.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(54,10): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(108,69): warning C4267: '인수': 'size_t'에서 'GLsizei'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(142,17): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(170,23): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(202,19): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(202,44): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(281,32): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(308,20): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(308,47): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(367,38): warning C4244: '=': 'double'에서 'ScalarType'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.cpp(597,28): warning C4267: '=': 'size_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  scene.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+  selection_tool.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\primitive.h(118,8): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\constraint.h(301,44): warning C4305: '초기화 중': 'double'에서 'const ScalarType'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\selection_tool.cpp(147,4): warning C4267: '초기화 중': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\selection_tool.cpp(245,31): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\selection_tool.cpp(374,30): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\selection_tool.cpp(409,89): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+  simulation.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\timer_wrapper.h(94,25): warning C4474: 'printf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\timer_wrapper.h(94,25): message : 자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(218,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(225,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(235,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(242,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(249,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(317,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(534,22): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(573,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(573,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(577,28): warning C4477: 'sprintf_s' : 서식 문자열 '%d'에 'int' 형식의 인수가 필요하지만 variadic 인수 2의 형식이 'unsigned __int64'입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(577,28): message : 서식 문자열에서 '%zd'을(를) 사용하는 것이 좋습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(1542,7): warning C4101: 'ignore' :참조되지 않은 지역 변수입니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3401,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3411,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3429,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3446,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3463,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3474,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\simulation.cpp(3491,20): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  tensor_math.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+  코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
+  tinyxml2.cpp
+  svd3x3.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(61,40): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(67): message : 컴파일되는 함수 템플릿 인스턴스화 'void igl::svd3x3<float>(const Eigen::Matrix<float,3,3,0,3,3> &,Eigen::Matrix<float,3,3,0,3,3> &,Eigen::Matrix<float,3,1,0,3,1> &,Eigen::Matrix<float,3,3,0,3,3> &)'에 대한 참조를 확인하세요.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(61,31): warning C4244: '초기화 중': 'double'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(62,34): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(62,31): warning C4244: '초기화 중': 'double'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(63,36): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(63,33): warning C4244: '초기화 중': 'double'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(78,1): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(79,1): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(28,2): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(29,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(30,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(31,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(32,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(33,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(34,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(35,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\svd3x3.cpp(36,3): warning C4244: '=': 'const double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  WunderSVD3x3.cpp
+D:\Libs\Eigen_3_3_1\Eigen\src\Core\arch\CUDA\Half.h(1,1): warning C4819: 현재 코드 페이지(949)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(61,40): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\WunderSVD3x3.cpp(60): message : 컴파일되는 함수 템플릿 인스턴스화 'void wunderSVD3x3<float>(const Eigen::Matrix<float,3,3,0,3,3> &,Eigen::Matrix<float,3,3,0,3,3> &,Eigen::Matrix<float,3,1,0,3,1> &,Eigen::Matrix<float,3,3,0,3,3> &)'에 대한 참조를 확인하세요.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(61,31): warning C4244: '초기화 중': 'double'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(62,34): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(62,31): warning C4244: '초기화 중': 'double'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(63,36): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(63,33): warning C4244: '초기화 중': 'double'에서 'const float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(78,1): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\wunderSVD\Singular_Value_Decomposition_Kernel_Declarations.hpp(79,1): warning C4305: '=': 'double'에서 'float'(으)로 잘립니다.
+  코드를 생성하고 있습니다...
+  stb_image.c
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\stb_image.c(760,1): warning C4244: '초기화 중': '__int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\stb_image.c(773,1): warning C4244: '초기화 중': '__int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  stb_image_write.c
+C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\GenPD\source\stb_image_write.h(326,1): warning C4244: '초기화 중': '__int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  코드를 생성하고 있습니다...
   GenPD.vcxproj -> C:\Users\mhkee\Desktop\workspace\Constrained-Projective-Dynamics\GenPD\x64\Debug\GenPD.exe

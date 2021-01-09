@@ -325,6 +325,8 @@ protected:
 	ScalarType m_total_energy;
 	ScalarType m_cpd_threshold;
 	ScalarType m_Hrb;
+	ScalarType m_alpha;
+	ScalarType m_Hk;
 	bool m_enable_cpd;
 	bool m_verbose_show_cpd_converge;
 	bool m_manipulate_plh;

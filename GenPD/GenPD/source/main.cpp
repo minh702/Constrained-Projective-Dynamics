@@ -198,7 +198,7 @@ int main(int argc, char ** argv){
     glutReshapeWindow(g_screen_width, g_screen_height);
 
     //for use cmd. if not, use true.
-    g_pause = false;
+    g_pause = true;
 
     // bind function callbacks
     glutDisplayFunc(display);
