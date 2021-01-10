@@ -552,6 +552,13 @@ void Simulation::UpdateAnimation(const int fn)
 
 void Simulation::Update()
 {
+	system_clock::time_point start, end;
+	nanoseconds result;
+	string txt = "CPDOverHead.txt";
+	string filePath = "./TextData/";
+	string fileName;
+
+
 	// update external force
 	calculateExternalForce();
 
@@ -560,11 +567,6 @@ void Simulation::Update()
 
 	m_last_descent_dir.resize(m_mesh->m_system_dimension);
 	m_last_descent_dir.setZero();
-	
-
-
-
-
 
 	EigenVector3 v, w;
 
@@ -585,6 +587,8 @@ void Simulation::Update()
 
 	
 		computeConstantVectorsYandZ();
+
+		start = system_clock::now();
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
@@ -601,6 +605,27 @@ void Simulation::Update()
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
 		}
+		end = system_clock::now();
+		result = end - start;
+
+		if (recordTextCPD && m_enable_cpd)
+		{
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "./TextData/cloth" + txt;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txt;
+				fileName = "./TextData/" + fileName;
+			}
+			std::ofstream out(fileName, std::ios::app);
+			if (out.is_open())
+			{
+				out << "a" + std::to_string(result.count()) << endl;
+			}
+			out.close();
+		}
 
 		switch (m_integration_method)
 		{
@@ -612,6 +637,16 @@ void Simulation::Update()
 		case INTEGRATION_IMPLICIT_NEWMARK_BETA:
 			integrateImplicitMethod();
 			break;
+		}
+
+		if (recordTextCPD && m_enable_cpd)
+		{
+			std::ofstream out(fileName, std::ios::app);
+			if (out.is_open())
+			{
+				out << std::to_string(m_cpd_threshold) + "b" + std::to_string(m_current_iteration) << endl;
+			}
+			out.close();
 		}
 
 		if (m_enable_fepr) 
@@ -626,6 +661,49 @@ void Simulation::Update()
 	
 	}
 
+	if (m_record_quantities) //per frame
+	{
+		VectorX x = m_mesh->m_current_positions;
+		VectorX v = m_mesh->m_current_velocities;
+		VectorX f(m_mesh->m_system_dimension);
+		f.setZero();
+
+		EigenVector3 P = evaluateLinearMomentum(v);
+		EigenVector3 L = evaluateAngularMomentum(x, v);
+		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
+
+		string fileName;
+		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+		{
+			fileName = "cloth";
+		}
+		else
+		{
+			fileName = m_mesh->m_tet_file_path;
+		}
+
+		if (m_enable_cpd)
+		{
+			fileName = fileName + "CPDQuantities.txt";
+		}
+		else if (m_enable_fepr)
+		{
+			fileName = fileName + "FEPRQuantities.txt";
+		}
+		else
+		{
+			fileName = '\0';
+		}
+
+		std::ofstream out(filePath + fileName, std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(P.x()) + " " + std::to_string(P.y()) + " " + std::to_string(P.z()) << endl;
+			out << std::to_string(L.x()) + " " + std::to_string(L.y()) + " " + std::to_string(L.z()) << endl;
+			out << std::to_string(H) << endl;
+		}
+		out.close();
+	}
 	//// volume
 	//m_current_volume = getVolume(m_mesh->m_current_positions);
 
@@ -2280,6 +2358,13 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	VectorX gf_k;
 
 
+	string txt = ".txt";
+	string txtForOverHead = "CPDOverHead.txt";
+	string txtForLoss = "CPDLoss.txt";
+	string fileName;
+	system_clock::time_point start, end;
+	nanoseconds result;
+
 	//ScalarType Hblend = m_hamiltonian;
 	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * m_Hrb;
 	// set xk and gfk
@@ -2327,15 +2412,40 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		g_lbfgs_timer.Pause();
 		// first iteration
 		VectorX r;
+
+		start = system_clock::now();
 		LBFGSKernelLinearSolve(r, gf_k, 1);
+		end = system_clock::now();
+		result = end - start;
+
+		if (recordTextPD)
+		{
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "./TextData/cloth" + txt;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txt;
+				fileName = "./TextData/" + fileName;
+			}
+			std::ofstream out(fileName, std::ios::app);
+			if (out.is_open())
+			{
+				out << std::to_string(result.count()) + "\n";
+			}
+			out.close();
+		}
+
 		g_lbfgs_timer.Resume();
 		
 		//VectorX c(6);
 
 		VectorX p_k = -r;
+		start = system_clock::now();
 		if (m_enable_cpd)
 		{
-			if (1)
+			if (0)
 			{
 				Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
 				Eigen::LLT<Eigen::MatrixXf> llt;
@@ -2350,6 +2460,31 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				ck += g_gcm.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gcm * lambda;
+
+				if (recordTextCPDLoss)
+				{
+					if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+					{
+						fileName = "./TextData/cloth" + txtForLoss;
+					}
+					else
+					{
+
+						fileName = m_mesh->m_tet_file_path + txtForLoss;
+						fileName = "./TextData/" + fileName;
+					}
+					std::ofstream outLoss(fileName, std::ios::app);
+					if (outLoss.is_open())
+					{
+						string token = "\t";
+						if (ck.norm() < m_cpd_threshold)
+						{
+							token = "\n";
+						}
+						outLoss << std::to_string(ck.norm()) + token;
+					}
+					outLoss.close();
+				}
 			}
 			else
 			{
@@ -2360,6 +2495,32 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				
 				//std::cout << ck.norm() << std::endl;
 				//m_cpd_threshold = 10e-6;
+
+				if (recordTextCPDLoss)
+				{
+					if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+					{
+						fileName = "./TextData/cloth" + txtForLoss;
+					}
+					else
+					{
+
+						fileName = m_mesh->m_tet_file_path + txtForLoss;
+						fileName = "./TextData/" + fileName;
+					}
+					std::ofstream outLoss(fileName, std::ios::app);
+					if (outLoss.is_open())
+					{
+						string token = "\t";
+						if (ck.norm() < m_cpd_threshold)
+						{
+							token = "\n";
+						}
+						outLoss << std::to_string(ck.norm()) + token;
+					}
+					outLoss.close();
+				}
+
 				if (ck.norm() < m_cpd_threshold)
 					return true;
 				ScalarType inv_eps;
@@ -2383,6 +2544,28 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				//return false 
 			}
 		}
+		end = system_clock::now();
+		result = end - start;
+
+		if (recordTextCPD && m_enable_cpd)
+		{
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "./TextData/cloth" + txtForOverHead;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txtForOverHead;
+				fileName = "./TextData/" + fileName;
+			}
+			std::ofstream outOH(fileName, std::ios::app);
+			if (outOH.is_open())
+			{
+				outOH << std::to_string(result.count()) + "\n";
+			}
+			outOH.close();
+		}
+
 
 		g_lbfgs_timer.Pause();
 		x +=  p_k;
@@ -2740,6 +2923,11 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 	ScalarType energy_pure_constraints, energy;
 	ScalarType inertia_term = 0.5 * (x - m_y).transpose() * m_mesh->m_mass_matrix * (x - m_y);
 	ScalarType inertia_term2 = 0.5 * (x - m_mesh->m_current_positions).transpose() * m_mesh->m_mass_matrix * (x - m_mesh->m_current_positions);
+
+	system_clock::time_point start, end;
+	nanoseconds result;
+	string txt = ".txt";
+
 	switch (m_integration_method)
 	{
 	case INTEGRATION_QUASI_STATICS:
@@ -2748,9 +2936,34 @@ ScalarType Simulation::evaluateEnergyAndGradient(const VectorX& x, VectorX& grad
 		gradient -= m_external_force;
 		break;//DO NOTHING
 	case INTEGRATION_IMPLICIT_EULER:
+
+		start = system_clock::now();
 		energy_pure_constraints = evaluateEnergyAndGradientPureConstraint(x, m_external_force, gradient);
 		energy = inertia_term2 + h_square*energy_pure_constraints;
 		gradient = m_mesh->m_mass_matrix * (x - m_y) + h_square*gradient;
+		end = system_clock::now();
+		result = end - start;
+
+		if (recordTextPD)
+		{
+			string fileName;
+			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			{
+				fileName = "./TextData/cloth" + txt;
+			}
+			else
+			{
+				fileName = m_mesh->m_tet_file_path + txt;
+				fileName = "./TextData/" + fileName;
+			}
+			std::ofstream out(fileName, std::ios::app);
+			if (out.is_open())
+			{
+				out << std::to_string(result.count()) + "\t";
+			}
+			out.close();
+		}
+
 		break;
 	case INTEGRATION_IMPLICIT_BDF2:
 		energy_pure_constraints = evaluateEnergyAndGradientPureConstraint(x, m_external_force, gradient);
@@ -3240,6 +3453,10 @@ void Simulation::fepr()
 	int iter = 0;
 	ScalarType inv_h_squared = 1/(m_h * m_h);
 
+	system_clock::time_point start, end;
+	nanoseconds result;
+	string fileName = "feprLossnOverhead.txt";
+
 	VectorX c(7);
 	Matrix dcx(m_mesh->m_system_dimension, C_DIM);
 	Matrix dcv(m_mesh->m_system_dimension, C_DIM);
@@ -3279,13 +3496,21 @@ void Simulation::fepr()
 	dcst.setZero();
 	ext_f.setZero();
 
-	system_clock::time_point start, end;
-	nanoseconds result;
-
 	//m_current_angular_momentum = EigenVector3(0, 0, 0);
 	//iteratively optimize for q = (x^T,v^T,s,t)^T 
 
-	std::ofstream out("test.txt", std::ios::app);
+	//std::ofstream out("test.txt", std::ios::app);
+
+	if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+	{
+		fileName = "cloth" + fileName;
+	}
+	else
+	{
+		fileName = m_mesh->m_tet_file_path + fileName;
+	}
+
+	std::ofstream out("./TextData/" + std::to_string(m_iterations_per_frame) + fileName, std::ios::app);
 
 	while (true)
 	{
@@ -3312,11 +3537,13 @@ void Simulation::fepr()
 
 		ScalarType c_norm = c.norm();
 
-		if (out.is_open()) 
+		if (recordTextFEPR)
 		{
-			out << std::to_string(c_norm) + "\t";
+			if (out.is_open())
+			{
+				out << std::to_string(c_norm) + "\t";
+			}
 		}
-		
 		//std::cout << c.transpose() << std::endl;
 		//std::cout << st << std::endl;
 		//std::cout << c_norm << std::endl;
@@ -3371,10 +3598,15 @@ void Simulation::fepr()
 		iter++;
 		end = system_clock::now();
 		result = end - start;
-		if (out.is_open())
+
+		if (recordTextFEPR)
 		{
-			out << std::to_string(result.count()) + "\n";
+			if (out.is_open())
+			{
+				out << std::to_string(result.count()) + "\n";
+			}
 		}
+
 		g_fepr_timer.Toc();
 	}
 
@@ -3390,6 +3622,15 @@ void Simulation::fepr()
 	//{
 	//	out << std::to_string(flag++) + "a" + std::to_string(iter) + "\n";
 	//}
+
+	if (recordTextFEPR)
+	{
+		if (out.is_open())
+		{
+			out << "a" + std::to_string(iter) + "\n";
+		}
+	}
+	out.close();
 
 	if (m_verbose_show_fepr_converge)
 	{
