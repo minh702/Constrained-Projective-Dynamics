@@ -157,6 +157,10 @@ Simulation::Simulation()
 	m_verbose_show_optimization_time = false;
 	m_verbose_show_energy = false;
 	m_verbose_show_factorization_warning = true;
+
+	m_enable_cpd = true;
+	m_cpd_threshold = 1e-5;
+	m_cpd_max_iter = 100;
 }
 
 Simulation::~Simulation()
@@ -260,6 +264,14 @@ void Simulation::Reset()
 	//Initialize P, L, H
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 	m_Hrb = 0.5f * m_angular_momentum_init.dot(angular_velocity) + 0.5f*m_linear_momentum_init.dot(linear_velocity);
+	m_Hrb = fabs(m_Hrb);
+
+	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
+	{
+		m_hamiltonian *= (1 + 0.01);
+	}
+	std::cout << m_Hrb << std::endl;
+	std::cout << m_hamiltonian << std::endl;
 	m_current_angular_momentum = m_angular_momentum_init;
 	m_current_linear_momentum = m_linear_momentum_init;
 
@@ -279,13 +291,9 @@ void Simulation::Reset()
 	EigenVector3 com;
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		m_mesh->m_current_positions.block_vector(i).x() *= 1.1f;
-		m_mesh->m_current_positions.block_vector(i).z() *= 1.1f;
 		ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i,i);
 		EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
 		EigenMatrix3 rx;
-
-
 		g_gcm(3 * i + 0, 0) = g_gcp(3 * i + 0, 0) = g_gck(3 * i + 0, 0) = mi;
 		g_gcm(3 * i + 1, 1) = g_gcp(3 * i + 1, 1) = g_gck(3 * i + 1, 1) = mi;
 		g_gcm(3 * i + 2, 2) = g_gcp(3 * i + 2, 2) = g_gck(3 * i + 2, 2) = mi;
@@ -293,10 +301,7 @@ void Simulation::Reset()
 	m_rest_inertia = inertia;
 
 	g_com = g_gcp.transpose() * m_mesh->m_current_positions;
-	
 	prefactorize();
-
-
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -306,8 +311,6 @@ void Simulation::Reset()
 	}
 
 	//std::cout << g_gcm.transpose() * g_Ainv_gcm << std::endl;
-
-	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions,f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 
 
 	//g_total_energy = 20000;
@@ -561,27 +564,19 @@ void Simulation::Update()
 
 
 
-	if (m_manipulate_plh)
-	{
-		g_total_energy = m_hamiltonian;
-		g_angular_momentum(0) = m_lx;
-		g_angular_momentum(1) = m_ly;
-		g_angular_momentum(2) = m_lz;
 
-		g_linear_momentum(0) = m_px;
-		g_linear_momentum(1) = m_py;
-		g_linear_momentum(2) = m_pz;
 
-		EigenVector3 v, w;
+	EigenVector3 v, w;
 
-		v = g_linear_momentum / m_mesh->m_total_mass;
-		w = m_rest_inertia.inverse() * g_angular_momentum;
-		m_Hrb = 0.5f * v.dot(g_linear_momentum) + 0.5f* w.dot(g_angular_momentum);
-		m_current_angular_momentum = g_angular_momentum;
-		m_current_linear_momentum = g_linear_momentum;
-		m_manipulate_plh = false;
-	}
-	
+	/*v = m_linear_momentum_init / m_mesh->m_total_mass;
+	w = m_rest_inertia.inverse() * m_angular_momentum_init;
+	m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f* w.dot(m_angular_momentum_init);
+	m_current_angular_momentum = m_angular_momentum_init;
+	m_current_linear_momentum = m_linear_momentum_init;
+
+	m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+	if (fabs(m_hamiltonian - m_Hrb) < 0.1)
+		m_hamiltonian *= (1 + 0.001);*/
 
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
@@ -2340,7 +2335,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		VectorX p_k = -r;
 		if (m_enable_cpd)
 		{
-			if (0)
+			if (1)
 			{
 				Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
 				Eigen::LLT<Eigen::MatrixXf> llt;
@@ -2348,9 +2343,9 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				VectorX ck(6);
 				ck.block_vector(0) = g_gcp.transpose() * x - g_com;
 				ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
-				std::cout << ck.norm() << std::endl;
-				/*m_cpd_threshold = 10e-6;
-				if (ck.norm() < m_cpd_threshold)
+				//std::cout << ck.norm() << std::endl;
+				//m_cpd_threshold = 10e-6;
+				/*if (ck.norm() < m_cpd_threshold)
 					return true;*/
 				ck += g_gcm.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
@@ -2363,7 +2358,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
 				ck(6) = current_energy;
 				
-				std::cout << ck.norm() << std::endl;
+				//std::cout << ck.norm() << std::endl;
 				//m_cpd_threshold = 10e-6;
 				if (ck.norm() < m_cpd_threshold)
 					return true;
@@ -2380,7 +2375,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				cTAinv_c(6, 6) += inv_eps * dh * dh;
 				Eigen::LLT<Eigen::MatrixXf> llt;
 				llt.compute(cTAinv_c);
-				//std::cout << m_alpha << std::endl;
+				std::cout << m_alpha << std::endl;
 				ck += g_gck.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gck * lambda;
