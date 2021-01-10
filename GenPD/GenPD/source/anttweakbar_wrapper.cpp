@@ -52,6 +52,7 @@ extern int g_screen_width;
 extern int g_screen_height;
 extern glm::vec3 g_handle_color;
 extern bool g_random_handle_color;
+extern std::string config_text_name;
 
 //----------State Control--------------------//
 extern bool g_only_show_sim;
@@ -126,6 +127,12 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "Total Frames", TW_TYPE_INT32, &(g_total_frame), "group='Recording'");
 	TwAddVarRW(m_control_panel_bar, "Export OBJ", TwType(sizeof(bool)), &(g_export_obj), "group='Recording'");
 	TwDefine(" 'Control Panel'/'Recording' group='State Control'");
+	TwAddVarRW(m_control_panel_bar, "PD", TwType(sizeof(bool)), &g_simulation->recordTextPD, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "CPD", TwType(sizeof(bool)), &g_simulation->recordTextCPD, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "CPDLoss", TwType(sizeof(bool)), &g_simulation->recordTextCPDLoss, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->recordTextFEPR, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "Quantities", TwType(sizeof(bool)), &g_simulation->m_record_quantities, "group='Recording To Text'");
+	TwDefine(" 'Control Panel'/'Recording To Text' group='State Control'");
 	TwAddSeparator(m_control_panel_bar, NULL, "");
 	// visualization
 	TwAddVarRW(m_control_panel_bar, "Mesh Body", TwType(sizeof(bool)), &(g_show_mesh), "group='Visualization'");
@@ -401,11 +408,13 @@ int AntTweakBarWrapper::Update()
 	if (g_record)
 	{
 		TwDefine(" 'Control Panel'/'Recording' visible=true");
+		TwDefine(" 'Control Panel'/'Recording To Text' visible=true");
 	}
 	else
 	{
 		g_recording_limit = false;
 		TwDefine(" 'Control Panel'/'Recording' visible=false");
+		TwDefine(" 'Control Panel'/'Recording To Text' visible=false");
 	}
 #ifdef ENABLE_MATLAB_DEBUGGING
 	// matlab settings display
@@ -697,6 +706,38 @@ void AntTweakBarWrapper::SaveSettings()
 
 		outfile << "LBFGSType           " << g_simulation->m_lbfgs_H0_type << std::endl;
 		outfile << "LBFGSWindowSize     " << g_simulation->m_lbfgs_m << std::endl;
+		outfile << std::endl;
+
+		//Demo
+
+		outfile << "AngularMomentum     " << g_simulation->m_angular_momentum_init.x() << " " \
+										  << g_simulation->m_angular_momentum_init.y() << " " \
+										  << g_simulation->m_angular_momentum_init.z() << std::endl;
+		outfile << "LinearMomentum      " << g_simulation->m_linear_momentum_init.x() << " " \
+										  << g_simulation->m_linear_momentum_init.y() << " " \
+										  << g_simulation->m_linear_momentum_init.z() << std::endl;
+		outfile << "Scale               " << g_simulation->m_scale_x << " " \
+										  << g_simulation->m_scale_y << " " \
+										  << g_simulation->m_scale_z << std::endl;
+		//outfile << "Process Colision    " << g_simulation->m_processing_collision << std::endl;
+		outfile << std::endl;
+		//FEPR
+		outfile << "FEPREnable          " << g_simulation->m_enable_fepr << std::endl;
+		outfile << "FEPRThreshold       " << g_simulation->m_fepr_threshold << std::endl;
+		outfile << "FEPRMaxIter         " << g_simulation->m_fepr_max_iter << std::endl;
+		outfile << std::endl;
+		//CPD
+		outfile << "CPDEnable           " << g_simulation->m_enable_cpd << std::endl;
+		outfile << "CPDThreshold        " << g_simulation->m_cpd_threshold << std::endl;
+		outfile << std::endl;
+
+		//Record
+		outfile << "ExportOBJ           " << g_export_obj << std::endl;
+		outfile << "RecordPD            " << g_simulation->recordTextPD << std::endl;
+		outfile << "RecordCPD           " << g_simulation->recordTextCPD << std::endl;
+		outfile << "RecordCPDLoss       " << g_simulation->recordTextCPDLoss << std::endl;
+		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
+		outfile << "RecordQuantities    " << g_simulation->m_record_quantities << std::endl;
 
 		outfile.close();
 	}
@@ -712,7 +753,7 @@ void AntTweakBarWrapper::LoadSettings()
 
 	//read file
 	std::ifstream infile;
-	infile.open(DEFAULT_CONFIG_FILE, std::ifstream::in);
+	infile.open(config_text_name, std::ifstream::in);
 	if (successfulRead = infile.is_open())
 	{
 		int tempEnum;
@@ -791,6 +832,35 @@ void AntTweakBarWrapper::LoadSettings()
 
 		infile >> ignoreToken >> tempEnum; g_simulation->m_lbfgs_H0_type = LBFGSH0Type(tempEnum);
 		infile >> ignoreToken >> g_simulation->m_lbfgs_m;
+
+		//Demo
+		infile >> ignoreToken >> g_simulation->m_angular_momentum_init.x() \
+			>> g_simulation->m_angular_momentum_init.y() \
+			>> g_simulation->m_angular_momentum_init.z();
+		infile >> ignoreToken >> g_simulation->m_linear_momentum_init.x() \
+			>> g_simulation->m_linear_momentum_init.y() \
+			>> g_simulation->m_linear_momentum_init.z();
+		infile >> ignoreToken >> g_simulation->m_scale_x \
+			>> g_simulation->m_scale_y \
+			>> g_simulation->m_scale_z; //helpppp
+//infile >> ignoreToken >> g_simulation->m_processing_collision;
+
+//FEPR
+		infile >> ignoreToken >> g_simulation->m_enable_fepr;
+		infile >> ignoreToken >> g_simulation->m_fepr_threshold;
+		infile >> ignoreToken >> g_simulation->m_fepr_max_iter;
+
+		//CPD
+		infile >> ignoreToken >> g_simulation->m_enable_cpd;
+		infile >> ignoreToken >> g_simulation->m_cpd_threshold;
+
+		//Record
+		infile >> ignoreToken >> g_export_obj;
+		infile >> ignoreToken >> g_simulation->recordTextPD;
+		infile >> ignoreToken >> g_simulation->recordTextCPD;
+		infile >> ignoreToken >> g_simulation->recordTextCPDLoss;
+		infile >> ignoreToken >> g_simulation->recordTextFEPR;
+		infile >> ignoreToken >> g_simulation->m_record_quantities;
 
 		infile.close();
 	}

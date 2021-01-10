@@ -33,6 +33,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <string>
 //----------Headers--------------//
 #include "global_headers.h"
 #include "math_headers.h"
@@ -71,10 +72,14 @@ int g_screen_width = DEFAULT_SCREEN_WIDTH;
 int g_screen_height = DEFAULT_SCREEN_HEIGHT;
 glm::vec3 g_handle_color;
 bool g_random_handle_color;
+char ** config_name_list;
+int config_num;
+int config_limit;
+std::string config_text_name;
 
 //----------State Control--------------------//
 bool g_only_show_sim = false;
-bool g_record = false;
+bool g_record = true;
 bool g_pause = true;
 bool g_show_mesh = true;
 bool g_show_wireframe = false;
@@ -97,7 +102,7 @@ int g_timestep = 1000 / g_max_fps;
 bool g_recording_limit = false;
 int g_current_frame = 0;
 int g_total_frame = 0;
-bool g_export_obj = true;
+bool g_export_obj;
 
 //----------glut function handlers-----------//
 void resize(int, int);
@@ -190,6 +195,21 @@ int main(int argc, char ** argv){
 	glutInitDisplayMode(GLUT_RGBA);
 #endif
 
+	config_name_list = argv;
+	config_limit = argc;
+
+	if (config_limit == 1)
+	{
+		config_text_name = DEFAULT_CONFIG_FILE;
+		std::cout << "config text path error" << std::endl;
+	}
+	else
+	{
+		config_num = 1;
+		config_text_name = config_name_list[config_num++];
+		std::cout << "correct" << std::endl;
+	}
+
     glutCreateWindow("Mass-Spring System Simulation T.L.");
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
@@ -199,6 +219,9 @@ int main(int argc, char ** argv){
     // user init
     init();
 	glutReshapeWindow(g_screen_width, g_screen_height);
+
+	//for data extract. if used to test, convert 'true'.
+	g_pause = false;
 
     // bind function callbacks
     glutDisplayFunc(display);
@@ -259,7 +282,18 @@ void timeout(int value)
 
 	if (g_recording_limit && g_current_frame > g_total_frame)
 	{
-		g_pause = true;
+		//PostQuitMessage(0);
+		//here
+		if (config_limit == 1 || config_num == config_limit)
+		{
+			PostQuitMessage(0);
+		}
+		else
+		{
+			config_text_name = config_name_list[config_num++];
+			reset_simulation(NULL);
+			g_pause = false;
+		}
 	}
 
 	// simulation update
@@ -268,9 +302,9 @@ void timeout(int value)
 		// grab screen
 		if (g_record)
 		{
-			char cap_filename[256];
+			/*char cap_filename[256];
 			sprintf_s(cap_filename, 256, "output/screenshots/ScreenCap%04d.png", g_current_frame);
-			grab_screen(cap_filename);
+			grab_screen(cap_filename);*/
 
 			if (g_export_obj)
 			{

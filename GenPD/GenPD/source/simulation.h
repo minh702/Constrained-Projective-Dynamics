@@ -282,6 +282,14 @@ protected:
 	// for optimization method
 	unsigned int m_current_iteration;
 
+
+	// for record data to text file
+	bool recordTextPD;
+	bool recordTextCPD;
+	bool recordTextCPDLoss;
+	bool recordTextFEPR;
+	bool m_record_quantities;
+
 	// line search 
 	bool m_enable_line_search;
 	bool m_enable_exact_search;
