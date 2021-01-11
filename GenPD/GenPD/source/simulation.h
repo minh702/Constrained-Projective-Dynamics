@@ -331,6 +331,7 @@ protected:
 	bool m_enable_cpd;
 	bool m_manipulate_plh;
 	bool m_use_cpd_both_momenta;
+	bool m_show_alpha;
 	int m_cpd_max_iter;
 	ScalarType m_Hrb;
 	ScalarType m_alpha;
@@ -450,6 +451,8 @@ private:
 	void fepr();
 	bool m_enable_fepr;
 	bool m_verbose_show_fepr_converge;
+	bool m_show_st;
+	bool m_show_fepr_loss;
 	bool m_verbose_show_fepr_optimization_time;
 	EigenVector3 evaluateAngularMomentumAndGradient(const VectorX& x, const VectorX& v, Matrix& clx, Matrix& clv);
 	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
@@ -459,7 +462,7 @@ private:
 	//cpd
 	void set_prefactored_matrix();
 	bool m_verbose_show_cpd_converge;
-
+	bool m_show_cpd_loss;
 	// collision
 	ScalarType evaluateEnergyCollision(const VectorX& x);
 	void evaluateGradientCollision(const VectorX& x, VectorX& gradient);

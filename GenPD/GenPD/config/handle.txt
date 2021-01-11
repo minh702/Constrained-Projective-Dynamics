@@ -1,0 +1,30 @@
+HandleNum   4
+
+Color       0.3 1 0.3
+RotationCenter -6 8 -6
+Translation 0 0 0
+Rotation 1 0 0 0
+VerticesNum 1
+0 
+
+Color       0.3 1 0.3
+RotationCenter -6 8 6
+Translation 0 0 0
+Rotation 1 0 0 0
+VerticesNum 1
+59 
+
+Color       0.3 1 0.3
+RotationCenter 6 8 6
+Translation 0 0 0
+Rotation 1 0 0 0
+VerticesNum 1
+3599 
+
+Color       0.3 1 0.3
+RotationCenter 6 8 -6
+Translation 0 0 0
+Rotation 1 0 0 0
+VerticesNum 1
+3540 
+

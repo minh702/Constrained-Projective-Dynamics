@@ -174,7 +174,7 @@ void test()
 int main(int argc, char ** argv){
 	//test();
 
-    // gl init
+	// gl init
 
 
 	Eigen::Matrix3f m;
@@ -188,9 +188,9 @@ int main(int argc, char ** argv){
 	}
 	
 	file.close();
-    glutInit(&argc, argv);
+	glutInit(&argc, argv);
 #ifdef HIGH_PRECISION
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 #else
 	glutInitDisplayMode(GLUT_RGBA);
 #endif
@@ -210,57 +210,57 @@ int main(int argc, char ** argv){
 		std::cout << "correct" << std::endl;
 	}
 
-    glutCreateWindow("Mass-Spring System Simulation T.L.");
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glutInitWindowSize(g_screen_width, g_screen_height);
-    glViewport(0, 0, g_screen_width, g_screen_height);
+	glutCreateWindow("Mass-Spring System Simulation T.L.");
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glutInitWindowSize(g_screen_width, g_screen_height);
+	glViewport(0, 0, g_screen_width, g_screen_height);
 
-    // user init
-    init();
+	// user init
+	init();
 	glutReshapeWindow(g_screen_width, g_screen_height);
 
 	//for data extract. if used to test, convert 'true'.
 	g_pause = false;
 
-    // bind function callbacks
-    glutDisplayFunc(display);
-    glutTimerFunc(g_timestep, timeout, g_timestep);
-    glutReshapeFunc(resize);
-    glutKeyboardFunc(key_press);
-    glutMouseFunc(mouse_click);
-    glutMotionFunc(mouse_motion);
-    glutPassiveMotionFunc(mouse_over);
-    glutMouseWheelFunc(mouse_wheel);
-    glutCloseFunc(cleanup);
-    glutIdleFunc(display);
+	// bind function callbacks
+	glutDisplayFunc(display);
+	glutTimerFunc(g_timestep, timeout, g_timestep);
+	glutReshapeFunc(resize);
+	glutKeyboardFunc(key_press);
+	glutMouseFunc(mouse_click);
+	glutMotionFunc(mouse_motion);
+	glutPassiveMotionFunc(mouse_over);
+	glutMouseWheelFunc(mouse_wheel);
+	glutCloseFunc(cleanup);
+	glutIdleFunc(display);
 
 	omp_set_num_threads(6);
 
-    glutMainLoop();
+	glutMainLoop();
 
-    return 0;
+	return 0;
 }
 
 void resize(int width, int height) {
 	g_screen_width = width;
 	g_screen_height = height;
-    //set the viewport, more boilerplate
-    glViewport(0, 0, width, height);
-    g_camera->ResizeWindow(width, height);
+	//set the viewport, more boilerplate
+	glViewport(0, 0, width, height);
+	g_camera->ResizeWindow(width, height);
 	g_config_bar->ChangeTwBarWindowSize(g_screen_width, g_screen_height);
 
-    glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 void timeout(int value)
 {
-    glutTimerFunc(g_timestep, timeout, g_timestep);
-    // keep track of time
-    g_fps_tracker.timestamp();
+	glutTimerFunc(g_timestep, timeout, g_timestep);
+	// keep track of time
+	g_fps_tracker.timestamp();
 
-    // ant tweak bar update
-    int atb_feed_back = g_config_bar->Update();
+	// ant tweak bar update
+	int atb_feed_back = g_config_bar->Update();
 	if (atb_feed_back&ATB_RESHAPE_WINDOW)
 	{
 		glutReshapeWindow(g_screen_width, g_screen_height);
@@ -297,8 +297,8 @@ void timeout(int value)
 	}
 
 	// simulation update
-    if (!g_pause) 
-    {
+	if (!g_pause) 
+	{
 		// grab screen
 		if (g_record)
 		{
@@ -327,7 +327,7 @@ void timeout(int value)
 
 		//g_global_timer.Tic();
 		// update mesh
-        g_simulation->Update();
+		g_simulation->Update();
 		g_mesh->Update();
 		//g_global_timer.Toc();
 		//total_time += g_global_timer.Duration();
@@ -337,24 +337,24 @@ void timeout(int value)
 		//	total_time = 0;
 		//}
 		g_current_frame ++;
-    }
+	}
 
-    glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 void display() {
 
-    //Always and only do this at the start of a frame, it wipes the slate clean
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	//Always and only do this at the start of a frame, it wipes the slate clean
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-    // aim camera
-    g_renderer->SetCameraModelview(g_camera->GetViewMatrix());
-    g_renderer->SetCameraProjection(g_camera->GetProjectionMatrix());
+	// aim camera
+	g_renderer->SetCameraModelview(g_camera->GetViewMatrix());
+	g_renderer->SetCameraProjection(g_camera->GetProjectionMatrix());
 
-    // Draw world and cloth (using programmable shaders)
-    g_renderer->ActivateShaderprog();
-    g_scene->Draw(g_renderer->getVBO());
+	// Draw world and cloth (using programmable shaders)
+	g_renderer->ActivateShaderprog();
+	g_scene->Draw(g_renderer->getVBO());
 
 	if (g_show_mesh)
 	{
@@ -374,27 +374,27 @@ void display() {
 	g_selection_tool->Draw();
 	
 	if (!g_only_show_sim)
-    {
-        // Draw axis
-        g_camera->DrawAxis();
+	{
+		// Draw axis
+		g_camera->DrawAxis();
 
-        // Draw overlay
-        draw_overlay();
-    }
+		// Draw overlay
+		draw_overlay();
+	}
 
-    // Draw tweak bar
-    g_config_bar->Draw();
+	// Draw tweak bar
+	g_config_bar->Draw();
 
-    glutSwapBuffers();
+	glutSwapBuffers();
 }
 
 void key_press(unsigned char key, int x, int y) {
-    if (!TwEventKeyboardGLUT(key, x, y))
-    {
-        switch(key) {
-        case 32:
-            g_pause = !g_pause;
-            break;
+	if (!TwEventKeyboardGLUT(key, x, y))
+	{
+		switch(key) {
+		case 32:
+			g_pause = !g_pause;
+			break;
 		case 'q':
 		case 'Q':
 			g_selection_tool->SetMode(GUI_MODE_SELECTION);
@@ -422,26 +422,26 @@ void key_press(unsigned char key, int x, int y) {
 		case 'T':
 			g_show_texture = !g_show_texture;
 			break;
-        case 'p':
-        case 'P':
-            step_through(NULL);
-            break;
-        case 27: // ascii code of esc key
-            cleanup();
-            exit(EXIT_SUCCESS);
-            break;
-        case '0':
-            if (g_only_show_sim)
-            {
-                g_only_show_sim = false;
-                g_config_bar->Show();
-            }
-            else
-            {
-                g_only_show_sim = true;
-                g_config_bar->Hide();
-            }
-            break;
+		case 'p':
+		case 'P':
+			step_through(NULL);
+			break;
+		case 27: // ascii code of esc key
+			cleanup();
+			exit(EXIT_SUCCESS);
+			break;
+		case '0':
+			if (g_only_show_sim)
+			{
+				g_only_show_sim = false;
+				g_config_bar->Show();
+			}
+			else
+			{
+				g_only_show_sim = true;
+				g_config_bar->Hide();
+			}
+			break;
 		case 's':
 		case 'S':
 			g_camera->SaveCamera();
@@ -493,10 +493,10 @@ void key_press(unsigned char key, int x, int y) {
 		case 'A':
 			g_selection_tool->SelectVerticesHardCoded(g_mesh->m_positions);
 			break;
-        case 'f':
-        case 'F':
-            g_camera->Lookat(g_mesh);
-            break;
+		case 'f':
+		case 'F':
+			g_camera->Lookat(g_mesh);
+			break;
 		case '9':
 			g_simulation->RandomizePoints();
 			g_mesh->Update();
@@ -522,9 +522,9 @@ void key_press(unsigned char key, int x, int y) {
 			g_simulation->SetReprefactorFlag();
 			break;
 		}
-    }
+	}
 
-    glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 void mouse_click(int button, int state, int x, int y)
@@ -548,7 +548,7 @@ void mouse_click(int button, int state, int x, int y)
    //             g_mouse_old_x = x;
    //             g_mouse_old_y = y;
    //         }
- 		//	else
+		//	else
 			//{
 			//	if (g_simulation->TryToToggleAttachmentConstraint(GLM2Eigen(g_camera->GetCameraPosition()), GLM2Eigen(g_camera->GetRaycastDirection(x, y))))
 			//	{ // hit something
@@ -718,10 +718,10 @@ void mouse_motion(int x, int y)
 
 void mouse_wheel(int button, int dir, int x, int y)
 {
-    if (!TwMouseWheel(g_mouse_wheel_pos+=dir))
-    {
-        g_camera->MouseChangeDistance(1.0f, 0, (ScalarType)(dir));
-    }
+	if (!TwMouseWheel(g_mouse_wheel_pos+=dir))
+	{
+		g_camera->MouseChangeDistance(1.0f, 0, (ScalarType)(dir));
+	}
 }
 
 void mouse_over(int x, int y)
@@ -741,73 +741,73 @@ void mouse_over(int x, int y)
 
 void init()
 {
-    // glew init
-    fprintf(stdout, "Initializing glew...\n");
-    glewInit();
-    if (!glewIsSupported( "GL_VERSION_2_0 " 
-        "GL_ARB_pixel_buffer_object"
-        )) {
-            std::cerr << "ERROR: Support for necessary OpenGL extensions missing." << std::endl;
-            exit(EXIT_FAILURE);
-    }
+	// glew init
+	fprintf(stdout, "Initializing glew...\n");
+	glewInit();
+	if (!glewIsSupported( "GL_VERSION_2_0 " 
+		"GL_ARB_pixel_buffer_object"
+		)) {
+			std::cerr << "ERROR: Support for necessary OpenGL extensions missing." << std::endl;
+			exit(EXIT_FAILURE);
+	}
 
-    // config init
-    fprintf(stdout, "Initializing AntTweakBar...\n");
-    g_config_bar = new AntTweakBarWrapper();
-    g_config_bar->ChangeTwBarWindowSize(g_screen_width, g_screen_height);
+	// config init
+	fprintf(stdout, "Initializing AntTweakBar...\n");
+	g_config_bar = new AntTweakBarWrapper();
+	g_config_bar->ChangeTwBarWindowSize(g_screen_width, g_screen_height);
 
 #ifdef ENABLE_MATLAB_DEBUGGING
 	// debugger init
 	g_debugger = new MatlabDebugger();
 #endif // ENABLE_MATLAB_DEBUGGING
 
-    // render wrapper init
-    fprintf(stdout, "Initializing render wrapper...\n");
-    g_renderer = new RenderWrapper();
-    g_renderer->InitShader(DEFAULT_VERT_SHADER_FILE, DEFAULT_FRAG_SHADER_FILE);
-    g_texture_load_succeed = g_renderer->InitTexture(DEFAULT_TEXTURE_FILE);
+	// render wrapper init
+	fprintf(stdout, "Initializing render wrapper...\n");
+	g_renderer = new RenderWrapper();
+	g_renderer->InitShader(DEFAULT_VERT_SHADER_FILE, DEFAULT_FRAG_SHADER_FILE);
+	g_texture_load_succeed = g_renderer->InitTexture(DEFAULT_TEXTURE_FILE);
 
 	// selection tool
 	g_selection_tool = new SelectionTool();
 
-    // camera init
-    fprintf(stdout, "Initializing camera...\n");
-    g_camera = new Camera();
+	// camera init
+	fprintf(stdout, "Initializing camera...\n");
+	g_camera = new Camera();
 
-    // scene init
-    fprintf(stdout, "Initializing scene...\n");
-    g_scene = new Scene(DEFAULT_SCENE_FILE);
+	// scene init
+	fprintf(stdout, "Initializing scene...\n");
+	g_scene = new Scene(DEFAULT_SCENE_FILE);
 
-    // mesh init
-    fprintf(stdout, "Initializing mesh...\n");
-    g_mesh = new Mesh();
+	// mesh init
+	fprintf(stdout, "Initializing mesh...\n");
+	g_mesh = new Mesh();
 
-    // simulation init
-    fprintf(stdout, "Initializing simulation...\n");
-    g_simulation = new Simulation();
+	// simulation init
+	fprintf(stdout, "Initializing simulation...\n");
+	g_simulation = new Simulation();
 
 	// load or get default value
 	g_config_bar->LoadSettings();
 
 	reset_camera(NULL);
-    reset_simulation(NULL);
+	reset_simulation(NULL);
 }
 
 void cleanup() // clean up in a reverse order
 {
-    //if (g_simulation)
-    //    delete g_simulation;
-    ////if (g_mesh)
-    ////    delete g_mesh;
-    if (g_scene)
-        delete g_scene;
-    if (g_camera)
-        delete g_camera;
-    if (g_renderer)
-    {
-        g_renderer->CleanupShader();
-        delete g_renderer;
-    }
+	//if (g_simulation)
+	//    delete g_simulation;
+	////if (g_mesh)
+	////    delete g_mesh;
+	if (g_scene)
+		delete g_scene;
+	if (g_camera)
+		delete g_camera;
+	if (g_renderer)
+	{
+		g_renderer->CleanupShader();
+		delete g_renderer;
+	}
 	if (g_selection_tool)
 	{
 		delete g_selection_tool;
@@ -818,10 +818,10 @@ void cleanup() // clean up in a reverse order
 		delete g_debugger;
 	}
 #endif // ENABLE_MATLAB_DEBUGGING
-    if (g_config_bar)
-    {
-        delete g_config_bar;
-    }
+	if (g_config_bar)
+	{
+		delete g_config_bar;
+	}
 }
 
 void TW_CALL set_handle(void*)
@@ -866,27 +866,27 @@ void TW_CALL reset_simulation(void*)
 	g_pause = true;
 
 	switch(g_mesh->GetMeshType())
-    {
+	{
 	case MESH_TYPE_CLOTH:
 		delete g_mesh;
 		g_mesh = new ClothMesh();
-        break;
+		break;
 	case MESH_TYPE_TET:
 		delete g_mesh;
-        g_mesh = new TetMesh();
-        break;
-    }
+		g_mesh = new TetMesh();
+		break;
+	}
 	g_config_bar->LoadSettings();
-    g_mesh->Reset();
+	g_mesh->Reset();
 
-    // reset simulation
-    g_simulation->SetMesh(g_mesh);
+	// reset simulation
+	g_simulation->SetMesh(g_mesh);
 	g_simulation->ResetVisualizationMesh();
 	g_simulation->SetVisualizationMesh();
 	g_simulation->ResetVisualizationMeshHeight();
 	g_simulation->SetScene(g_scene);
 
-    g_simulation->Reset();
+	g_simulation->Reset();
 
 	// reset selection
 	g_selection_tool->Reset();
@@ -905,7 +905,7 @@ void TW_CALL reset_simulation(void*)
 
 void TW_CALL reset_camera(void*)
 {
-    // reset camera
+	// reset camera
 	g_camera->Reset(g_screen_width, g_screen_height);
 	// reset selection
 	g_selection_tool->Reset();
@@ -918,31 +918,31 @@ void TW_CALL set_partial_material_property(void*)
 
 void TW_CALL step_through(void*)
 {
-    if(!g_pause)
-    {
-        g_pause = true;
-    }
+	if(!g_pause)
+	{
+		g_pause = true;
+	}
 
 	g_scene->Update(g_simulation->Timestep(), g_current_frame);
 
 	g_simulation->AnimateHandle(g_current_frame);
 
-    // enable step mode
+	// enable step mode
 	g_simulation->SetStepMode(true);
-    // update cloth
-    g_simulation->Update();
-    // disable step mode
+	// update cloth
+	g_simulation->Update();
+	// disable step mode
 	g_simulation->SetStepMode(false);
 
 	g_mesh->Update();
 
-    g_current_frame++;
+	g_current_frame++;
 }
 
 void grab_screen(void)
 {
-    char anim_filename[256];
-    sprintf_s(anim_filename, 256, "output/Simulation%04d.png", g_current_frame);
+	char anim_filename[256];
+	sprintf_s(anim_filename, 256, "output/Simulation%04d.png", g_current_frame);
 	grab_screen(anim_filename);
 }
 
@@ -950,20 +950,20 @@ void grab_screen(char* filename)
 {
 	unsigned char* bitmapData = new unsigned char[3 * g_screen_width * g_screen_height];
 
-    for (int i=0; i < g_screen_height; i++) 
-    {
-        glReadPixels(0, i, g_screen_width, 1, GL_RGB, GL_UNSIGNED_BYTE, 
-            bitmapData + (g_screen_width * 3 * ((g_screen_height - 1) - i)));
-    }
+	for (int i=0; i < g_screen_height; i++) 
+	{
+		glReadPixels(0, i, g_screen_width, 1, GL_RGB, GL_UNSIGNED_BYTE, 
+			bitmapData + (g_screen_width * 3 * ((g_screen_height - 1) - i)));
+	}
 
-    stbi_write_png(filename, g_screen_width, g_screen_height, 3, bitmapData, g_screen_width * 3);
+	stbi_write_png(filename, g_screen_width, g_screen_height, 3, bitmapData, g_screen_width * 3);
 
-    delete [] bitmapData;
+	delete [] bitmapData;
 }
 
 void draw_overlay()
 {
-    
+	
 	
 	std::ofstream input("test.txt");
 
@@ -980,30 +980,30 @@ void draw_overlay()
 		}
 	}
 	// Draw Overlay
-    glColor4d(0.0, 0.0, 0.0, 1.0);
-    glPushAttrib(GL_LIGHTING_BIT);
-    glDisable(GL_LIGHTING);
+	glColor4d(0.0, 0.0, 0.0, 1.0);
+	glPushAttrib(GL_LIGHTING_BIT);
+	glDisable(GL_LIGHTING);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0.0, 1.0, 0.0, 1.0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, 1.0, 0.0, 1.0);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glRasterPos2d(0.03, 0.01);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glRasterPos2d(0.03, 0.01);
 
-    char overlay_char_from_simulation[255] = ""; 
-    g_simulation->GetOverlayChar(overlay_char_from_simulation, 255);
+	char overlay_char_from_simulation[255] = ""; 
+	g_simulation->GetOverlayChar(overlay_char_from_simulation, 255);
 
-    char info[1024];
+	char info[1024];
 	sprintf_s(info, "FPS: %3.1f | Frame#: %d%s", g_fps_tracker.fpsAverage(), g_current_frame, overlay_char_from_simulation);
 
-    for (unsigned int i = 0; i < strlen(info); i++)
-    {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
-    }
+	for (unsigned int i = 0; i < strlen(info); i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, info[i]);
+	}
 
-    glPopAttrib();
+	glPopAttrib();
 }
 
 // matlab calls

@@ -334,15 +334,18 @@ void AntTweakBarWrapper::Init()
 
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+
 	//Linear Momentum
 	TwAddVarRW(m_sim_bar, "P x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.x(), " group='Linear Momentum' "); //here
 	TwAddVarRW(m_sim_bar, "P y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.y(), " group='Linear Momentum' "); //here
 	TwAddVarRW(m_sim_bar, "P z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.z(), " group='Linear Momentum' "); //here
 	TwDefine(" 'Simulation Settings'/'Linear Momentum' group='Demo'");
+
 	//Angular Momentum
 	TwAddVarRW(m_sim_bar, "L x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.x(), " group='Angular Momentum' "); //here
 	TwAddVarRW(m_sim_bar, "L y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Angular Momentum' "); //here
 	TwAddVarRW(m_sim_bar, "L z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Angular Momentum' "); //here
+
 	TwDefine(" 'Simulation Settings'/'Angular Momentum' group='Demo'");
 	// Scale
 	TwAddVarRW(m_sim_bar, "Scale X", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_x, " group='Scale' ");
@@ -354,11 +357,16 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "FEPR threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_fepr_threshold, " group='FEPR' ");
 	TwAddVarRW(m_sim_bar, "FEPR max iter", TW_TYPE_INT32, &g_simulation->m_fepr_max_iter, " group='FEPR' ");
 	TwAddVarRW(m_sim_bar, "FEPR verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_fepr_converge, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR show s, t", TwType(sizeof(bool)), &g_simulation->m_show_st, " group='FEPR' ");
+	TwAddVarRW(m_sim_bar, "FEPR show loss", TwType(sizeof(bool)), &g_simulation->m_show_fepr_loss, " group='FEPR' ");
+
 
 	TwAddVarRW(m_sim_bar, "CPD on/off", TwType(sizeof(bool)), &g_simulation->m_enable_cpd, " group='CPD' ");
 	TwAddVarRW(m_sim_bar, "CPD threshold", TW_TYPE_SCALAR_TYPE, &g_simulation->m_cpd_threshold, " group='CPD' ");
 	TwAddVarRW(m_sim_bar, "CPD max iter", TW_TYPE_INT32, &g_simulation->m_cpd_max_iter, " group='CPD' ");
 	TwAddVarRW(m_sim_bar, "CPD verbose show iteration", TwType(sizeof(bool)), &g_simulation->m_verbose_show_cpd_converge, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD show alpha", TwType(sizeof(bool)), &g_simulation->m_show_alpha, " group='CPD' ");
+	TwAddVarRW(m_sim_bar, "CPD show loss", TwType(sizeof(bool)), &g_simulation->m_show_cpd_loss, " group='CPD' ");
 
 
 	// !simulation settings bard

@@ -1,0 +1,66 @@
+HasEnd              1
+TotalFrame          100
+MeshBody            1
+Wireframe           0
+Wireframe           1
+Texture             0
+ScreenWidth         0
+ScreenHeight        768
+
+MeshType            3342343
+MeshMass            0
+TetFilePath         TetScaling
+TetScaling          0
+TetFlip             0
+TetRotation         0
+ClothDimension      0 0
+ClothCorners        0 0 0 0 0 0
+
+HandleColor         0 0 0
+RandomHandleColor   0
+
+SimMethod           3342343
+OptimizationMethod  3342343
+Timestep            0
+SubStepping         0
+OpenMP              0
+TetConstraintType   3342343
+AttachmentStiffness 0
+StretchStiffness    0
+BendingStiffness    0
+KappaStiffness      0
+AutoLaplacian       0
+LaplacianStiffness  0
+GravityConstant     0
+DampingCoefficient  0
+RestiCoefficient    0
+FrictionCoefficient 0
+IterationsPerFrame  0
+DefinitenessFix     0
+LSEnable            0
+LSExact             0
+LSType              3342343
+LSStep              0
+LSAlpha             0
+LSBeta              0
+AnimEnableSwing     0
+AnimSwingAll        0
+AnimHalfPeriod      0
+AnimAmp             0
+AnimDir             0 0 0
+LBFGSType           3342343
+LBFGSWindowSize     0
+
+AngularMomentum     0 0 0
+LinearMomentum      0 0 0
+Scale               0 0 0
+Process Colision    0
+
+FEPREnable          0
+FEPRThreshold       0
+FEPRMaxIter         0
+
+RecordPD            0
+RecordCPD           0
+RecordFEPR          0
+RecordQuantities    0
