@@ -331,6 +331,7 @@ protected:
 	bool m_enable_cpd;
 	bool m_manipulate_plh;
 	bool m_use_cpd_both_momenta;
+	bool m_clamp;
 	bool m_show_alpha;
 	int m_cpd_max_iter;
 	ScalarType m_Hrb;

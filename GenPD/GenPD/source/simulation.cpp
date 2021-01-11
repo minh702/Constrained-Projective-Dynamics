@@ -157,7 +157,7 @@ Simulation::Simulation()
 	m_verbose_show_optimization_time = false;
 	m_verbose_show_energy = false;
 	m_verbose_show_factorization_warning = true;
-
+	m_cpd_max_iter = 100;
 	/*m_enable_cpd = false;
 	m_cpd_threshold = 1e-5;
 	m_cpd_max_iter = 100;*/
@@ -227,8 +227,9 @@ void Simulation::Reset()
 
 
 	EigenMatrix3 inertia;
+	EigenVector3 centerOfMass;
 	inertia.setZero();
-
+	centerOfMass.setZero();
 
 	// compute angular velocity
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -237,8 +238,11 @@ void Simulation::Reset()
 		ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
 		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
 		EigenMatrix3 skewMat = vec2skew(xi);
+		centerOfMass += mi * xi;
 		inertia += mi * skewMat * skewMat;
 	}
+	centerOfMass /= m_mesh->m_total_mass;
+
 	EigenVector3 angular_velocity = inertia.inverse() * m_angular_momentum_init;
 
 
@@ -246,6 +250,7 @@ void Simulation::Reset()
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
+		m_mesh->m_current_positions.block_vector(i) -= centerOfMass;
 		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
 		m_mesh->m_current_velocities.block_vector(i) = xi.cross(angular_velocity) + linear_velocity;
 	}
@@ -258,6 +263,26 @@ void Simulation::Reset()
 		m_mesh->m_current_positions.block_vector(i).z() *= (1 + fabs(m_scale_z));
 	}
 
+	//clamp to box
+
+	if (m_clamp)
+	{
+		EigenVector3 clamp(2, 2, 2);
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
+
+			if (xi.x() > clamp.x()) xi.x() = clamp.x();
+			if (xi.y() > clamp.y()) xi.y() = clamp.y();
+			if (xi.z() > clamp.z()) xi.z() = clamp.z();
+
+			if (xi.x() < -clamp.x()) xi.x() = -clamp.x();
+			if (xi.y() < -clamp.y()) xi.y() = -clamp.y();
+			if (xi.z() < -clamp.z()) xi.z() = -clamp.z();
+
+			m_mesh->m_current_positions.block_vector(i) = xi;
+		}
+	}
 	//std::cout << m_angular_momentum_init<<std::endl;
 	//std::cout << angular_velocity << std::endl;
 
@@ -269,10 +294,10 @@ void Simulation::Reset()
 	m_current_linear_momentum = m_linear_momentum_init;
 
 
-	//if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
-	//{
-	//	m_hamiltonian *= (1 + 0.01);
-	//}
+	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
+	{
+		m_hamiltonian *= (1 + 0.01);
+	}
 	std::cout << m_Hrb << std::endl;
 	std::cout << m_hamiltonian << std::endl;
 	// lbfgs
@@ -2001,7 +2026,7 @@ void Simulation::dampVelocity()
 
 	if (m_enable_cpd)
 	{
-		g_total_energy = g_total_energy - m_damping_coefficient * (g_total_energy - g_rigid_energy);
+		m_hamiltonian -= m_damping_coefficient * (m_hamiltonian - m_Hrb);
 	}
 	
 	// post-processing damping

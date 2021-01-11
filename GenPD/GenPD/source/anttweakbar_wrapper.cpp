@@ -334,6 +334,7 @@ void AntTweakBarWrapper::Init()
 
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "clamp", TwType(sizeof(bool)), &g_simulation->m_clamp, " group='Demo' ");
 
 	//Linear Momentum
 	TwAddVarRW(m_sim_bar, "P x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.x(), " group='Linear Momentum' "); //here
