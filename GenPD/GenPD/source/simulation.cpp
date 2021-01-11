@@ -158,9 +158,9 @@ Simulation::Simulation()
 	m_verbose_show_energy = false;
 	m_verbose_show_factorization_warning = true;
 
-	m_enable_cpd = true;
+	/*m_enable_cpd = false;
 	m_cpd_threshold = 1e-5;
-	m_cpd_max_iter = 100;
+	m_cpd_max_iter = 100;*/
 }
 
 Simulation::~Simulation()
@@ -265,16 +265,16 @@ void Simulation::Reset()
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 	m_Hrb = 0.5f * m_angular_momentum_init.dot(angular_velocity) + 0.5f*m_linear_momentum_init.dot(linear_velocity);
 	m_Hrb = fabs(m_Hrb);
-
-	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
-	{
-		m_hamiltonian *= (1 + 0.01);
-	}
-	std::cout << m_Hrb << std::endl;
-	std::cout << m_hamiltonian << std::endl;
 	m_current_angular_momentum = m_angular_momentum_init;
 	m_current_linear_momentum = m_linear_momentum_init;
 
+
+	//if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
+	//{
+	//	m_hamiltonian *= (1 + 0.01);
+	//}
+	std::cout << m_Hrb << std::endl;
+	std::cout << m_hamiltonian << std::endl;
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
@@ -292,8 +292,6 @@ void Simulation::Reset()
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i,i);
-		EigenVector3 r = m_mesh->m_current_positions.block_vector(i);
-		EigenMatrix3 rx;
 		g_gcm(3 * i + 0, 0) = g_gcp(3 * i + 0, 0) = g_gck(3 * i + 0, 0) = mi;
 		g_gcm(3 * i + 1, 1) = g_gcp(3 * i + 1, 1) = g_gck(3 * i + 1, 1) = mi;
 		g_gcm(3 * i + 2, 2) = g_gcp(3 * i + 2, 2) = g_gck(3 * i + 2, 2) = mi;
@@ -335,27 +333,31 @@ void Simulation::set_prefactored_matrix()
 {
 	ScalarType gravity_potential = 0;
 	//m_bl = m_angular_momentum;
-	for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	{
-		ScalarType mi =m_mesh->m_mass_matrix_1d.coeff(i, i);
-		EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
-		// x - angular momentum gradient
-		g_gcl(3 * i + 0, 0) = g_gcm(3 * i + 0, 3) =g_gck(3 * i + 0, 3) = 0.f;
-		g_gcl(3 * i + 1, 0) = g_gcm(3 * i + 1, 3) =g_gck(3 * i + 1, 3) = -mi * ri.z();
-		g_gcl(3 * i + 2, 0) = g_gcm(3 * i + 2, 3) =g_gck(3 * i + 2, 3) = mi * ri.y();
 
-		// y - angular momentum gradient
-		g_gcl(3 * i + 0, 1) = g_gcm(3 * i + 0, 4) = g_gck(3 * i + 0, 4) = mi * ri.z();
-		g_gcl(3 * i + 1, 1) = g_gcm(3 * i + 1, 4) = g_gck(3 * i + 1, 4) = 0.f;
-		g_gcl(3 * i + 2, 1) = g_gcm(3 * i + 2, 4) = g_gck(3 * i + 2, 4) = -mi * ri.x();
+#pragma omp parallel
+{
+		#pragma omp  for 
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
+			EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
+			// x - angular momentum gradient
+			g_gcl(3 * i + 0, 0) = g_gcm(3 * i + 0, 3) = g_gck(3 * i + 0, 3) = 0.f;
+			g_gcl(3 * i + 1, 0) = g_gcm(3 * i + 1, 3) = g_gck(3 * i + 1, 3) = -mi * ri.z();
+			g_gcl(3 * i + 2, 0) = g_gcm(3 * i + 2, 3) = g_gck(3 * i + 2, 3) = mi * ri.y();
 
-		// z - angular momentum gradient		
-		g_gcl(3 * i + 0, 2) = g_gcm(3 * i + 0, 5) = g_gck(3 * i + 0, 5) = -mi * ri.y();
-		g_gcl(3 * i + 1, 2) = g_gcm(3 * i + 1, 5) = g_gck(3 * i + 1, 5) = mi * ri.x();
-		g_gcl(3 * i + 2, 2) = g_gcm(3 * i + 2, 5) = g_gck(3 * i + 2, 5) = 0.f;
-		//m_bl -= m_com.cross
-	}
+			// y - angular momentum gradient
+			g_gcl(3 * i + 0, 1) = g_gcm(3 * i + 0, 4) = g_gck(3 * i + 0, 4) = mi * ri.z();
+			g_gcl(3 * i + 1, 1) = g_gcm(3 * i + 1, 4) = g_gck(3 * i + 1, 4) = 0.f;
+			g_gcl(3 * i + 2, 1) = g_gcm(3 * i + 2, 4) = g_gck(3 * i + 2, 4) = -mi * ri.x();
 
+			// z - angular momentum gradient		
+			g_gcl(3 * i + 0, 2) = g_gcm(3 * i + 0, 5) = g_gck(3 * i + 0, 5) = -mi * ri.y();
+			g_gcl(3 * i + 1, 2) = g_gcm(3 * i + 1, 5) = g_gck(3 * i + 1, 5) = mi * ri.x();
+			g_gcl(3 * i + 2, 2) = g_gcm(3 * i + 2, 5) = g_gck(3 * i + 2, 5) = 0.f;
+			//m_bl -= m_com.cross
+		}
+}
 
 
 	//g_total_energy = g_system_energy - gravity_potential;
@@ -452,7 +454,7 @@ EigenVector3 Simulation::evaluateAngularMomentumAndGradient(const VectorX& x, co
 	{
 		//#pragma omp parallel
 		//{
-		//	#pragma omp for
+		//	#pragma omp for 
 		for (int i = 0; i < m_mesh->m_vertices_number; i++)
 		{
 			vi = v.block_vector(i);
@@ -592,15 +594,18 @@ void Simulation::Update()
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
-			VectorX f_int;
-			VectorX f_ext(m_mesh->m_system_dimension);
-			f_ext.setZero();
-			evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
-			m_y -= 0.1f* m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
+			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
+			{
+				VectorX f_int;
+				VectorX f_ext(m_mesh->m_system_dimension);
+				f_ext.setZero();
+				evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
+				m_y -= 0.1f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
+			}
 			m_alpha = 0;
 			//m_Hrb = g_total_energy;
 			// update
-			g_com += m_linear_momentum_init * m_h + 0.5 * gravity * m_h * m_h * m_mesh->m_total_mass;
+			g_com += m_linear_momentum_init * m_h + gravity * m_h * m_mesh->m_total_mass;
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
@@ -2367,367 +2372,192 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 	//ScalarType Hblend = m_hamiltonian;
 	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * m_Hrb;
-	// set xk and gfk
-	//if (m_ls_is_first_iteration || !m_enable_line_search)
-	//{
-	//	current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
-	//	//m_Hrb = current_energy + Hblend /(m_h * m_h);
-	//}
-	//else
-	//{
-	//	current_energy = m_ls_prefetched_energy;
-	//	gf_k = m_ls_prefetched_gradient;
-	//}
 	current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
 
-	if (1/*m_lbfgs_need_update_H0*/) // first iteration
+	// decide H0 and it's factorization precomputation
+	switch (m_lbfgs_H0_type)
 	{
-		// clear sk and yk and alpha_k
-#ifdef USE_STL_QUEUE_IMPLEMENTATION
-		// stl implementation
-		m_lbfgs_y_queue.clear();
-		m_lbfgs_s_queue.clear();
-#else
-		// my implementation
-		delete m_lbfgs_queue;
-		m_lbfgs_queue = new QueueLBFGS(x.size(), m_lbfgs_m);
-#endif
+	case LBFGS_H0_LAPLACIAN:
+		prefactorize();
+		break;
+	default:
+		//prefactorize();
+		break;
+	}
 
-		// decide H0 and it's factorization precomputation
-		switch (m_lbfgs_H0_type)
+	g_lbfgs_timer.Resume();
+	// store them before wipeout
+	m_lbfgs_last_x = x;
+	m_lbfgs_last_gradient = gf_k;
+
+	g_lbfgs_timer.Pause();
+	// first iteration
+	VectorX r;
+
+	start = system_clock::now();
+	LBFGSKernelLinearSolve(r, gf_k, 1);
+	end = system_clock::now();
+	result = end - start;
+
+	if (recordTextPD)
+	{
+		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 		{
-		case LBFGS_H0_LAPLACIAN:
-			prefactorize();
-			break;
-		default:
-			//prefactorize();
-			break;
+			fileName = "./TextData/cloth" + txt;
 		}
-
-		g_lbfgs_timer.Resume();
-		// store them before wipeout
-		m_lbfgs_last_x = x;
-		m_lbfgs_last_gradient = gf_k;
-
-		g_lbfgs_timer.Pause();
-		// first iteration
-		VectorX r;
-
-		start = system_clock::now();
-		LBFGSKernelLinearSolve(r, gf_k, 1);
-		end = system_clock::now();
-		result = end - start;
-
-		if (recordTextPD)
+		else
 		{
-			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
-			{
-				fileName = "./TextData/cloth" + txt;
-			}
-			else
-			{
-				fileName = m_mesh->m_tet_file_path + txt;
-				fileName = "./TextData/" + fileName;
-			}
-			std::ofstream out(fileName, std::ios::app);
-			if (out.is_open())
-			{
-				out << std::to_string(result.count()) + "\n";
-			}
-			out.close();
+			fileName = m_mesh->m_tet_file_path + txt;
+			fileName = "./TextData/" + fileName;
 		}
+		std::ofstream out(fileName, std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(result.count()) + "\n";
+		}
+		out.close();
+	}
 
-		g_lbfgs_timer.Resume();
+	g_lbfgs_timer.Resume();
 		
-		//VectorX c(6);
+	//VectorX c(6);
 
-		VectorX p_k = -r;
-		start = system_clock::now();
-		if (m_enable_cpd)
-		{
-			if (0)
-			{
-				Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
-				Eigen::LLT<Eigen::MatrixXf> llt;
-				llt.compute(cTAinv_c);
-				VectorX ck(6);
-				ck.block_vector(0) = g_gcp.transpose() * x - g_com;
-				ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
-				//std::cout << ck.norm() << std::endl;
-				//m_cpd_threshold = 10e-6;
-				/*if (ck.norm() < m_cpd_threshold)
-					return true;*/
-				ck += g_gcm.transpose() * p_k;
-				VectorX lambda = llt.solve(ck);
-				p_k -= g_Ainv_gcm * lambda;
-
-				if (recordTextCPDLoss)
-				{
-					if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
-					{
-						fileName = "./TextData/cloth" + txtForLoss;
-					}
-					else
-					{
-
-						fileName = m_mesh->m_tet_file_path + txtForLoss;
-						fileName = "./TextData/" + fileName;
-					}
-					std::ofstream outLoss(fileName, std::ios::app);
-					if (outLoss.is_open())
-					{
-						string token = "\t";
-						if (ck.norm() < m_cpd_threshold)
-						{
-							token = "\n";
-						}
-						outLoss << std::to_string(ck.norm()) + token;
-					}
-					outLoss.close();
-				}
-			}
-			else
-			{
-				VectorX ck(7);
-				ck.block_vector(0) = g_gcp.transpose() * x - g_com;
-				ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
-				ck(6) = current_energy;
-				
-				//std::cout << ck.norm() << std::endl;
-				//m_cpd_threshold = 10e-6;
-
-				if (recordTextCPDLoss)
-				{
-					if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
-					{
-						fileName = "./TextData/cloth" + txtForLoss;
-					}
-					else
-					{
-
-						fileName = m_mesh->m_tet_file_path + txtForLoss;
-						fileName = "./TextData/" + fileName;
-					}
-					std::ofstream outLoss(fileName, std::ios::app);
-					if (outLoss.is_open())
-					{
-						string token = "\t";
-						if (ck.norm() < m_cpd_threshold)
-						{
-							token = "\n";
-						}
-						outLoss << std::to_string(ck.norm()) + token;
-					}
-					outLoss.close();
-				}
-
-				if (ck.norm() < m_cpd_threshold)
-					return true;
-				ScalarType inv_eps;
-				if (m_hamiltonian < m_Hrb)
-					inv_eps = 10e7;
-				else
-					inv_eps = 0.f;
-
-				ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
-				g_gck.col(6) = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
-				g_Ainv_gck.col(6) = r + g_Ainv_vn;
-				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
-				cTAinv_c(6, 6) += inv_eps * dh * dh;
-				Eigen::LLT<Eigen::MatrixXf> llt;
-				llt.compute(cTAinv_c);
-				std::cout << m_alpha << std::endl;
-				ck += g_gck.transpose() * p_k;
-				VectorX lambda = llt.solve(ck);
-				p_k -= g_Ainv_gck * lambda;
-				m_alpha -= inv_eps * dh * lambda(6);
-				//return false 
-			}
-		}
-		end = system_clock::now();
-		result = end - start;
-
-		if (recordTextCPD && m_enable_cpd)
-		{
-			if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
-			{
-				fileName = "./TextData/cloth" + txtForOverHead;
-			}
-			else
-			{
-				fileName = m_mesh->m_tet_file_path + txtForOverHead;
-				fileName = "./TextData/" + fileName;
-			}
-			std::ofstream outOH(fileName, std::ios::app);
-			if (outOH.is_open())
-			{
-				outOH << std::to_string(result.count()) + "\n";
-			}
-			outOH.close();
-		}
-
-
-		g_lbfgs_timer.Pause();
-		x +=  p_k;
-
-		/*for (int i = 0; i < 4; i++)
-		{
-			int idx = g_fixed_indices(i);
-			x.block_vector(idx) = g_fixed_positions.block_vector(i);
-		}*/
-
-		if (m_processing_collision)
-		{
-			for (unsigned int i = 0; i != m_mesh->m_vertices_number; ++i)
-			{
-				if (x.block_vector(i).y() < -5)
-				{
-					x.block_vector(i).y() = -5;
-
-					/*if (!first_hit)
-					{
-						g_linear_momentum.y() = -m_restitution_coefficient * g_linear_momentum.y();
-						first_hit = true;
-					}*/
-				}
-
-			}
-		}
-		// final touch
-		m_lbfgs_need_update_H0 = false;
-	}
-	else // otherwise
+	VectorX p_k = -r;
+	start = system_clock::now();
+	if (m_enable_cpd)
 	{
-		TimerWrapper t_local;
-		TimerWrapper t_global;
-		TimerWrapper t_linesearch;
-		TimerWrapper t_other;
-		bool verbose = false;
-
-		t_other.Tic();
-		g_lbfgs_timer.Resume();
-		// enqueue stuff
-		VectorX s_k = x - m_lbfgs_last_x;
-		VectorX y_k = gf_k - m_lbfgs_last_gradient;
-
-#ifdef USE_STL_QUEUE_IMPLEMENTATION
-		//stl implementation
-		if (m_lbfgs_s_queue.size() > m_lbfgs_m)
+		if (0)
 		{
-			m_lbfgs_s_queue.pop_back();
-			m_lbfgs_y_queue.pop_back();
-		}
-		// enqueue stuff
-		m_lbfgs_s_queue.push_front(s_k);
-		m_lbfgs_y_queue.push_front(y_k);
+			Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
+			Eigen::LLT<Eigen::MatrixXf> llt;
+			llt.compute(cTAinv_c);
+			VectorX ck(6);
+			ck.block_vector(0) = g_gcp.transpose() * x - g_com;
+			ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
+			//std::cout << ck.norm() << std::endl;
+			//m_cpd_threshold = 10e-6;
+			/*if (ck.norm() < m_cpd_threshold)
+				return true;*/
+			ck += g_gcm.transpose() * p_k;
+			VectorX lambda = llt.solve(ck);
+			p_k -= g_Ainv_gcm * lambda;
 
-		int m_queue_size = m_lbfgs_s_queue.size();
-#else
-		// my implementation
-		if (m_lbfgs_queue->isFull())
-		{
-			m_lbfgs_queue->dequeue();
-		}
-		m_lbfgs_queue->enqueue(s_k, y_k);
-
-		int m_queue_size = m_lbfgs_queue->size();
-#endif
-
-		// store them before wipeout
-		m_lbfgs_last_x = x;
-		m_lbfgs_last_gradient = gf_k;
-		VectorX q = gf_k;
-
-		// loop 1 of l-BFGS
-		std::vector<ScalarType> rho;
-		rho.clear();
-		std::vector<ScalarType> alpha;
-		alpha.clear();
-		int m_queue_visit_upper_bound = (m_lbfgs_m < m_queue_size) ? m_lbfgs_m : m_queue_size;
-		ScalarType* s_i = NULL;
-		ScalarType* y_i = NULL;
-		for (int i = 0; i != m_queue_visit_upper_bound; i++)
-		{
-#ifdef USE_STL_QUEUE_IMPLEMENTATION
-			// stl implementation
-			ScalarType yi_dot_si = m_lbfgs_y_queue[i].dot(m_lbfgs_s_queue[i]);
-			if (yi_dot_si < EPSILON_SQUARE)
+			if (recordTextCPDLoss)
 			{
-				return true;
+				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+				{
+					fileName = "./TextData/cloth" + txtForLoss;
+				}
+				else
+				{
+
+					fileName = m_mesh->m_tet_file_path + txtForLoss;
+					fileName = "./TextData/" + fileName;
+				}
+				std::ofstream outLoss(fileName, std::ios::app);
+				if (outLoss.is_open())
+				{
+					string token = "\t";
+					if (ck.norm() < m_cpd_threshold)
+					{
+						token = "\n";
+					}
+					outLoss << std::to_string(ck.norm()) + token;
+				}
+				outLoss.close();
 			}
-			ScalarType rho_i = 1.0 / yi_dot_si;
-			rho.push_back(rho_i);
-			alpha.push_back(rho[i]*m_lbfgs_s_queue[i].dot(q));
-			q = q - alpha[i] * m_lbfgs_y_queue[i];
-#else
-			// my implementation
-			m_lbfgs_queue->visitSandY(&s_i, &y_i, i);
-			Eigen::Map<const VectorX> s_i_eigen(s_i, x.size());
-			Eigen::Map<const VectorX> y_i_eigen(y_i, x.size());
-			ScalarType yi_dot_si = (y_i_eigen.dot(s_i_eigen));
-			if (yi_dot_si < EPSILON_SQUARE)
+		}
+		else
+		{
+			VectorX ck(7);
+			ck.block_vector(0) = g_gcp.transpose() * x - g_com;
+			ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
+			ck(6) = current_energy;
+				
+			//std::cout << ck.norm() << std::endl;
+			//m_cpd_threshold = 10e-6;
+
+			if (recordTextCPDLoss)
 			{
-				return true;
+				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+				{
+					fileName = "./TextData/cloth" + txtForLoss;
+				}
+				else
+				{
+
+					fileName = m_mesh->m_tet_file_path + txtForLoss;
+					fileName = "./TextData/" + fileName;
+				}
+				std::ofstream outLoss(fileName, std::ios::app);
+				if (outLoss.is_open())
+				{
+					string token = "\t";
+					if (ck.norm() < m_cpd_threshold)
+					{
+						token = "\n";
+					}
+					outLoss << std::to_string(ck.norm()) + token;
+				}
+				outLoss.close();
 			}
-			ScalarType rho_i = 1.0 / yi_dot_si;
-			rho.push_back(rho_i);
-			ScalarType alpha_i = rho_i * s_i_eigen.dot(q);
-			alpha.push_back(alpha_i);
-			q -= alpha_i * y_i_eigen;
-#endif
-		}
-		// compute H0 * q
-		g_lbfgs_timer.Pause();
-		t_other.Pause();
-		t_global.Tic();
-		VectorX r;
-		// compute the scaling parameter on the fly
-		ScalarType scaling_parameter = (s_k.transpose()*y_k).trace() / (y_k.transpose()*y_k).trace();
-		if (scaling_parameter < EPSILON) // should not be negative
-		{
-			scaling_parameter = EPSILON;
-		}
-		LBFGSKernelLinearSolve(r, q, scaling_parameter);
-		t_global.Toc();
-		t_other.Resume();
-		g_lbfgs_timer.Resume();
-		// loop 2 of l-BFGS
-		for (int i = m_queue_visit_upper_bound - 1; i >= 0; i--)
-		{
-#ifdef USE_STL_QUEUE_IMPLEMENTATION
-			// stl implementation
-			ScalarType beta = rho[i] * m_lbfgs_y_queue[i].dot(r);
-			r = r + m_lbfgs_s_queue[i] * (alpha[i] - beta);
-#else
-			// my implementation
-			m_lbfgs_queue->visitSandY(&s_i, &y_i, i);
-			Eigen::Map<const VectorX> s_i_eigen(s_i, x.size());
-			Eigen::Map<const VectorX> y_i_eigen(y_i, x.size());
-			ScalarType beta = rho[i] * y_i_eigen.dot(r);
-			r += s_i_eigen * (alpha[i] - beta);
-#endif
-		}
-		// update
-		VectorX p_k = -r;
-		if (-p_k.dot(gf_k) < EPSILON_SQUARE || p_k.squaredNorm() < EPSILON_SQUARE)
-		{
-			converged = true;
-		}
-		g_lbfgs_timer.Pause();
-		t_other.Toc();
 
-		t_linesearch.Tic();
-		//ScalarType alpha_k = lineSearch(x, gf_k, p_k);
-		ScalarType alpha_k = linesearchWithPrefetchedEnergyAndGradientComputing(x, current_energy, gf_k, p_k, m_ls_prefetched_energy, m_ls_prefetched_gradient);
-		t_linesearch.Toc();
+			ScalarType cnorm = ck.norm();
 
-		x += alpha_k * p_k;
+			if(m_show_alpha)
+				std::cout << m_alpha << std::endl;
+			if (m_show_cpd_loss)
+				std::cout << cnorm << std::endl;
 
-		t_global.Report("Forward Backward Substitution", verbose, TIMER_OUTPUT_MICROSECONDS);
-		t_other.Report("Two loop overhead", verbose, TIMER_OUTPUT_MICROSECONDS);
-		t_linesearch.Report("Linesearch", verbose, TIMER_OUTPUT_MICROSECONDS);
+			if (cnorm < m_cpd_threshold)
+				return true;
+			ScalarType inv_eps;
+			if (m_hamiltonian < m_Hrb)
+				inv_eps = 10e7;
+			else
+				inv_eps = 0.f;
+
+			ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
+			g_gck.col(6) = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+			g_Ainv_gck.col(6) = r + g_Ainv_vn;
+			Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
+			cTAinv_c(6, 6) += inv_eps * dh * dh;
+			Eigen::LLT<Eigen::MatrixXf> llt;
+			llt.compute(cTAinv_c);
+			//std::cout << m_alpha << std::endl;
+			ck += g_gck.transpose() * p_k;
+			VectorX lambda = llt.solve(ck);
+			p_k -= g_Ainv_gck * lambda;
+			m_alpha -= inv_eps * dh * lambda(6);
+			//return false 
+		}
 	}
+	end = system_clock::now();
+	result = end - start;
 
+	if (recordTextCPD && m_enable_cpd)
+	{
+		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+		{
+			fileName = "./TextData/cloth" + txtForOverHead;
+		}
+		else
+		{
+			fileName = m_mesh->m_tet_file_path + txtForOverHead;
+			fileName = "./TextData/" + fileName;
+		}
+		std::ofstream outOH(fileName, std::ios::app);
+		if (outOH.is_open())
+		{
+			outOH << std::to_string(result.count()) + "\n";
+		}
+		outOH.close();
+	}
+	g_lbfgs_timer.Pause();
+	x += p_k;
+
+	// final touch
+	m_lbfgs_need_update_H0 = false;
 	return converged;
 }
 
@@ -3448,7 +3278,7 @@ void Simulation::applyHessianForCGPureConstraint(const VectorX& x, VectorX& b)
 void Simulation::fepr()
 {
 
-	ScalarType threshold = 10e-3;
+	ScalarType threshold = 10e-5;
 	ScalarType inv_eps = 10e5;
 	int iter = 0;
 	ScalarType inv_h_squared = 1/(m_h * m_h);
@@ -3515,7 +3345,6 @@ void Simulation::fepr()
 	while (true)
 	{
 		start = system_clock::now();
-
 		g_fepr_timer.Tic();
 		VectorX dcs(C_DIM);
 		VectorX dct(C_DIM);
@@ -3523,20 +3352,16 @@ void Simulation::fepr()
 		dct.setZero();
 		
 	//compute c(q)
-		// compute c_P 
+		// compute C_P 
 		c.block_vector(0) = evaluateLinearMomentumAndGradient(qv, dcpv) - (1 - st(0))* m_current_linear_momentum - st(0) * m_previous_linear_momentum;
-		// compute c_L
+		// compute C_L
 		c.block_vector(1) = evaluateAngularMomentumAndGradient(qx, qv, dclx, dclv) - (1 - st(1)) * m_current_angular_momentum - st(1) * m_previous_angular_momentum;
 		// compute C_H
 		if(C_DIM==7)
 			c(6) = evaluateEnergyAndGradientPureConstraint(qx, ext_f, dchx) + evaluateKineticEnergy(qv) - m_hamiltonian;
-
 		VectorX dchv = m_mesh->m_mass_matrix * qv;
 
-		// col1 
-
 		ScalarType c_norm = c.norm();
-
 		if (recordTextFEPR)
 		{
 			if (out.is_open())
@@ -3545,8 +3370,11 @@ void Simulation::fepr()
 			}
 		}
 		//std::cout << c.transpose() << std::endl;
-		//std::cout << st << std::endl;
-		//std::cout << c_norm << std::endl;
+
+		if (m_show_st)
+			std::cout << st << std::endl;
+		if (m_show_fepr_loss)
+			std::cout << c_norm << std::endl;
 		if (isnan(c_norm))
 			break;
 		else if (c_norm < m_fepr_threshold || iter > m_fepr_max_iter)
@@ -3570,7 +3398,7 @@ void Simulation::fepr()
 		dcs.block_vector(0) =  m_current_linear_momentum - m_previous_linear_momentum;
 		dcst.row(0) = dcs;
 
-		// dc/dt
+		// dc/dtr
 		dct.block_vector(1) = m_current_angular_momentum - m_previous_angular_momentum;
 		dcst.row(1) = dct;
 		
