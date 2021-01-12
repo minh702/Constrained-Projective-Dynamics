@@ -504,16 +504,17 @@ EigenVector3 Simulation::evaluateAngularMomentumAndGradient(const VectorX& x, co
 
 EigenVector3 Simulation::evaluateAngularMomentum(const VectorX& x, const VectorX& v)
 {
-	EigenVector3 xi, vi;
+	EigenVector3 ri, vi;
 	ScalarType mi;
 	EigenVector3 angular_momentum(0, 0, 0);
+	EigenVector3 com = g_gcp.transpose() * x / m_mesh->m_total_mass;
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		xi = x.block_vector(i);
+		ri = x.block_vector(i) - com;
 		vi = v.block_vector(i);
 		mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
-		angular_momentum += mi * xi.cross(vi);
+		angular_momentum += mi * ri.cross(vi);
 	}
 	return angular_momentum;
 }
@@ -2040,14 +2041,31 @@ void Simulation::setupConstraints()
 
 void Simulation::dampVelocity()
 {
-
 	switch (m_damping_type)
 	{
-
 	case DAMPING_ETHER_DRAG:
+	{
+		ScalarType kinetic_energy = evaluateKineticEnergy(m_mesh->m_current_velocities);
+		VectorX v_damp = (1 - m_damping_coefficient) * m_mesh->m_current_velocities;
+		m_mesh->m_current_velocities = v_damp;
+		ScalarType kinetic_energy_damp = evaluateKineticEnergy(v_damp);
+		m_hamiltonian += (kinetic_energy_damp - kinetic_energy);
+		m_linear_momentum_init = evaluateLinearMomentum(v_damp);
+		m_angular_momentum_init = evaluateAngularMomentum(m_mesh->m_current_positions, v_damp);
+		m_Hrb = 0.5f * m_linear_momentum_init.dot(m_linear_momentum_init) / m_mesh->m_total_mass 
+			  + 0.5f * m_angular_momentum_init.dot(m_rest_inertia.inverse() * m_angular_momentum_init);
+	}
 	break;
 
+
+
 	case DAMPING_PBD:
+	{
+			
+
+
+
+	}
 		break;
 
 	case DAMPING_OURS:
