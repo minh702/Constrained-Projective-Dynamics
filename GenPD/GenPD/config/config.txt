@@ -9,11 +9,11 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         tpipe
+TetFilePath         cube
 TetScaling          1
 TetFlip             0
 TetRotation         0
-ClothDimension      11 11
+ClothDimension      30 30
 ClothCorners        -5 8 -5 5 -1.85 -3.26
 
 HandleColor         0.3 1 0.3
@@ -26,13 +26,13 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 120
-StretchStiffness    600
+StretchStiffness    500
 BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  1220
+LaplacianStiffness  1020
 GravityConstant     0
-DampingCoefficient  0
+DampingCoefficient  0.05
 RestiCoefficient    1
 FrictionCoefficient 0
 IterationsPerFrame  10
@@ -51,16 +51,16 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     5
 
-AngularMomentum     0 100 0
+AngularMomentum     500 0 0
 LinearMomentum      0 0 0
-Scale               0 0 0
+Scale               0 0.3 0
 
 FEPREnable          0
 FEPRThreshold       0.0001
 FEPRMaxIter         100
 
 CPDEnable           1
-CPDThreshold        0.0001
+CPDThreshold        0.001
 
 ExportOBJ           0
 RecordPD            0

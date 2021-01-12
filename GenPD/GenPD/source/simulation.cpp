@@ -250,7 +250,7 @@ void Simulation::Reset()
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		m_mesh->m_current_positions.block_vector(i) -= centerOfMass;
+		//m_mesh->m_current_positions.block_vector(i) -= centerOfMass;
 		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
 		m_mesh->m_current_velocities.block_vector(i) = xi.cross(angular_velocity) + linear_velocity;
 	}
@@ -296,7 +296,7 @@ void Simulation::Reset()
 
 	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
 	{
-		m_hamiltonian *= (1 + 0.01);
+		m_Hrb *= (1 + 0.01);
 	}
 	std::cout << m_Hrb << std::endl;
 	std::cout << m_hamiltonian << std::endl;
@@ -358,14 +358,14 @@ void Simulation::set_prefactored_matrix()
 {
 	ScalarType gravity_potential = 0;
 	//m_bl = m_angular_momentum;
-
+	EigenVector3 com = g_com / m_mesh->m_total_mass;
 #pragma omp parallel
 {
 		#pragma omp  for 
 		for (int i = 0; i < m_mesh->m_vertices_number; i++)
 		{
 			ScalarType mi = m_mesh->m_mass_matrix_1d.coeff(i, i);
-			EigenVector3 ri = m_mesh->m_current_positions.block_vector(i);
+			EigenVector3 ri = m_mesh->m_current_positions.block_vector(i) - com;
 			// x - angular momentum gradient
 			g_gcl(3 * i + 0, 0) = g_gcm(3 * i + 0, 3) = g_gck(3 * i + 0, 3) = 0.f;
 			g_gcl(3 * i + 1, 0) = g_gcm(3 * i + 1, 3) = g_gck(3 * i + 1, 3) = -mi * ri.z();
@@ -595,18 +595,22 @@ void Simulation::Update()
 	m_last_descent_dir.resize(m_mesh->m_system_dimension);
 	m_last_descent_dir.setZero();
 
-	EigenVector3 v, w;
+	
+	if (m_enable_user_control)
+	{
+		EigenVector3 v, w;
+		v = m_linear_momentum_init / m_mesh->m_total_mass;
+		w = m_rest_inertia.inverse() * m_angular_momentum_init;
+		m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+		m_current_angular_momentum = m_angular_momentum_init;
+		m_current_linear_momentum = m_linear_momentum_init;
 
-	/*v = m_linear_momentum_init / m_mesh->m_total_mass;
-	w = m_rest_inertia.inverse() * m_angular_momentum_init;
-	m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f* w.dot(m_angular_momentum_init);
-	m_current_angular_momentum = m_angular_momentum_init;
-	m_current_linear_momentum = m_linear_momentum_init;
+		m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+		if (fabs(m_hamiltonian - m_Hrb) < 0.1)
+			m_Hrb *= (1 + 0.001);
 
-	m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
-	if (fabs(m_hamiltonian - m_Hrb) < 0.1)
-		m_hamiltonian *= (1 + 0.001);*/
-
+		m_enable_user_control = false;
+	}
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
 		// update inertia term
@@ -619,6 +623,7 @@ void Simulation::Update()
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
+
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
@@ -627,11 +632,23 @@ void Simulation::Update()
 				evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
 				m_y -= 0.1f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
 			}
+			/*else
+			{
+				VectorX f_ext(m_mesh->m_system_dimension);
+				f_ext.setZero();
+				m_Hrb = evaluateEnergyPureConstraint(m_y, f_ext)/(m_h * m_h);
+			}*/
 			m_alpha = 0;
 			//m_Hrb = g_total_energy;
 			// update
-			g_com += m_linear_momentum_init * m_h + gravity * m_h * m_mesh->m_total_mass;
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
+			g_com += m_linear_momentum_init * m_h;
+			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+
+			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
+				m_Hrb *= (1 + 0.001);
+
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
 		}
@@ -2024,11 +2041,24 @@ void Simulation::setupConstraints()
 void Simulation::dampVelocity()
 {
 
-	if (m_enable_cpd)
+	switch (m_damping_type)
 	{
-		m_hamiltonian -= m_damping_coefficient * (m_hamiltonian - m_Hrb);
+
+	case DAMPING_ETHER_DRAG:
+	break;
+
+	case DAMPING_PBD:
+		break;
+
+	case DAMPING_OURS:
+		m_hamiltonian = m_hamiltonian - m_damping_coefficient * (m_hamiltonian - m_Hrb);
+		break;
+
 	}
+
 	
+	//pbd damping
+
 	// post-processing damping
 	//EigenVector3 pos_mc(0.0, 0.0, 0.0), vel_mc(0.0, 0.0, 0.0);
 	//unsigned int i, size;
@@ -2218,7 +2248,7 @@ void Simulation::integrateImplicitMethod()
 	if (m_processing_collision)
 	{
 		// Collision Detection every iteration
-		//collisionDetection(x);
+		collisionDetection(x);
 	}
 
 	int iter;
@@ -2384,7 +2414,7 @@ bool Simulation::performNewtonsMethodOneIteration(VectorX& x)
 bool Simulation::performLBFGSOneIteration(VectorX& x)
 {
 	bool converged = false;
-	ScalarType current_energy;
+
 	VectorX gf_k;
 
 
@@ -2397,7 +2427,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 	//ScalarType Hblend = m_hamiltonian;
 	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * m_Hrb;
-	current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
+	ScalarType current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
 
 	// decide H0 and it's factorization precomputation
 	switch (m_lbfgs_H0_type)

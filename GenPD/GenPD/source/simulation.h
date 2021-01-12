@@ -92,6 +92,16 @@ typedef enum
 	LS_TYPE_TOTAL_NUM,
 } LinesearchType;
 
+
+typedef enum
+{
+	DAMPING_ETHER_DRAG,
+	DAMPING_PBD,
+	DAMPING_OURS,
+	DAMPING_TYPE_TOTAL_NUM,
+
+} DampingType;
+
 class Simulation
 {
 	friend class AntTweakBarWrapper;
@@ -329,11 +339,13 @@ protected:
 	//for cpd
 	EigenMatrix3 m_rest_inertia;
 	bool m_enable_cpd;
-	bool m_manipulate_plh;
+	bool m_enable_user_control;
 	bool m_use_cpd_both_momenta;
 	bool m_clamp;
 	bool m_show_alpha;
 	int m_cpd_max_iter;
+
+	DampingType m_damping_type;
 	ScalarType m_Hrb;
 	ScalarType m_alpha;
 	ScalarType m_lx, m_ly, m_lz;

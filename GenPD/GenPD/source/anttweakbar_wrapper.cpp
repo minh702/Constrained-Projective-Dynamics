@@ -324,17 +324,27 @@ void AntTweakBarWrapper::Init()
 	TwDefine(" 'Simulation Settings'/'Selected Material' group='Material'");
 
 	TwAddVarRW(m_sim_bar, "Gravity", TW_TYPE_SCALAR_TYPE, &g_simulation->m_gravity_constant, " group='Constants' ");
-	TwAddVarRW(m_sim_bar, "Damping Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_damping_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Restitution Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_restitution_coefficient, " min=0 group='Constants' ");
 	TwAddVarRW(m_sim_bar, "Friction Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_friction_coefficient, " min=0 group='Constants' ");
 
 	//
-
-	
+	//
+	TwEnumVal dampingTypeEV[DAMPING_TYPE_TOTAL_NUM] = { \
+														{DAMPING_ETHER_DRAG, "Ether"}, \
+														{DAMPING_PBD, "PBD"}, \
+														{DAMPING_OURS, "Ours"}, \
+	};
+	TwType dampingType = TwDefineEnum("Damping Type", dampingTypeEV, DAMPING_TYPE_TOTAL_NUM);
+	TwAddVarRW(m_sim_bar, "Sim Damping Type", dampingType, &g_simulation->m_damping_type, " group='Damping' ");
+	TwAddVarRW(m_sim_bar, "Damping Coefficient", TW_TYPE_SCALAR_TYPE, &g_simulation->m_damping_coefficient, "group='Damping' ");
 
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "enable User Control", TwType(sizeof(bool)), &g_simulation->m_enable_user_control, " group='Demo' ");
 	TwAddVarRW(m_sim_bar, "clamp", TwType(sizeof(bool)), &g_simulation->m_clamp, " group='Demo' ");
+
+
+	TwAddVarRW(m_sim_bar, "H", TW_TYPE_SCALAR_TYPE, &g_simulation->m_hamiltonian, " group='Demo' "); //here
 
 	//Linear Momentum
 	TwAddVarRW(m_sim_bar, "P x", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init.x(), " group='Linear Momentum' "); //here
