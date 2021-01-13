@@ -52,7 +52,7 @@ AnimDir             0 1 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 0 100
+AngularMomentum     0 50 0
 LinearMomentum      0 0 0
 Scale               0 0 0
 

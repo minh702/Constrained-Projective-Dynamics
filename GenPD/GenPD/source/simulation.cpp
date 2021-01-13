@@ -64,7 +64,7 @@ TimerWrapper g_lbfgs_timer;
 TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
-
+ScalarType g_padding = 0.2;
 
 //for cpd
 
@@ -290,14 +290,18 @@ void Simulation::Reset()
 	m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f) + evaluateKineticEnergy(m_mesh->m_current_velocities);
 	m_Hrb = 0.5f * m_angular_momentum_init.dot(angular_velocity) + 0.5f*m_linear_momentum_init.dot(linear_velocity);
 	m_Hrb = fabs(m_Hrb);
+
+	
+	//m_hamiltonian = (1 + g_padding) * m_Hrb;
 	m_current_angular_momentum = m_angular_momentum_init;
 	m_current_linear_momentum = m_linear_momentum_init;
 
-
 	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
 	{
-		m_Hrb *= (1 + 0.01);
+		m_hamiltonian = (1 + g_padding) * m_Hrb;
 	}
+
+
 	std::cout << m_Hrb << std::endl;
 	std::cout << m_hamiltonian << std::endl;
 	// lbfgs
@@ -632,30 +636,31 @@ void Simulation::Update()
 				evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
 				m_y -= 0.1f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
 			}
-			/*else
+			else
 			{
 				VectorX f_ext(m_mesh->m_system_dimension);
 				f_ext.setZero();
-				m_Hrb = evaluateEnergyPureConstraint(m_y, f_ext)/(m_h * m_h);
-			}*/
+				//m_Hrb = evaluateEnergyPureConstraint(m_y, f_ext)/(m_h * m_h) + evaluateKineticEnergy(m_mesh->m_current_velocities);
+			}
 			m_alpha = 0;
 
 			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
 			EigenVector3 v, w;
-			v = m_linear_momentum_init / m_mesh->m_total_mass;
+	/*		v = m_linear_momentum_init / m_mesh->m_total_mass;
 			w = m_rest_inertia.inverse() * m_angular_momentum_init;
 			m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+			m_Hrb = fabs(m_Hrb);*/
 
-			m_Hrb = fabs(m_Hrb);
+			//std::cout << m_Hrb << std::endl;
 			//m_Hrb = g_total_energy;
 			// update
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
 			g_com += m_linear_momentum_init * m_h;
 			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
-
-			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
-				m_Hrb *= (1 + 0.001);
+			
+			/*if (fabs(1 - m_hamiltonian/m_Hrb) < 0.1)
+				m_hamiltonian *= (1 + 0.5);*/
 
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
@@ -710,10 +715,8 @@ void Simulation::Update()
 
 		// damping
 		dampVelocity();
-	
 
 		// damping
-	
 	}
 
 	if (m_record_quantities) //per frame
@@ -2064,7 +2067,10 @@ void Simulation::dampVelocity()
 		break;
 
 	case DAMPING_OURS:
-		m_hamiltonian = m_hamiltonian - m_h * m_damping_coefficient * (m_hamiltonian - m_Hrb);
+		ScalarType m_Hrbpadding = (1 + g_padding) * m_Hrb;
+		m_hamiltonian = m_hamiltonian - m_h * m_damping_coefficient * (m_hamiltonian - m_Hrbpadding);
+		if (m_hamiltonian < m_Hrbpadding)
+			m_hamiltonian = m_Hrbpadding;
 		break;
 
 	}
@@ -2439,7 +2445,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	nanoseconds result;
 
 	//ScalarType Hblend = m_hamiltonian;
-	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * m_Hrb;
+	ScalarType Hrbpadding = (1 + g_padding) * m_Hrb;
+	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * Hrbpadding;
 	ScalarType current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
 
 	// decide H0 and it's factorization precomputation
@@ -2580,12 +2587,13 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			if (cnorm < m_cpd_threshold)
 				return true;
 			ScalarType inv_eps;
-			if (m_hamiltonian < m_Hrb)
-				inv_eps = 10e7;
-			else
-				inv_eps = 0.f;
-
-			ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
+			if (fabs(1 - m_Hrb/ m_hamiltonian) < 0.15f)
+				inv_eps = 10e3;
+			
+			else if(m_hamiltonian - m_Hrb >0)
+				inv_eps = 0;
+			//inv_eps = 10e7;
+			ScalarType dh = m_h * m_h * (m_hamiltonian - Hrbpadding);
 			g_gck.col(6) = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gck.col(6) = r + g_Ainv_vn;
 			Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
@@ -2597,6 +2605,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			VectorX lambda = llt.solve(ck);
 			p_k -= g_Ainv_gck * lambda;
 			m_alpha -= inv_eps * dh * lambda(6);
+			if (m_alpha < 0)
+				m_alpha = 0;
 			//return false 
 		}
 	}
