@@ -2317,14 +2317,15 @@ void Simulation::integrateImplicitMethod()
 			break;
 		}
 
-	/*	ScalarType bottom = -5.f;
+		ScalarType bottom = -10.f;
 		for (int i = 0; i < m_mesh->m_vertices_number; i++)
 		{
 			if (x.block_vector(i).y() < bottom)
 			{
-				x.block_vector(i).y() = bottom;
+				m_linear_momentum_init = -m_restitution_coefficient * m_linear_momentum_init;
+				break;
 			}
-		}*/
+		}
 
 		m_ls_is_first_iteration = false;
 		g_integration_timer.Toc();
