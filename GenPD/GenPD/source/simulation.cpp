@@ -623,7 +623,7 @@ void Simulation::Update()
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
-
+			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
@@ -639,6 +639,14 @@ void Simulation::Update()
 				m_Hrb = evaluateEnergyPureConstraint(m_y, f_ext)/(m_h * m_h);
 			}*/
 			m_alpha = 0;
+
+			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
+			EigenVector3 v, w;
+			v = m_linear_momentum_init / m_mesh->m_total_mass;
+			w = m_rest_inertia.inverse() * m_angular_momentum_init;
+			m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+
+			m_Hrb = fabs(m_Hrb);
 			//m_Hrb = g_total_energy;
 			// update
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
@@ -2241,7 +2249,7 @@ void Simulation::integrateImplicitMethod()
 	m_ls_is_first_iteration = true;
 	bool first_hit = false;
 
-	set_prefactored_matrix();
+	
 
 	ScalarType k = 0.01f;
 
