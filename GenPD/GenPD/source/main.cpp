@@ -34,6 +34,7 @@
 #include <string>
 #include <fstream>
 #include <string>
+#include <direct.h>
 //----------Headers--------------//
 #include "global_headers.h"
 #include "math_headers.h"
@@ -103,6 +104,7 @@ bool g_recording_limit = false;
 int g_current_frame = 0;
 int g_total_frame = 0;
 bool g_export_obj;
+int g_directory_exist = 0;
 
 //----------glut function handlers-----------//
 void resize(int, int);
@@ -308,9 +310,39 @@ void timeout(int value)
 
 			if (g_export_obj)
 			{
+				std::string filepath = "output/mesh/";
+				std::string filename;
+				char foldername[256];
+				int i = 0;
+				int flag = 0;
+				
+
+				if (g_directory_exist)
+				{
+					flag = 0;
+					i = g_directory_exist - 1;
+					filename = filepath + std::to_string(i);
+					strcpy_s(foldername, filename.c_str());
+					i += 1;
+				}
+				else
+				{
+					filename = filepath + std::to_string(i++);
+					strcpy_s(foldername, filename.c_str());
+					flag = _mkdir(foldername);
+				}
+				while(flag == -1)
+				{
+					filename = filepath + std::to_string(i++);
+					strcpy_s(foldername, filename.c_str());
+					flag = _mkdir(foldername);
+				}
+				g_directory_exist = i;
+
 				char mesh_filename[256];
-				sprintf_s(mesh_filename, 256, "output/mesh/Mesh%04d.obj", g_current_frame);
-				g_mesh->ExportToOBJ(mesh_filename);
+				sprintf_s(mesh_filename, 256, "/Mesh%04d.obj", g_current_frame);
+				strcat_s(foldername, mesh_filename);
+				g_mesh->ExportToOBJ(foldername);
 
 				char handle_filename[256];
 				sprintf_s(handle_filename, 256, "output/handles/Handle%04d.obj", g_current_frame);

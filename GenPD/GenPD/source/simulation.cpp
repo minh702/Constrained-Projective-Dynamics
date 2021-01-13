@@ -728,6 +728,10 @@ void Simulation::Update()
 		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
 
 		string fileName;
+		string damp = to_string(m_damping_coefficient);
+
+		damp.erase(damp.find_last_not_of('0') + 1, std::string::npos);
+
 		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 		{
 			fileName = "cloth";
@@ -737,13 +741,14 @@ void Simulation::Update()
 			fileName = m_mesh->m_tet_file_path;
 		}
 
+		
 		if (m_enable_cpd)
 		{
-			fileName = fileName + "CPDQuantities.txt";
+			fileName = damp + fileName + "CPDQuantities.txt";
 		}
 		else if (m_enable_fepr)
 		{
-			fileName = fileName + "FEPRQuantities.txt";
+			fileName = damp + fileName + "FEPRQuantities.txt";
 		}
 		else
 		{
@@ -2059,7 +2064,7 @@ void Simulation::dampVelocity()
 		break;
 
 	case DAMPING_OURS:
-		m_hamiltonian = m_hamiltonian - m_damping_coefficient * (m_hamiltonian - m_Hrb);
+		m_hamiltonian = m_hamiltonian - m_h * m_damping_coefficient * (m_hamiltonian - m_Hrb);
 		break;
 
 	}
