@@ -65,6 +65,7 @@ TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
+ScalarType g_bottom = -10;
 
 //for cpd
 
@@ -597,7 +598,7 @@ void Simulation::Update()
 	m_last_descent_dir.setZero();
 
 	
-	if (m_enable_user_control)
+	/*if (m_enable_user_control)
 	{
 		EigenVector3 v, w;
 		v = m_linear_momentum_init / m_mesh->m_total_mass;
@@ -611,40 +612,36 @@ void Simulation::Update()
 			m_Hrb *= (1 + 0.001);
 
 		m_enable_user_control = false;
-	}
+	}*/
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
 		// update inertia term
 		EigenVector3 gravity(0, -m_gravity_constant, 0);
-
 	
 		computeConstantVectorsYandZ();
-
+		VectorX v_t = m_mesh->m_current_velocities + m_h * m_external_force;
 		start = system_clock::now();
+
+		//m_hamiltonian = Evalaute;
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
+			VectorX f_ext(m_mesh->m_system_dimension);
+			f_ext.setZero();
+
 			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
-				VectorX f_ext(m_mesh->m_system_dimension);
-				f_ext.setZero();
 				evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
 				m_y -= 0.1f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
 			}
-			/*ScalarType bottom = -5.f;
-			for (int i = 0; i < m_mesh->m_vertices_number; i++)
-			{
-				if (m_y.block_vector(i).y() < bottom)
-				{
-					EigenVector3 f_col_i;
-					f_col_i.setZero();
-					f_col_i.y() = 100*(bottom - m_y.block_vector(i).y());
-					m_external_force.block_vector(i) -= f_col_i;
-				}
-			}*/
+
 			m_alpha = 0;
+
+			//m_linear_momentum_init = evaluateLinearMomentum(v_t);
+			//m_angular_momentum_init = evaluateAngularMomentum(m_y, v_t);
+			//m_hamiltonian += m_external_force.dot(v_t);
 
 			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
 			EigenVector3 v, w;
@@ -656,10 +653,36 @@ void Simulation::Update()
 			//m_Hrb = g_total_energy;
 			// update
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
+
+
+			if (m_processing_collision)
+			{
+				for (int i = 0; i < m_mesh->m_vertices_number; i++)
+				{
+					EigenVector3 v = v_t.block_vector(i);
+					if (m_y.block_vector(i).y() < g_bottom && m_linear_momentum_init.y() < 0)
+					{
+						m_linear_momentum_init *= -m_restitution_coefficient;
+						m_angular_momentum_init *= -m_restitution_coefficient;
+							break;
+					}
+				}
+
+				/*for (int i = 0; i < m_mesh->m_vertices_number; i++)
+				{
+					EigenVector3 v = v_t.block_vector(i);
+					if (m_y.block_vector(i).y() < g_bottom && m_linear_momentum_init.y() < 0)
+					{
+						m_linear_momentum_init *= -m_restitution_coefficient;
+						m_angular_momentum_init *= -m_restitution_coefficient;
+						break;
+					}
+				}*/
+			}
+
 			g_com += m_linear_momentum_init * m_h;
 			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
-
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
 				m_Hrb *= (1 + 0.002);
 
@@ -2297,7 +2320,6 @@ void Simulation::integrateImplicitMethod()
 		iter = m_iterations_per_frame;
 	}
 
-
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
 		
@@ -2317,15 +2339,18 @@ void Simulation::integrateImplicitMethod()
 			break;
 		}
 
-		ScalarType bottom = -10.f;
-		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		if (m_processing_collision)
 		{
-			if (x.block_vector(i).y() < bottom)
+			for (int i = 0; i < m_mesh->m_vertices_number; i++)
 			{
-				m_linear_momentum_init = -m_restitution_coefficient * m_linear_momentum_init;
-				break;
+				if (x.block_vector(i).y() < g_bottom)
+				{
+					x.block_vector(i).y() = g_bottom;
+				}
+
 			}
 		}
+
 
 		m_ls_is_first_iteration = false;
 		g_integration_timer.Toc();
