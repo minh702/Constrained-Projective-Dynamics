@@ -26,41 +26,43 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 120
-StretchStiffness    80
+StretchStiffness    100
 BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  180
+LaplacianStiffness  220
 GravityConstant     0
-DampingCoefficient  0.1
-RestiCoefficient    1
+DampingType         2
+DampingCoefficient  0
+RestiCoefficient    0
 FrictionCoefficient 0
 IterationsPerFrame  10
-DefinitenessFix     1
-LSEnable            1
+DefinitenessFix     0
+LSEnable            0
 LSExact             0
 LSType              0
 LSStep              0
-LSAlpha             0.03
-LSBeta              0.5
+LSAlpha             0
+LSBeta              0
 AnimEnableSwing     0
-AnimSwingAll        1
-AnimHalfPeriod      10
-AnimAmp             2
-AnimDir             0 1 0
+AnimSwingAll        0
+AnimHalfPeriod      0
+AnimAmp             0
+AnimDir             0 0 0
 LBFGSType           1
-LBFGSWindowSize     5
+LBFGSWindowSize     0
 
-AngularMomentum     3.77651e-06 2.3108e-05 2.28286e-05
-LinearMomentum      -4.25352e-06 6.04865e-07 1.8237e-06
-Scale               0 0.3 0
+AngularMomentum     300 0 0
+LinearMomentum      0 0 0
+Scale               0 0 0.2
 
 FEPREnable          0
-FEPRThreshold       0.0001
+FEPRThreshold       0.001
 FEPRMaxIter         100
 
 CPDEnable           1
 CPDThreshold        0.001
+CPDMaxIter          100
 
 ExportOBJ           0
 RecordPD            0
@@ -68,3 +70,6 @@ RecordCPD           0
 RecordCPDLoss       0
 RecordFEPR          0
 RecordQuantities    0
+
+ProcessCollison     0
+ClampEnable         0

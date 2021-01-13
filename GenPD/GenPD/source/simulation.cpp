@@ -633,11 +633,16 @@ void Simulation::Update()
 				evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
 				m_y -= 0.1f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
 			}
-			/*else
+			/*ScalarType bottom = -5.f;
+			for (int i = 0; i < m_mesh->m_vertices_number; i++)
 			{
-				VectorX f_ext(m_mesh->m_system_dimension);
-				f_ext.setZero();
-				m_Hrb = evaluateEnergyPureConstraint(m_y, f_ext)/(m_h * m_h);
+				if (m_y.block_vector(i).y() < bottom)
+				{
+					EigenVector3 f_col_i;
+					f_col_i.setZero();
+					f_col_i.y() = 100*(bottom - m_y.block_vector(i).y());
+					m_external_force.block_vector(i) -= f_col_i;
+				}
 			}*/
 			m_alpha = 0;
 
@@ -656,7 +661,7 @@ void Simulation::Update()
 			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
-				m_Hrb *= (1 + 0.001);
+				m_Hrb *= (1 + 0.002);
 
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
@@ -2276,11 +2281,11 @@ void Simulation::integrateImplicitMethod()
 
 	ScalarType k = 0.01f;
 
-	if (m_processing_collision)
-	{
-		// Collision Detection every iteration
-		collisionDetection(x);
-	}
+	//if (m_processing_collision)
+	//{
+	//	// Collision Detection every iteration
+	//	collisionDetection(x);
+	//}
 
 	int iter;
 	if (m_enable_cpd)
@@ -2311,6 +2316,16 @@ void Simulation::integrateImplicitMethod()
 		default:
 			break;
 		}
+
+	/*	ScalarType bottom = -5.f;
+		for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		{
+			if (x.block_vector(i).y() < bottom)
+			{
+				x.block_vector(i).y() = bottom;
+			}
+		}*/
+
 		m_ls_is_first_iteration = false;
 		g_integration_timer.Toc();
 
@@ -2641,6 +2656,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	}
 	g_lbfgs_timer.Pause();
 	x += p_k;
+
+
 
 	// final touch
 	m_lbfgs_need_update_H0 = false;
