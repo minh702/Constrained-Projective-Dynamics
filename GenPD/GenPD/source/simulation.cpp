@@ -624,7 +624,7 @@ void Simulation::Update()
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
-
+			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
@@ -640,6 +640,14 @@ void Simulation::Update()
 				m_Hrb = evaluateEnergyPureConstraint(m_y, f_ext)/(m_h * m_h);
 			}*/
 			m_alpha = 0;
+
+			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
+			EigenVector3 v, w;
+			v = m_linear_momentum_init / m_mesh->m_total_mass;
+			w = m_rest_inertia.inverse() * m_angular_momentum_init;
+			m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+
+			m_Hrb = fabs(m_Hrb);
 			//m_Hrb = g_total_energy;
 			// update
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
@@ -721,6 +729,10 @@ void Simulation::Update()
 		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
 
 		string fileName;
+		string damp = to_string(m_damping_coefficient);
+
+		damp.erase(damp.find_last_not_of('0') + 1, std::string::npos);
+
 		if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 		{
 			fileName = "cloth";
@@ -730,13 +742,14 @@ void Simulation::Update()
 			fileName = m_mesh->m_tet_file_path;
 		}
 
+		
 		if (m_enable_cpd)
 		{
-			fileName = fileName + "CPDQuantities.txt";
+			fileName = damp + fileName + "CPDQuantities.txt";
 		}
 		else if (m_enable_fepr)
 		{
-			fileName = fileName + "FEPRQuantities.txt";
+			fileName = damp + fileName + "FEPRQuantities.txt";
 		}
 		else
 		{
@@ -2069,7 +2082,7 @@ void Simulation::dampVelocity()
 		break;
 
 	case DAMPING_OURS:
-		m_hamiltonian = m_hamiltonian - m_damping_coefficient * (m_hamiltonian - m_Hrb);
+		m_hamiltonian = m_hamiltonian - m_h * m_damping_coefficient * (m_hamiltonian - m_Hrb);
 		break;
 
 	}
@@ -2259,7 +2272,7 @@ void Simulation::integrateImplicitMethod()
 	m_ls_is_first_iteration = true;
 	bool first_hit = false;
 
-	set_prefactored_matrix();
+	
 
 	ScalarType k = 0.01f;
 

@@ -699,6 +699,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "AutoLaplacian       " << g_simulation->m_stiffness_auto_laplacian_stiffness << std::endl;
 		outfile << "LaplacianStiffness  " << g_simulation->m_stiffness_laplacian << std::endl;
 		outfile << "GravityConstant     " << g_simulation->m_gravity_constant << std::endl;
+		outfile << "DampingType         " << g_simulation->m_damping_type << std::endl;
 		outfile << "DampingCoefficient  " << g_simulation->m_damping_coefficient << std::endl;
 		outfile << "RestiCoefficient    " << g_simulation->m_restitution_coefficient << std::endl;
 		outfile << "FrictionCoefficient " << g_simulation->m_friction_coefficient << std::endl;
@@ -748,6 +749,7 @@ void AntTweakBarWrapper::SaveSettings()
 		//CPD
 		outfile << "CPDEnable           " << g_simulation->m_enable_cpd << std::endl;
 		outfile << "CPDThreshold        " << g_simulation->m_cpd_threshold << std::endl;
+		outfile << "CPDMaxIter          " << g_simulation->m_cpd_max_iter << std::endl;
 		outfile << std::endl;
 
 		//Record
@@ -757,6 +759,11 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "RecordCPDLoss       " << g_simulation->recordTextCPDLoss << std::endl;
 		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
 		outfile << "RecordQuantities    " << g_simulation->m_record_quantities << std::endl;
+		outfile << std::endl;
+
+		//
+		outfile << "ProcessCollison     " << g_simulation->m_processing_collision << std::endl;
+		outfile << "ClampEnable         " << g_simulation->m_clamp << std::endl;
 
 		outfile.close();
 	}
@@ -826,6 +833,7 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_stiffness_auto_laplacian_stiffness;
 		infile >> ignoreToken >> g_simulation->m_stiffness_laplacian;
 		infile >> ignoreToken >> g_simulation->m_gravity_constant;
+		infile >> ignoreToken >> tempEnum; g_simulation->m_damping_type = DampingType(tempEnum);
 		infile >> ignoreToken >> g_simulation->m_damping_coefficient;
 		infile >> ignoreToken >> g_simulation->m_restitution_coefficient;
 		infile >> ignoreToken >> g_simulation->m_friction_coefficient;
@@ -872,6 +880,7 @@ void AntTweakBarWrapper::LoadSettings()
 		//CPD
 		infile >> ignoreToken >> g_simulation->m_enable_cpd;
 		infile >> ignoreToken >> g_simulation->m_cpd_threshold;
+		infile >> ignoreToken >> g_simulation->m_cpd_max_iter;
 
 		//Record
 		infile >> ignoreToken >> g_export_obj;
@@ -880,6 +889,10 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->recordTextCPDLoss;
 		infile >> ignoreToken >> g_simulation->recordTextFEPR;
 		infile >> ignoreToken >> g_simulation->m_record_quantities;
+
+		//
+		infile >> ignoreToken >> g_simulation->m_processing_collision;
+		infile >> ignoreToken >> g_simulation->m_clamp;
 
 		infile.close();
 	}
