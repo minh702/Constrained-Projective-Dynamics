@@ -69,6 +69,10 @@ ScalarType g_bottom = -10;
 
 //for cpd
 
+VectorX g_prev_x;
+EigenVector3 g_ac, g_lc;
+VectorX g_st;
+
 EigenVector3 g_angular_momentum, g_linear_momentum;
 EigenVector3 g_com;
 EigenVector3 g_current_angular_momentum, g_current_linear_momentum;
@@ -197,7 +201,7 @@ void Simulation::Reset()
 	g_Ainv_gcm.setZero();
 	g_Ainv_gcl.resize(m_mesh->m_system_dimension, 3);
 	g_Ainv_gcp.resize(m_mesh->m_system_dimension, 3);
-
+	g_prev_x.resize(m_mesh->m_system_dimension);
 	
 	g_Ainv_gca.resize(m_mesh->m_system_dimension, 4);
 	g_Ainv_gca.resize(m_mesh->m_system_dimension, 4);
@@ -624,21 +628,27 @@ void Simulation::Update()
 
 		//m_hamiltonian = Evalaute;
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
+		VectorX f_ext(m_mesh->m_system_dimension);
+		f_ext.setZero();
+
+
+	/*	if (m_get_current_hamiltonian)
+		{
+			m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f_ext) + evaluateKineticEnergy(m_mesh->m_current_velocities);
+			m_get_current_hamiltonian = false;
+		}*/
 		if (m_enable_cpd)
 		{
-			VectorX f_ext(m_mesh->m_system_dimension);
-			f_ext.setZero();
 
 			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
 				evaluateEnergyAndGradientPureConstraint(m_mesh->m_current_positions, f_ext, f_int);
-				m_y -= 0.1f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
+				m_y -= 0.3f * m_mesh->m_inv_mass_matrix * f_int * m_h * m_h;
 			}
 
 			m_alpha = 0;
-
 			//m_linear_momentum_init = evaluateLinearMomentum(v_t);
 			//m_angular_momentum_init = evaluateAngularMomentum(m_y, v_t);
 			//m_hamiltonian += m_external_force.dot(v_t);
@@ -2339,6 +2349,16 @@ void Simulation::integrateImplicitMethod()
 			break;
 		}
 
+		if (m_handles.size() > 0)
+		{
+			for (int i = 0; i < m_handles[0].attachment_constraints.size(); i++)
+			{
+				unsigned int idx = m_handles[0].attachment_constraints[i]->GetConstrainedVertexIndex();
+				EigenVector3 fixedpoint = m_handles[0].attachment_constraints[i]->GetFixedPoint();
+				x.block_vector(idx) = fixedpoint;
+			}
+		}
+
 		if (m_processing_collision)
 		{
 			for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -2596,67 +2616,78 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		}
 		else
 		{
-			VectorX ck(7);
-			ck.block_vector(0) = g_gcp.transpose() * x - g_com;
-			ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
-			ck(6) = current_energy;
-				
-			//std::cout << ck.norm() << std::endl;
-			//m_cpd_threshold = 10e-6;
 
-			if (recordTextCPDLoss)
+			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+			g_Ainv_gch = r + g_Ainv_vn;
+			if (m_handles.size() == 0)
 			{
-				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
-				{
-					fileName = "./TextData/cloth" + txtForLoss;
-				}
-				else
-				{
+				VectorX ck(7);
+				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
+				ck.block_vector(1) = (g_gcl.transpose() * x - m_angular_momentum_init * m_h);
+				ck(6) = current_energy;
+				//std::cout << ck.norm() << std::endl;
+				//m_cpd_threshold = 10e-6;
 
-					fileName = m_mesh->m_tet_file_path + txtForLoss;
-					fileName = "./TextData/" + fileName;
-				}
-				std::ofstream outLoss(fileName, std::ios::app);
-				if (outLoss.is_open())
+				if (recordTextCPDLoss)
 				{
-					string token = "\t";
-					if (ck.norm() < m_cpd_threshold)
+					if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 					{
-						token = "\n";
+						fileName = "./TextData/cloth" + txtForLoss;
 					}
-					outLoss << std::to_string(ck.norm()) + token;
+					else
+					{
+
+						fileName = m_mesh->m_tet_file_path + txtForLoss;
+						fileName = "./TextData/" + fileName;
+					}
+					std::ofstream outLoss(fileName, std::ios::app);
+					if (outLoss.is_open())
+					{
+						string token = "\t";
+						if (ck.norm() < m_cpd_threshold)
+						{
+							token = "\n";
+						}
+						outLoss << std::to_string(ck.norm()) + token;
+					}
+					outLoss.close();
 				}
-				outLoss.close();
+
+				ScalarType cnorm = ck.norm();
+				if (m_show_alpha)
+					std::cout << m_alpha << std::endl;
+				if (m_show_cpd_loss)
+					std::cout << cnorm << std::endl;
+
+				if (cnorm < m_cpd_threshold)
+					return true;
+				ScalarType inv_eps;
+				if (m_hamiltonian < m_Hrb)
+					inv_eps = 10e7;
+				else
+					inv_eps = 0.f;
+
+				ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
+				g_gck.col(6) = g_gch;
+				g_Ainv_gck.col(6) = g_Ainv_gch;
+				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck /*+ dcst.transpose() * dcst*/;
+				cTAinv_c(6, 6) += inv_eps * dh * dh;
+				Eigen::LLT<Eigen::MatrixXf> llt;
+				llt.compute(cTAinv_c);
+				//std::cout << m_alpha << std::endl;
+				ck += g_gck.transpose() * p_k;
+				VectorX lambda = llt.solve(ck);
+				p_k -= g_Ainv_gck * lambda;
+				m_alpha -= inv_eps * dh * lambda(6);
+				/*g_st -= dcst* lambda;*/
+				//return false 
 			}
-
-			ScalarType cnorm = ck.norm();
-
-			if(m_show_alpha)
-				std::cout << m_alpha << std::endl;
-			if (m_show_cpd_loss)
-				std::cout << cnorm << std::endl;
-
-			if (cnorm < m_cpd_threshold)
-				return true;
-			ScalarType inv_eps;
-			if (m_hamiltonian < m_Hrb)
-				inv_eps = 10e7;
 			else
-				inv_eps = 0.f;
-
-			ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
-			g_gck.col(6) = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
-			g_Ainv_gck.col(6) = r + g_Ainv_vn;
-			Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck;
-			cTAinv_c(6, 6) += inv_eps * dh * dh;
-			Eigen::LLT<Eigen::MatrixXf> llt;
-			llt.compute(cTAinv_c);
-			//std::cout << m_alpha << std::endl;
-			ck += g_gck.transpose() * p_k;
-			VectorX lambda = llt.solve(ck);
-			p_k -= g_Ainv_gck * lambda;
-			m_alpha -= inv_eps * dh * lambda(6);
-			//return false 
+			{
+				ScalarType ctac = g_gch.transpose() * g_Ainv_gch;
+				ScalarType lh = (current_energy + g_gch.transpose() * p_k) / ctac;
+				p_k -= lh * g_Ainv_gch;
+			}
 		}
 	}
 	end = system_clock::now();
@@ -2681,6 +2712,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		outOH.close();
 	}
 	g_lbfgs_timer.Pause();
+	
+	g_prev_x = x;
 	x += p_k;
 
 

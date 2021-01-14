@@ -635,7 +635,7 @@ void mouse_click(int button, int state, int x, int y)
 			if (glutGetModifiers() != GLUT_ACTIVE_ALT)
 			{
 				g_selection_tool->SelectSecondPoint(x, y, g_screen_width, g_screen_height, true);
-				switch (g_selection_tool->GetMode())
+				switch (g_selection_tool->GetMode())                                                                                           
 				{
 				case GUI_MODE_SELECTION:
 					// if selection mode
