@@ -2349,13 +2349,16 @@ void Simulation::integrateImplicitMethod()
 			break;
 		}
 
-		if (m_handles.size() > 0)
+	/*	if (m_handles.size() > 0)
 		{
-			for (int i = 0; i < m_handles[0].attachment_constraints.size(); i++)
+			for (int j = 0; j < m_handles.size(); j++)
 			{
-				unsigned int idx = m_handles[0].attachment_constraints[i]->GetConstrainedVertexIndex();
-				EigenVector3 fixedpoint = m_handles[0].attachment_constraints[i]->GetFixedPoint();
-				x.block_vector(idx) = fixedpoint;
+				for (int i = 0; i < m_handles[j].attachment_constraints.size(); i++)
+				{
+					unsigned int idx = m_handles[j].attachment_constraints[i]->GetConstrainedVertexIndex();
+					EigenVector3 fixedpoint = m_handles[j].attachment_constraints[i]->GetFixedPoint();
+					x.block_vector(idx) = fixedpoint;
+				}
 			}
 		}
 
@@ -2369,7 +2372,7 @@ void Simulation::integrateImplicitMethod()
 				}
 
 			}
-		}
+		}*/
 
 
 		m_ls_is_first_iteration = false;
@@ -2684,6 +2687,10 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			}
 			else
 			{
+				if (m_show_cpd_loss)
+					std::cout << fabs(current_energy) << std::endl;
+				if (fabs(current_energy) < m_cpd_threshold)
+					return true;
 				ScalarType ctac = g_gch.transpose() * g_Ainv_gch;
 				ScalarType lh = (current_energy + g_gch.transpose() * p_k) / ctac;
 				p_k -= lh * g_Ainv_gch;
