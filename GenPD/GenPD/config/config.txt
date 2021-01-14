@@ -1,6 +1,6 @@
 HasEnd              0
 TotalFrame          1000
-MeshBody            1
+MeshBody            0
 Wireframe           1
 Wireframe           1
 Texture             0
@@ -36,7 +36,7 @@ DampingType         2
 DampingCoefficient  0
 RestiCoefficient    0.99
 FrictionCoefficient 0
-IterationsPerFrame  20
+IterationsPerFrame  30
 DefinitenessFix     0
 LSEnable            0
 LSExact             0
@@ -56,11 +56,11 @@ AngularMomentum     0 0 0
 LinearMomentum      0 30 0
 Scale               0.2 0 0.2
 
-FEPREnable          1
+FEPREnable          0
 FEPRThreshold       0.001
 FEPRMaxIter         1000
 
-CPDEnable           0
+CPDEnable           1
 CPDThreshold        0.001
 CPDMaxIter          100
 

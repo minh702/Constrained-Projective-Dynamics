@@ -2404,6 +2404,11 @@ void Simulation::integrateImplicitMethod()
 		std::cout<<"CPD Iteration: "<< m_current_iteration<<std::endl;
 	}
 
+	else if (m_verbose_show_converge)
+	{
+		std::cout << "PD Iteration: " << m_current_iteration << std::endl;
+	}
+
 	t_optimization.Toc();
 	t_optimization.Report("Optimization", m_verbose_show_optimization_time);
 	g_lbfgs_timer.Resume();
@@ -2721,10 +2726,12 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	g_lbfgs_timer.Pause();
 	
 	g_prev_x = x;
+
+	if (-p_k.dot(gf_k) < EPSILON_SQUARE || p_k.norm() / x.norm() < LARGER_EPSILON)
+	{
+		converged = true;
+	}
 	x += p_k;
-
-
-
 	// final touch
 	m_lbfgs_need_update_H0 = false;
 	return converged;
