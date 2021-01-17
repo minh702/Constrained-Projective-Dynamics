@@ -132,6 +132,7 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "CPDLoss", TwType(sizeof(bool)), &g_simulation->recordTextCPDLoss, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->recordTextFEPR, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "Quantities", TwType(sizeof(bool)), &g_simulation->m_record_quantities, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "Energy", TwType(sizeof(bool)), &g_simulation->recordTextEnergy, "group='Recording To Text'");
 	TwDefine(" 'Control Panel'/'Recording To Text' group='State Control'");
 	TwAddSeparator(m_control_panel_bar, NULL, "");
 	// visualization
@@ -759,6 +760,7 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "RecordCPDLoss       " << g_simulation->recordTextCPDLoss << std::endl;
 		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
 		outfile << "RecordQuantities    " << g_simulation->m_record_quantities << std::endl;
+		outfile << "RecordEnergy        " << g_simulation->recordTextEnergy << std::endl;
 		outfile << std::endl;
 
 		//
@@ -889,6 +891,7 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->recordTextCPDLoss;
 		infile >> ignoreToken >> g_simulation->recordTextFEPR;
 		infile >> ignoreToken >> g_simulation->m_record_quantities;
+		infile >> ignoreToken >> g_simulation->recordTextEnergy;
 
 		//
 		infile >> ignoreToken >> g_simulation->m_processing_collision;

@@ -2516,8 +2516,6 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	bool converged = false;
 
 	VectorX gf_k;
-
-
 	string txt = ".txt";
 	string txtForOverHead = "CPDOverHead.txt";
 	string txtForLoss = "CPDLoss.txt";
@@ -2527,7 +2525,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 	//ScalarType Hblend = m_hamiltonian;
 	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * m_Hrb;
-	ScalarType current_energy = evaluateEnergyAndGradient(x, gf_k) - m_h * m_h * Hblend;
+	ScalarType ce = evaluateEnergyAndGradient(x, gf_k);
+	ScalarType current_energy = ce - m_h * m_h * Hblend;
 
 	// decide H0 and it's factorization precomputation
 	switch (m_lbfgs_H0_type)
@@ -2694,6 +2693,23 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			{
 				if (m_show_cpd_loss)
 					std::cout << fabs(current_energy) << std::endl;
+
+				if (recordTextEnergy)
+				{
+					string fileName2 = "./TextData/CPDEnergy.txt";
+					std::ofstream outen(fileName2, std::ios::app);
+					if (outen.is_open())
+					{
+						string token = "\t";
+						if (fabs(current_energy) < m_cpd_threshold || m_current_iteration >= m_cpd_max_iter)
+						{
+							token = "\n";
+						}
+						outen << std::to_string(ce / (m_h * m_h)) + token;
+					}
+					outen.close();
+				}
+
 				if (fabs(current_energy) < m_cpd_threshold)
 					return true;
 				ScalarType ctac = g_gch.transpose() * g_Ainv_gch;
@@ -2726,6 +2742,33 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	g_lbfgs_timer.Pause();
 	
 	g_prev_x = x;
+
+	if (recordTextEnergy && m_enable_fepr)
+	{
+		string fileName3 = "./TextData/PDEnergy.txt";
+		std::ofstream outen(fileName3, std::ios::app);
+		if (outen.is_open())
+		{
+			string token = "\t";
+			if (-p_k.dot(gf_k) < EPSILON_SQUARE || m_current_iteration == m_iterations_per_frame - 1)
+			{
+				token = "\n";
+			}
+			outen << std::to_string(ce / (m_h * m_h)) + token;
+		}
+		outen.close();
+	}
+
+	string fileName4 = "./TextData/PDiter.txt";
+	std::ofstream outit(fileName4, std::ios::app);
+	if (outit.is_open())
+	{
+		if (-p_k.dot(gf_k) < EPSILON_SQUARE || m_current_iteration == m_iterations_per_frame - 1)
+		{
+			outit << std::to_string(m_current_iteration) << std::endl;
+		}
+	}
+	outit.close();
 
 	if (-p_k.dot(gf_k) < EPSILON_SQUARE)
 	{
@@ -3547,6 +3590,22 @@ void Simulation::fepr()
 		}
 		//std::cout << c.transpose() << std::endl;
 
+		if (recordTextEnergy)
+		{
+			string fileName2 = "./TextData/FEPREnergy.txt";
+			std::ofstream outen(fileName2, std::ios::app);
+			if (outen.is_open())
+			{
+				string token = "\t";
+				if (c_norm < m_fepr_threshold || iter > m_fepr_max_iter)
+				{
+					token = "\n";
+				}
+				outen << std::to_string(c(6) + m_hamiltonian) + token;
+			}
+			outen.close();
+		}
+
 		if (m_show_st)
 			std::cout << st << std::endl;
 		if (m_show_fepr_loss)
@@ -3598,6 +3657,7 @@ void Simulation::fepr()
 		qx = qx - m_mesh->m_inv_mass_matrix * dchx * lh;
 		qv = qv - inv_h_squared * m_mesh->m_inv_mass_matrix * dchv * lh;*/
 
+		
 	
 		iter++;
 		end = system_clock::now();
