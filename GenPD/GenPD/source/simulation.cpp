@@ -2727,7 +2727,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	
 	g_prev_x = x;
 
-	if (-p_k.dot(gf_k) < EPSILON_SQUARE || p_k.norm() / x.norm() < LARGER_EPSILON)
+	if (-p_k.dot(gf_k) < EPSILON_SQUARE)
 	{
 		converged = true;
 	}

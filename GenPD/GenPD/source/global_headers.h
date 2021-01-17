@@ -53,7 +53,7 @@
 	#define LARGER_EPSILON 1e-6
 #else
 	#define EPSILON 1e-6
-	#define EPSILON_SQUARE 1e-12
+	#define EPSILON_SQUARE 1e-6
 	#define LARGER_EPSILON 1e-4
 #endif
 
