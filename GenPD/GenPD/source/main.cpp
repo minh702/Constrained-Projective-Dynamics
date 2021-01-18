@@ -288,7 +288,9 @@ void timeout(int value)
 		//here
 		if (config_limit == 1 || config_num == config_limit)
 		{
-			PostQuitMessage(0);
+			//for cmd
+			//PostQuitMessage(0);
+			g_pause = true;
 		}
 		else
 		{
