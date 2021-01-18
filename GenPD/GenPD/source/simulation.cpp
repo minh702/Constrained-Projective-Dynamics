@@ -69,6 +69,8 @@ ScalarType g_bottom = -10;
 
 //for cpd
 
+
+VectorX g_gravity_grad;
 VectorX g_prev_x;
 EigenVector3 g_ac, g_lc;
 VectorX g_st;
@@ -253,6 +255,7 @@ void Simulation::Reset()
 
 	EigenVector3 linear_velocity = m_linear_momentum_init/m_mesh->m_total_mass;
 
+
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		//m_mesh->m_current_positions.block_vector(i) -= centerOfMass;
@@ -267,6 +270,15 @@ void Simulation::Reset()
 		m_mesh->m_current_positions.block_vector(i).y() *= (1 + fabs(m_scale_y));
 		m_mesh->m_current_positions.block_vector(i).z() *= (1 + fabs(m_scale_z));
 	}
+
+	//compute gravity gradient
+	ScalarType gravity_potential = 0;
+	g_gravity_grad.resize(m_mesh->m_system_dimension);
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		g_gravity_grad.block_vector(i) = EigenVector3(0, m_gravity_constant, 0);
+	}
+
 
 	//clamp to box
 
@@ -288,6 +300,8 @@ void Simulation::Reset()
 			m_mesh->m_current_positions.block_vector(i) = xi;
 		}
 	}
+
+	//
 	//std::cout << m_angular_momentum_init<<std::endl;
 	//std::cout << angular_velocity << std::endl;
 

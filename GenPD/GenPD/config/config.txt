@@ -7,12 +7,12 @@ Texture             0
 ScreenWidth         1920
 ScreenHeight        1017
 
-MeshType            0
+MeshType            1
 MeshMass            10
-TetFilePath         3pipe3
+TetFilePath         tpipe
 TetScaling          1
 TetFlip             0
-TetRotation         -90
+TetRotation         90
 ClothDimension      60 60
 ClothCorners        -5 8 -5 5 8 5
 
@@ -26,11 +26,11 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
-StretchStiffness    200
-BendingStiffness    10
+StretchStiffness    10000
+BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  3210
+LaplacianStiffness  20020
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
@@ -52,15 +52,15 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 0 0
-LinearMomentum      0 10 0
-Scale               0.2 0 0.2
+AngularMomentum     0 0 100
+LinearMomentum      0 0 0
+Scale               0 0 0
 
-FEPREnable          1
+FEPREnable          0
 FEPRThreshold       0.001
 FEPRMaxIter         100
 
-CPDEnable           0
+CPDEnable           1
 CPDThreshold        0.0001
 CPDMaxIter          100
 
