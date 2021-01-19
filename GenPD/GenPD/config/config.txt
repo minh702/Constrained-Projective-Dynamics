@@ -1,5 +1,5 @@
 HasEnd              0
-TotalFrame          1000
+TotalFrame          149
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -9,8 +9,8 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         torus.1
-TetScaling          1
+TetFilePath         sphere
+TetScaling          2
 TetFlip             0
 TetRotation         90
 ClothDimension      60 60
@@ -27,16 +27,16 @@ OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
 StretchStiffness    1000
-BendingStiffness    20
+BendingStiffness    30
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  2020
-GravityConstant     0
+LaplacianStiffness  2030
+GravityConstant     10
 DampingType         2
 DampingCoefficient  0
 RestiCoefficient    0.99
 FrictionCoefficient 0
-IterationsPerFrame  40
+IterationsPerFrame  10
 DefinitenessFix     0
 LSEnable            0
 LSExact             0
@@ -52,8 +52,8 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 100 0
-LinearMomentum      0 0 0
+AngularMomentum     -0 -0 -0
+LinearMomentum      0 -46.6915 0
 Scale               0 0 0
 
 FEPREnable          0
@@ -61,8 +61,8 @@ FEPRThreshold       0.001
 FEPRMaxIter         100
 
 CPDEnable           1
-CPDThreshold        0.0001
-CPDMaxIter          10
+CPDThreshold        0.001
+CPDMaxIter          100
 
 ExportOBJ           0
 RecordPD            0
@@ -72,5 +72,5 @@ RecordFEPR          0
 RecordQuantities    0
 RecordEnergy        0
 
-ProcessCollison     0
+ProcessCollison     1
 ClampEnable         0

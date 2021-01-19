@@ -315,7 +315,7 @@ void Simulation::Reset()
 
 	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
 	{
-		m_Hrb *= (1 + 0.01);
+		m_hamiltonian *= (1 + 0.01);
 	}
 	std::cout << m_Hrb << std::endl;
 	std::cout << m_hamiltonian << std::endl;
@@ -775,10 +775,17 @@ void Simulation::Update()
 		VectorX v = m_mesh->m_current_velocities;
 		VectorX f(m_mesh->m_system_dimension);
 		f.setZero();
-
+		Matrix dclx(m_mesh->m_system_dimension, 3);
+		Matrix dclv(m_mesh->m_system_dimension, 3);
+		dclx.setZero();
+		dclv.setZero();
 		EigenVector3 P = evaluateLinearMomentum(v);
-		EigenVector3 L = evaluateAngularMomentum(x, v);
+		EigenVector3 L = evaluateAngularMomentumAndGradient(x, v, dclx, dclv);
 		ScalarType H = evaluateEnergyPureConstraint(x, f) + evaluateKineticEnergy(v);
+
+		//temporary 
+		EigenMatrix3 inertia = dclv.transpose() * m_mesh->m_inv_mass_matrix * dclv;
+		L = inertia.inverse() * L;
 
 		string fileName;
 		string damp = to_string(m_damping_coefficient);
@@ -805,7 +812,7 @@ void Simulation::Update()
 		}
 		else
 		{
-			fileName = '\0';
+			fileName = damp + fileName + "Quantities.txt";
 		}
 
 		std::ofstream out(filePath + fileName, std::ios::app);
@@ -2684,7 +2691,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 					return true;
 				ScalarType inv_eps;
 				if (m_hamiltonian < m_Hrb)
-					inv_eps = 10e7;
+					inv_eps = 10e3;
 				else
 					inv_eps = 0.f;
 
