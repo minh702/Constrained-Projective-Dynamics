@@ -65,7 +65,7 @@ TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
-ScalarType g_bottom = -10;
+ScalarType g_bottom = -8;
 
 //for cpd
 
@@ -671,14 +671,12 @@ void Simulation::Update()
 			EigenVector3 v, w;
 			v = m_linear_momentum_init / m_mesh->m_total_mass;
 			w = m_rest_inertia.inverse() * m_angular_momentum_init;
-			m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
-
-			m_Hrb = fabs(m_Hrb);
 			//m_Hrb = g_total_energy;
 			// update
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
 
 
+			ScalarType before = fabs(0.5f * v.dot(m_linear_momentum_init));
 			if (m_processing_collision)
 			{
 				for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -691,20 +689,15 @@ void Simulation::Update()
 							break;
 					}
 				}
+				v = m_linear_momentum_init / m_mesh->m_total_mass;
+				ScalarType after = fabs(0.5f * v.dot(m_linear_momentum_init));
+				m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
 
-				/*for (int i = 0; i < m_mesh->m_vertices_number; i++)
-				{
-					EigenVector3 v = v_t.block_vector(i);
-					if (m_y.block_vector(i).y() < g_bottom && m_linear_momentum_init.y() < 0)
-					{
-						m_linear_momentum_init *= -m_restitution_coefficient;
-						m_angular_momentum_init *= -m_restitution_coefficient;
-						break;
-					}
-				}*/
+				m_Hrb = fabs(m_Hrb);
+				m_hamiltonian += (after - before);
 			}
 
-			g_com += m_linear_momentum_init * m_h;
+			g_com += m_linear_momentum_init * m_h ;
 			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
