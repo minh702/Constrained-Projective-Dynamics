@@ -65,7 +65,7 @@ TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
-ScalarType g_bottom = -8;
+ScalarType g_bottom = -7;
 
 //for cpd
 
@@ -666,17 +666,13 @@ void Simulation::Update()
 			//m_linear_momentum_init = evaluateLinearMomentum(v_t);
 			//m_angular_momentum_init = evaluateAngularMomentum(m_y, v_t);
 			//m_hamiltonian += m_external_force.dot(v_t);
-
-			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
-			EigenVector3 v, w;
-			v = m_linear_momentum_init / m_mesh->m_total_mass;
-			w = m_rest_inertia.inverse() * m_angular_momentum_init;
 			//m_Hrb = g_total_energy;
 			// update
 			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
 
 
-			ScalarType before = fabs(0.5f * v.dot(m_linear_momentum_init));
+			ScalarType before = fabs(0.5f * m_linear_momentum_init.dot(m_linear_momentum_init)/m_mesh->m_total_mass);
+			ScalarType after;
 			if (m_processing_collision)
 			{
 				for (int i = 0; i < m_mesh->m_vertices_number; i++)
@@ -689,19 +685,19 @@ void Simulation::Update()
 							break;
 					}
 				}
-				v = m_linear_momentum_init / m_mesh->m_total_mass;
-				ScalarType after = fabs(0.5f * v.dot(m_linear_momentum_init));
-				m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
-
-				m_Hrb = fabs(m_Hrb);
-				m_hamiltonian += (after - before);
+			 after = fabs(0.5f * m_linear_momentum_init.dot(m_linear_momentum_init) / m_mesh->m_total_mass);
 			}
+			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
+			EigenVector3 v, w;
+			v = m_linear_momentum_init / m_mesh->m_total_mass;
+			w = m_rest_inertia.inverse() * m_angular_momentum_init;
 
 			g_com += m_linear_momentum_init * m_h ;
-			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities) ;
+			m_hamiltonian += (after - before);
 			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
-				m_Hrb *= (1 + 0.002);
+				m_Hrb *= (1 + 0.01);
 
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);
@@ -728,6 +724,9 @@ void Simulation::Update()
 			out.close();
 		}
 
+
+
+
 		switch (m_integration_method)
 		{
 
@@ -749,6 +748,11 @@ void Simulation::Update()
 			}
 			out.close();
 		}
+
+
+		EigenVector3 height = g_gcp.transpose() * m_mesh->m_current_positions/m_mesh->m_total_mass;
+
+		std::cout << height.y() << std::endl;
 
 		if (m_enable_fepr) 
 			fepr();
@@ -2333,6 +2337,8 @@ void Simulation::integrateImplicitMethod()
 	//	// Collision Detection every iteration
 	//	collisionDetection(x);
 	//}
+
+
 
 	int iter;
 	if (m_enable_cpd)
