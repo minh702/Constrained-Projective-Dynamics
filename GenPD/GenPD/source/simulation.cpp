@@ -65,11 +65,11 @@ TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
-ScalarType g_bottom = -10;
+ScalarType g_bottom = -5;
 
 //for cpd
 
-
+bool is_collision;
 VectorX g_gravity_grad;
 VectorX g_prev_x;
 EigenVector3 g_ac, g_lc;
@@ -299,7 +299,7 @@ void Simulation::Reset()
 
 			m_mesh->m_current_positions.block_vector(i) = xi;
 		}
-	}
+	} 
 
 	//
 	//std::cout << m_angular_momentum_init<<std::endl;
@@ -653,7 +653,7 @@ void Simulation::Update()
 		}*/
 		if (m_enable_cpd)
 		{
-
+			is_collision = false;
 			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
@@ -676,19 +676,22 @@ void Simulation::Update()
 			m_Hrb = fabs(m_Hrb);
 			//m_Hrb = g_total_energy;
 			// update
-			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
+			m_linear_momentum_init += 0.5f*gravity * m_h * m_mesh->m_total_mass;
 
 
 			if (m_processing_collision)
 			{
 				for (int i = 0; i < m_mesh->m_vertices_number; i++)
 				{
+
 					EigenVector3 v = v_t.block_vector(i);
 					if (m_y.block_vector(i).y() < g_bottom && m_linear_momentum_init.y() < 0)
 					{
 						m_linear_momentum_init *= -m_restitution_coefficient;
 						m_angular_momentum_init *= -m_restitution_coefficient;
 							break;
+
+						//is_collision = true;
 					}
 				}
 
@@ -746,6 +749,31 @@ void Simulation::Update()
 			integrateImplicitMethod();
 			break;
 		}
+
+		if (m_handles.size() != 0 && m_handles[0].attachment_constraints[0]->m_stiffness > 0.001 /* && !is_collision*/)
+		{
+			VectorX x = m_mesh->m_current_positions;
+			VectorX v = m_mesh->m_current_velocities;
+			VectorX f(m_mesh->m_system_dimension);
+			f.setZero();
+
+			m_linear_momentum_init = evaluateLinearMomentum(v);
+			m_angular_momentum_init = evaluateAngularMomentum(x, v);
+
+			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
+			EigenVector3 vt, w;
+			vt = m_linear_momentum_init / m_mesh->m_total_mass;
+			w = m_rest_inertia.inverse() * m_angular_momentum_init;
+			m_Hrb = 0.5f * vt.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
+
+			m_Hrb = fabs(m_Hrb);
+
+		}
+		//if (is_collision)
+		//{
+		//	m_linear_momentum_init = g_gcp.transpose() * m_mesh->m_current_velocities / m_mesh->m_total_mass;
+		//	m_angular_momentum_init = evaluateAngularMomentum(m_mesh->m_current_positions, m_mesh->m_current_velocities);
+		//}
 
 		if (recordTextCPD && m_enable_cpd)
 		{
@@ -2374,7 +2402,7 @@ void Simulation::integrateImplicitMethod()
 					x.block_vector(idx) = fixedpoint;
 				}
 			}
-		}
+		}*/
 
 		if (m_processing_collision)
 		{
@@ -2386,7 +2414,7 @@ void Simulation::integrateImplicitMethod()
 				}
 
 			}
-		}*/
+		}
 
 
 		m_ls_is_first_iteration = false;
@@ -2640,7 +2668,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
-			if (m_handles.size() == 0)
+			if (m_handles.size() == 0  || m_handles[0].attachment_constraints[0]->m_stiffness < 0.001 /* && !is_collision*/)
 			{
 				VectorX ck(7);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
@@ -2703,7 +2731,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				/*g_st -= dcst* lambda;*/
 				//return false 
 			}
-			else
+			else 
 			{
 				if (m_show_cpd_loss)
 					std::cout << fabs(current_energy) << std::endl;
@@ -3665,6 +3693,18 @@ void Simulation::fepr()
 		qx = qx - m_mesh->m_inv_mass_matrix * dcx * lambda;
 		qv = qv - inv_h_squared * m_mesh->m_inv_mass_matrix * dcv * lambda;
 		st = st - inv_eps * dcst * lambda;
+
+		if (m_processing_collision)
+		{
+			for (int i = 0; i < m_mesh->m_vertices_number; i++)
+			{
+				if (qx.block_vector(i).y() < g_bottom)
+				{
+					qx.block_vector(i).y() = g_bottom;
+				}
+
+			}
+		}
 
 		/*Matrix sch = dchx.transpose() * m_mesh->m_inv_mass_matrix * dchx + inv_h_squared * dchv.transpose() * m_mesh->m_inv_mass_matrix * dchv;
 		VectorX lh = sch.inverse() * c(6);

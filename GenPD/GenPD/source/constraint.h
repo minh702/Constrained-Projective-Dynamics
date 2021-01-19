@@ -98,16 +98,16 @@ public:
 
 	// inline
 	const ConstraintType& Type() { return m_constraint_type; }
-
+	ScalarType m_stiffness;
 protected:
 	ConstraintType m_constraint_type;
-	ScalarType m_stiffness;
 
 	// saved energy
 	ScalarType m_energy;
 
 // for visualization and selection
 public:
+
 	virtual void WriteToFileOBJ(std::ofstream& outfile, int& existing_vertices) { /*do nothing*/ }
 	virtual void WriteToFileOBJHead(std::ofstream& outfile) { /*do nothing*/ }
 	virtual void WriteToFileOBJTet(std::ofstream& outfile) { /*do nothing*/ }
