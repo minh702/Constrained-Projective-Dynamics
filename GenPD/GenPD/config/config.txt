@@ -7,7 +7,7 @@ Texture             0
 ScreenWidth         1920
 ScreenHeight        1017
 
-MeshType            0
+MeshType            1
 MeshMass            10
 TetFilePath         cube
 TetScaling          1
@@ -25,18 +25,18 @@ Timestep            0.0333
 SubStepping         1
 OpenMP              1
 TetConstraintType   0
-AttachmentStiffness 1000
-StretchStiffness    100
-BendingStiffness    20
+AttachmentStiffness 0
+StretchStiffness    80
+BendingStiffness    100
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  220
+LaplacianStiffness  260
 GravityConstant     10
 DampingType         2
 DampingCoefficient  0
 RestiCoefficient    0.99
 FrictionCoefficient 0
-IterationsPerFrame  40
+IterationsPerFrame  10
 DefinitenessFix     0
 LSEnable            0
 LSExact             0
@@ -52,8 +52,8 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     -2.25108 -0.246435 -0.133053
-LinearMomentum      0.18759 0.35821 -1.02156
+AngularMomentum     -960.181 4.40744 633.516
+LinearMomentum      81.6738 109.268 132.501
 Scale               0 0 0
 
 FEPREnable          0
@@ -72,5 +72,5 @@ RecordFEPR          0
 RecordQuantities    0
 RecordEnergy        0
 
-ProcessCollison     0
+ProcessCollison     1
 ClampEnable         0

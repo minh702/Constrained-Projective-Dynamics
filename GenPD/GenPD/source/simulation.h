@@ -239,7 +239,7 @@ protected:
 	AttachmentConstraint* m_selected_attachment_constraint;
 	// collision constraints
 	std::vector<CollisionSpringConstraint> m_collision_constraints;
-
+	std::vector<AttachmentConstraint> m_my_collision;
 	// partial material control
 	std::vector<Constraint*> m_selected_constraints;
 	MaterialType m_partial_material_type;
@@ -352,6 +352,7 @@ protected:
 	ScalarType m_lx, m_ly, m_lz;
 	ScalarType m_px, m_py, m_pz;
 	ScalarType m_cpd_threshold;
+	ScalarType m_collision_stiffness;
 	// for Newton's method
 	bool m_definiteness_fix;
 
@@ -402,7 +403,7 @@ private:
 	void dampVelocity(); // damp velocity at the end of each iteration.
 	void calculateExternalForce(); // wind force is propotional to the area of triangles projected on the tangential plane
 	VectorX collisionDetectionPostProcessing(const VectorX& x); // detect collision and return a vector of penetration
-	void collisionDetection(const VectorX& x); 
+	void collisionDetection( VectorX& x); 
 	void collisionResolution(const VectorX& penetration, VectorX& x, VectorX& v);
 
 	void integrateImplicitMethod();

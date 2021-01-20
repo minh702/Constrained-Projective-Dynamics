@@ -342,6 +342,7 @@ void AntTweakBarWrapper::Init()
 	// Demo
 	TwAddVarRW(m_sim_bar, "Process Collision", TwType(sizeof(bool)), &g_simulation->m_processing_collision, " group='Demo' ");
 	TwAddVarRW(m_sim_bar, "enable User Control", TwType(sizeof(bool)), &g_simulation->m_enable_user_control, " group='Demo' ");
+	TwAddVarRW(m_sim_bar, "collision stiffness", TW_TYPE_SCALAR_TYPE, &g_simulation->m_collision_stiffness, " group='Demo' ");
 	TwAddVarRW(m_sim_bar, "clamp", TwType(sizeof(bool)), &g_simulation->m_clamp, " group='Demo' ");
 
 

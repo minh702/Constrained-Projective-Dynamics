@@ -65,8 +65,8 @@ TimerWrapper g_fepr_timer;
 
 ScalarType rest_length_adjust = 1; // 1  = normal spring, 0 = zero length spring
 
-ScalarType g_bottom = -5;
-
+ScalarType g_bottom = -8;
+ScalarType g_collision_stiffness = 1e4;
 //for cpd
 
 bool is_collision;
@@ -165,6 +165,7 @@ Simulation::Simulation()
 	m_verbose_show_energy = false;
 	m_verbose_show_factorization_warning = true;
 	m_cpd_max_iter = 100;
+	m_collision_stiffness = 1e3;
 	/*m_enable_cpd = false;
 	m_cpd_threshold = 1e-5;
 	m_cpd_max_iter = 100;*/
@@ -633,11 +634,11 @@ void Simulation::Update()
 	}*/
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
-		// update inertia term
+		// update inertia termci
 		EigenVector3 gravity(0, -m_gravity_constant, 0);
 	
 		computeConstantVectorsYandZ();
-		VectorX v_t = m_mesh->m_current_velocities + m_h * m_external_force;
+		//VectorX v_t = m_mesh->m_current_velocities + m_h * m_external_force;
 		start = system_clock::now();
 
 		//m_hamiltonian = Evalaute;
@@ -663,9 +664,6 @@ void Simulation::Update()
 			}
 
 			m_alpha = 0;
-			//m_linear_momentum_init = evaluateLinearMomentum(v_t);
-			//m_angular_momentum_init = evaluateAngularMomentum(m_y, v_t);
-			//m_hamiltonian += m_external_force.dot(v_t);
 
 			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
 			EigenVector3 v, w;
@@ -676,40 +674,20 @@ void Simulation::Update()
 			m_Hrb = fabs(m_Hrb);
 			//m_Hrb = g_total_energy;
 			// update
-			m_linear_momentum_init += 0.5f*gravity * m_h * m_mesh->m_total_mass;
 
+			ScalarType before = fabs(0.5f*(m_linear_momentum_init.dot(m_linear_momentum_init)/m_mesh->m_total_mass));
 
-			if (m_processing_collision)
-			{
-				for (int i = 0; i < m_mesh->m_vertices_number; i++)
-				{
+			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
 
-					EigenVector3 v = v_t.block_vector(i);
-					if (m_y.block_vector(i).y() < g_bottom && m_linear_momentum_init.y() < 0)
-					{
-						m_linear_momentum_init *= -m_restitution_coefficient;
-						m_angular_momentum_init *= -m_restitution_coefficient;
-							break;
+			ScalarType after = fabs(0.5f * (m_linear_momentum_init.dot(m_linear_momentum_init) / m_mesh->m_total_mass));
+			m_hamiltonian += (after - before);
 
-						//is_collision = true;
-					}
-				}
-
-				/*for (int i = 0; i < m_mesh->m_vertices_number; i++)
-				{
-					EigenVector3 v = v_t.block_vector(i);
-					if (m_y.block_vector(i).y() < g_bottom && m_linear_momentum_init.y() < 0)
-					{
-						m_linear_momentum_init *= -m_restitution_coefficient;
-						m_angular_momentum_init *= -m_restitution_coefficient;
-						break;
-					}
-				}*/
-			}
+	 
 
 			g_com += m_linear_momentum_init * m_h;
-			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
-			m_Hrb += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+			//m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+			m_Hrb += (after - before);
+
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
 				m_Hrb *= (1 + 0.002);
 
@@ -750,7 +728,7 @@ void Simulation::Update()
 			break;
 		}
 
-		if (m_handles.size() != 0 && m_handles[0].attachment_constraints[0]->m_stiffness > 0.001 /* && !is_collision*/)
+		if ((m_handles.size() != 0 && m_handles[0].attachment_constraints[0]->m_stiffness > 0.001 ))
 		{
 			VectorX x = m_mesh->m_current_positions;
 			VectorX v = m_mesh->m_current_velocities;
@@ -769,12 +747,7 @@ void Simulation::Update()
 			m_Hrb = fabs(m_Hrb);
 
 		}
-		//if (is_collision)
-		//{
-		//	m_linear_momentum_init = g_gcp.transpose() * m_mesh->m_current_velocities / m_mesh->m_total_mass;
-		//	m_angular_momentum_init = evaluateAngularMomentum(m_mesh->m_current_positions, m_mesh->m_current_velocities);
-		//}
-
+	
 		if (recordTextCPD && m_enable_cpd)
 		{
 			std::ofstream out(fileName, std::ios::app);
@@ -2265,11 +2238,11 @@ VectorX Simulation::collisionDetectionPostProcessing(const VectorX& x)
 	return penetration;
 }
 
-void Simulation::collisionDetection(const VectorX& x)
+void Simulation::collisionDetection(VectorX& x)
 {
 	if (!m_scene->IsEmpty())
 	{
-		m_collision_constraints.clear();
+		m_my_collision.clear();
 
 		EigenVector3 surface_point;
 		EigenVector3 normal;
@@ -2281,11 +2254,14 @@ void Simulation::collisionDetection(const VectorX& x)
 
 			if (m_scene->StaticIntersectionTest(xi, normal, dist))
 			{
-				surface_point = xi - normal*dist; // dist is negative...
-				m_collision_constraints.push_back(CollisionSpringConstraint(1e3, i, surface_point, normal));
+				surface_point = xi - normal * dist; // dist is negative...
+				//x.block_vector(i) = surface_point;
+				m_my_collision.push_back(AttachmentConstraint(i, surface_point));
 			}
+
 		}
 	}
+
 }
 
 void Simulation::collisionResolution(const VectorX& penetration, VectorX& x, VectorX& v)
@@ -2355,13 +2331,6 @@ void Simulation::integrateImplicitMethod()
 	
 
 	ScalarType k = 0.01f;
-
-	//if (m_processing_collision)
-	//{
-	//	// Collision Detection every iteration
-	//	collisionDetection(x);
-	//}
-
 	int iter;
 	if (m_enable_cpd)
 	{
@@ -2371,10 +2340,16 @@ void Simulation::integrateImplicitMethod()
 	{
 		iter = m_iterations_per_frame;
 	}
-
+	g_first_hit = false;
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
-		
+		if (m_processing_collision)
+		{
+			// Collision Detection every iteration
+			collisionDetection(x);
+
+
+		}
 		g_integration_timer.Tic();
 		switch (m_optimization_method)
 		{
@@ -2390,33 +2365,6 @@ void Simulation::integrateImplicitMethod()
 		default:
 			break;
 		}
-
-	/*	if (m_handles.size() > 0)
-		{
-			for (int j = 0; j < m_handles.size(); j++)
-			{
-				for (int i = 0; i < m_handles[j].attachment_constraints.size(); i++)
-				{
-					unsigned int idx = m_handles[j].attachment_constraints[i]->GetConstrainedVertexIndex();
-					EigenVector3 fixedpoint = m_handles[j].attachment_constraints[i]->GetFixedPoint();
-					x.block_vector(idx) = fixedpoint;
-				}
-			}
-		}*/
-
-		if (m_processing_collision)
-		{
-			for (int i = 0; i < m_mesh->m_vertices_number; i++)
-			{
-				if (x.block_vector(i).y() < g_bottom)
-				{
-					x.block_vector(i).y() = g_bottom;
-				}
-
-			}
-		}
-
-
 		m_ls_is_first_iteration = false;
 		g_integration_timer.Toc();
 
@@ -2668,7 +2616,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
-			if (m_handles.size() == 0  || m_handles[0].attachment_constraints[0]->m_stiffness < 0.001 /* && !is_collision*/)
+			if (m_handles.size() == 0  || m_handles[0].attachment_constraints[0]->m_stiffness < 0.001 )
 			{
 				VectorX ck(7);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
@@ -3386,6 +3334,9 @@ void Simulation::evaluateGradientPureConstraint(const VectorX& x, const VectorX&
 #pragma omp for
 			for (i = 0; i < m_constraints.size(); i++)
 			{
+				if (m_constraints[i]->m_stiffness > 1234)
+					std::cout << "test" << std::endl;
+
 				m_constraints[i]->EvaluateGradient(x);
 			}
 		}
