@@ -752,7 +752,15 @@ void Simulation::Update()
 
 		EigenVector3 height = g_gcp.transpose() * m_mesh->m_current_positions/m_mesh->m_total_mass;
 
-		std::cout << height.y() << std::endl;
+
+		string aa = "./TextData/" + std::to_string(m_restitution_coefficient) + "height.txt";
+		std::ofstream outhe(aa, std::ios::app);
+		if (outhe.is_open())
+		{
+			outhe << std::to_string(height.y()) << std::endl;
+		}
+		outhe.close();
+		//std::cout << height.y() << std::endl;
 
 		if (m_enable_fepr) 
 			fepr();

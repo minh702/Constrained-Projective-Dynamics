@@ -1,5 +1,5 @@
-HasEnd              0
-TotalFrame          149
+HasEnd              1
+TotalFrame          999
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -34,7 +34,7 @@ LaplacianStiffness  2030
 GravityConstant     10
 DampingType         2
 DampingCoefficient  0
-RestiCoefficient    0.5
+RestiCoefficient    1
 FrictionCoefficient 0
 IterationsPerFrame  10
 DefinitenessFix     0
@@ -52,8 +52,8 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 0 0
-LinearMomentum      0 0 0
+AngularMomentum     -0 -0 -0
+LinearMomentum      0 -76.59 0
 Scale               0 0 0
 
 FEPREnable          0
