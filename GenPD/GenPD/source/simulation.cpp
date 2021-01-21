@@ -616,29 +616,24 @@ void Simulation::Update()
 	m_last_descent_dir.resize(m_mesh->m_system_dimension);
 	m_last_descent_dir.setZero();
 
-	
-	/*if (m_enable_user_control)
-	{
-		EigenVector3 v, w;
-		v = m_linear_momentum_init / m_mesh->m_total_mass;
-		w = m_rest_inertia.inverse() * m_angular_momentum_init;
-		m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
-		m_current_angular_momentum = m_angular_momentum_init;
-		m_current_linear_momentum = m_linear_momentum_init;
-
-		m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
-		if (fabs(m_hamiltonian - m_Hrb) < 0.1)
-			m_Hrb *= (1 + 0.001);
-
-		m_enable_user_control = false;
-	}*/
+	is_collision = false;
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
-		// update inertia termci
-		EigenVector3 gravity(0, -m_gravity_constant, 0);
 	
+		if (m_processing_collision)
+		{
+			for (int i = 0; i < m_mesh->m_vertices_number; i++)
+			{
+				if (m_mesh->m_current_positions.y() < g_bottom)
+				{
+					is_collision = true;
+					m_external_force.block_vector(i).y() += m_collision_stiffness * pow((m_mesh->m_current_positions.y() - g_bottom),2);
+				}
+			}
+		}
+
 		computeConstantVectorsYandZ();
-		//VectorX v_t = m_mesh->m_current_velocities + m_h * m_external_force;
+	
 		start = system_clock::now();
 
 		//m_hamiltonian = Evalaute;
@@ -646,15 +641,8 @@ void Simulation::Update()
 		VectorX f_ext(m_mesh->m_system_dimension);
 		f_ext.setZero();
 
-
-	/*	if (m_get_current_hamiltonian)
-		{
-			m_hamiltonian = evaluateEnergyPureConstraint(m_mesh->m_current_positions, f_ext) + evaluateKineticEnergy(m_mesh->m_current_velocities);
-			m_get_current_hamiltonian = false;
-		}*/
 		if (m_enable_cpd)
 		{
-			is_collision = false;
 			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
@@ -665,6 +653,9 @@ void Simulation::Update()
 
 			m_alpha = 0;
 
+			m_linear_momentum_init += g_gcp.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
+			m_angular_momentum_init += g_gcl.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
+
 			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
 			EigenVector3 v, w;
 			v = m_linear_momentum_init / m_mesh->m_total_mass;
@@ -672,22 +663,9 @@ void Simulation::Update()
 			m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
 
 			m_Hrb = fabs(m_Hrb);
-			//m_Hrb = g_total_energy;
-			// update
-
-			ScalarType before = fabs(0.5f*(m_linear_momentum_init.dot(m_linear_momentum_init)/m_mesh->m_total_mass));
-
-			m_linear_momentum_init += gravity * m_h * m_mesh->m_total_mass;
-
-			ScalarType after = fabs(0.5f * (m_linear_momentum_init.dot(m_linear_momentum_init) / m_mesh->m_total_mass));
-			m_hamiltonian += (after - before);
-
-	 
-
 			g_com += m_linear_momentum_init * m_h;
-			//m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
-			m_Hrb += (after - before);
-
+			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+		
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
 				m_Hrb *= (1 + 0.002);
 
@@ -728,7 +706,7 @@ void Simulation::Update()
 			break;
 		}
 
-		if ((m_handles.size() != 0 && m_handles[0].attachment_constraints[0]->m_stiffness > 0.001 ))
+	/*	if ((m_handles.size() != 0 && m_handles[0].attachment_constraints[0]->m_stiffness > 0.001 ))
 		{
 			VectorX x = m_mesh->m_current_positions;
 			VectorX v = m_mesh->m_current_velocities;
@@ -746,7 +724,7 @@ void Simulation::Update()
 
 			m_Hrb = fabs(m_Hrb);
 
-		}
+		}*/
 	
 		if (recordTextCPD && m_enable_cpd)
 		{
@@ -2343,13 +2321,6 @@ void Simulation::integrateImplicitMethod()
 	g_first_hit = false;
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
-		if (m_processing_collision)
-		{
-			// Collision Detection every iteration
-			collisionDetection(x);
-
-
-		}
 		g_integration_timer.Tic();
 		switch (m_optimization_method)
 		{
@@ -2364,6 +2335,17 @@ void Simulation::integrateImplicitMethod()
 			break;
 		default:
 			break;
+		}
+
+		if (m_processing_collision)
+		{
+			for (int i = 0; i < m_mesh->m_vertices_number; i++)
+			{
+				if (x.block_vector(i).y() < g_bottom)
+				{
+					x.block_vector(i).y() = g_bottom;
+				}
+			}
 		}
 		m_ls_is_first_iteration = false;
 		g_integration_timer.Toc();
@@ -2616,7 +2598,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
-			if (m_handles.size() == 0  || m_handles[0].attachment_constraints[0]->m_stiffness < 0.001 )
+			if (0)
 			{
 				VectorX ck(7);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
@@ -2698,6 +2680,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 						outen << std::to_string(ce / (m_h * m_h)) + token;
 					}
 					outen.close();
+
 				}
 
 				if (fabs(current_energy) < m_cpd_threshold)
