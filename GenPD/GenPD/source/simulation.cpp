@@ -627,7 +627,7 @@ void Simulation::Update()
 				if (m_mesh->m_current_positions.y() < g_bottom)
 				{
 					is_collision = true;
-					m_external_force.block_vector(i).y() += m_collision_stiffness * pow((m_mesh->m_current_positions.y() - g_bottom),2);
+					//m_external_force.block_vector(i).y() += m_collision_stiffness * pow((m_mesh->m_current_positions.y() - g_bottom),2);
 				}
 			}
 		}

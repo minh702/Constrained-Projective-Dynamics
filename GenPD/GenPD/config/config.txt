@@ -52,15 +52,15 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     -600.524 0 -135.437
-LinearMomentum      0 -72000 0
+AngularMomentum     8216.37 0 3334.59
+LinearMomentum      0 -284700 0
 Scale               0 0 0
 
 FEPREnable          0
 FEPRThreshold       0.001
 FEPRMaxIter         100
 
-CPDEnable           0
+CPDEnable           1
 CPDThreshold        0.0001
 CPDMaxIter          10
 
