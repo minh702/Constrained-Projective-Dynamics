@@ -1,5 +1,5 @@
-HasEnd              0
-TotalFrame          1000
+HasEnd              1
+TotalFrame          199
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -26,11 +26,11 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 100
-StretchStiffness    10000
+StretchStiffness    20000
 BendingStiffness    100
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  20100
+LaplacianStiffness  40100
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
@@ -52,7 +52,7 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     500 0 0
+AngularMomentum     600 0 0
 LinearMomentum      0 0 0
 Scale               0 0 0
 
@@ -65,12 +65,14 @@ CPDThreshold        0.0001
 CPDMaxIter          100
 
 ExportOBJ           0
-RecordPD            0
-RecordCPD           0
+RecordPD            1
+RecordPDiter        0
+RecordCPD           1
 RecordCPDLoss       0
 RecordFEPR          0
 RecordQuantities    0
 RecordEnergy        0
+RecordHeight        0
 
 ProcessCollison     0
 ClampEnable         0
