@@ -417,13 +417,17 @@ void Simulation::set_prefactored_matrix()
 		break;
 	}
 
-	for (int i = 3; i < 6; i++)
+#pragma omp parallel
 	{
-		// first iteration
-		VectorX r;
-		LBFGSKernelLinearSolve(r, g_gck.col(i), 1);
+#pragma omp  for 
+		for (int i = 3; i < 6; i++)
+		{
+			// first iteration
+			VectorX r;
+			LBFGSKernelLinearSolve(r, g_gck.col(i), 1);
 
-		 g_Ainv_gcl.col(i - 3) = g_Ainv_gcm.col(i) = g_Ainv_gck.col(i) = r;
+			g_Ainv_gcl.col(i - 3) = g_Ainv_gcm.col(i) = g_Ainv_gck.col(i) = r;
+		}
 	}
 }
 
@@ -643,7 +647,24 @@ void Simulation::Update()
 
 		if (m_enable_cpd)
 		{
+			system_clock::time_point start1, end1;
+			nanoseconds result1;
+			
+			start1 = system_clock::now();
+			/// <summary>
 			set_prefactored_matrix();
+			/// </summary>
+			end1 = system_clock::now();
+			result1 = end1 - start1;
+
+			std::ofstream out12("./TextData/tempo.txt", std::ios::app);
+			if (out12.is_open())
+			{
+				out12 << std::to_string(result1.count()) << endl;
+			}
+			out12.close();
+
+
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
@@ -653,9 +674,12 @@ void Simulation::Update()
 
 			m_alpha = 0;
 
-			m_linear_momentum_init += g_gcp.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
-			m_angular_momentum_init += g_gcl.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
-
+			if (m_external_force.norm() > 0.001)
+			{
+				m_linear_momentum_init += g_gcp.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
+				m_angular_momentum_init += g_gcl.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
+				m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+			}
 			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
 			EigenVector3 v, w;
 			v = m_linear_momentum_init / m_mesh->m_total_mass;
@@ -664,7 +688,6 @@ void Simulation::Update()
 
 			m_Hrb = fabs(m_Hrb);
 			g_com += m_linear_momentum_init * m_h;
-			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 		
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
 				m_Hrb *= (1 + 0.002);
