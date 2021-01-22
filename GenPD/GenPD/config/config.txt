@@ -9,8 +9,8 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         sphere
-TetScaling          3
+TetFilePath         torus.1
+TetScaling          5
 TetFlip             0
 TetRotation         0
 ClothDimension      60 60
@@ -25,13 +25,13 @@ Timestep            0.0333
 SubStepping         1
 OpenMP              1
 TetConstraintType   0
-AttachmentStiffness 0
-StretchStiffness    8000
+AttachmentStiffness 100
+StretchStiffness    10000
 BendingStiffness    100
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  16100
-GravityConstant     10
+LaplacianStiffness  20100
+GravityConstant     0
 DampingType         2
 DampingCoefficient  0
 RestiCoefficient    0.99
@@ -52,8 +52,8 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     8216.37 0 3334.59
-LinearMomentum      0 -284700 0
+AngularMomentum     500 0 0
+LinearMomentum      0 0 0
 Scale               0 0 0
 
 FEPREnable          0
@@ -62,7 +62,7 @@ FEPRMaxIter         100
 
 CPDEnable           1
 CPDThreshold        0.0001
-CPDMaxIter          10
+CPDMaxIter          100
 
 ExportOBJ           0
 RecordPD            0
@@ -72,5 +72,5 @@ RecordFEPR          0
 RecordQuantities    0
 RecordEnergy        0
 
-ProcessCollison     1
+ProcessCollison     0
 ClampEnable         0

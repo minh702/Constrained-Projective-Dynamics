@@ -2598,7 +2598,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
-			if (0)
+			if (m_gravity_constant < 0.001)
 			{
 				VectorX ck(7);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
