@@ -627,7 +627,24 @@ void Simulation::Update()
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		if (m_enable_cpd)
 		{
+
+			system_clock::time_point start1, end1;
+			nanoseconds result1;
+
+			start1 = system_clock::now();
+			/// <summary>
 			set_prefactored_matrix();
+			/// </summary>
+			end1 = system_clock::now();
+			result1 = end1 - start1;
+
+			std::ofstream out12("./TextData/tempo.txt", std::ios::app);
+			if (out12.is_open())
+			{
+				out12 << std::to_string(result1.count()) << endl;
+			}
+			out12.close();
+
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
