@@ -736,6 +736,19 @@ void Simulation::Update()
 			out.close();
 		}
 
+		EigenVector3 height = g_gcp.transpose() * m_mesh->m_current_positions / m_mesh->m_total_mass;
+
+		if (recordTextHeight)
+		{
+			string aa = "./TextData/" + std::to_string(m_restitution_coefficient) + "height.txt";
+			std::ofstream outhe(aa, std::ios::app);
+			if (outhe.is_open())
+			{
+				outhe << std::to_string(height.y()) << std::endl;
+			}
+			outhe.close();
+		}
+
 		if (m_enable_fepr) 
 			fepr();
 		
@@ -2598,7 +2611,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
-			if (0)
+			if (1)
 			{
 				VectorX ck(7);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
@@ -2732,16 +2745,19 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		outen.close();
 	}
 
-	string fileName4 = "./TextData/PDiter.txt";
-	std::ofstream outit(fileName4, std::ios::app);
-	if (outit.is_open())
+	if (recordTextPDiter)
 	{
-		if (-p_k.dot(gf_k) < EPSILON_SQUARE || m_current_iteration == m_iterations_per_frame - 1)
+		string fileName4 = "./TextData/PDiter.txt";
+		std::ofstream outit(fileName4, std::ios::app);
+		if (outit.is_open())
 		{
-			outit << std::to_string(m_current_iteration) << std::endl;
+			if (-p_k.dot(gf_k) < EPSILON_SQUARE || m_current_iteration == m_iterations_per_frame - 1)
+			{
+				outit << std::to_string(m_current_iteration) << std::endl;
+			}
 		}
+		outit.close();
 	}
-	outit.close();
 
 	if (-p_k.dot(gf_k) < EPSILON_SQUARE)
 	{
