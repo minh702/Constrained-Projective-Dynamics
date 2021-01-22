@@ -647,13 +647,13 @@ void Simulation::Update()
 
 		if (m_enable_cpd)
 		{
-			system_clock::time_point start1, end1;
+			/*system_clock::time_point start1, end1;
 			nanoseconds result1;
 			
 			start1 = system_clock::now();
-			/// <summary>
+			/// <summary>*/
 			set_prefactored_matrix();
-			/// </summary>
+			/*/// </summary>
 			end1 = system_clock::now();
 			result1 = end1 - start1;
 
@@ -663,7 +663,7 @@ void Simulation::Update()
 				out12 << std::to_string(result1.count()) << endl;
 			}
 			out12.close();
-
+			*/
 
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
