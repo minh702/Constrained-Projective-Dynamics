@@ -128,11 +128,14 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "Export OBJ", TwType(sizeof(bool)), &(g_export_obj), "group='Recording'");
 	TwDefine(" 'Control Panel'/'Recording' group='State Control'");
 	TwAddVarRW(m_control_panel_bar, "PD", TwType(sizeof(bool)), &g_simulation->recordTextPD, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "PD iteration", TwType(sizeof(bool)), &g_simulation->recordTextPDiter, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "CPD", TwType(sizeof(bool)), &g_simulation->recordTextCPD, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "CPDLoss", TwType(sizeof(bool)), &g_simulation->recordTextCPDLoss, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->recordTextFEPR, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "Quantities", TwType(sizeof(bool)), &g_simulation->m_record_quantities, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "Energy", TwType(sizeof(bool)), &g_simulation->recordTextEnergy, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "Height", TwType(sizeof(bool)), &g_simulation->recordTextHeight, "group='Recording To Text'");
+
 	TwDefine(" 'Control Panel'/'Recording To Text' group='State Control'");
 	TwAddSeparator(m_control_panel_bar, NULL, "");
 	// visualization
@@ -757,11 +760,13 @@ void AntTweakBarWrapper::SaveSettings()
 		//Record
 		outfile << "ExportOBJ           " << g_export_obj << std::endl;
 		outfile << "RecordPD            " << g_simulation->recordTextPD << std::endl;
+		outfile << "RecordPDiter        " << g_simulation->recordTextPDiter << std::endl;
 		outfile << "RecordCPD           " << g_simulation->recordTextCPD << std::endl;
 		outfile << "RecordCPDLoss       " << g_simulation->recordTextCPDLoss << std::endl;
 		outfile << "RecordFEPR          " << g_simulation->recordTextFEPR << std::endl;
 		outfile << "RecordQuantities    " << g_simulation->m_record_quantities << std::endl;
 		outfile << "RecordEnergy        " << g_simulation->recordTextEnergy << std::endl;
+		outfile << "RecordHeight        " << g_simulation->recordTextHeight << std::endl;
 		outfile << std::endl;
 
 		//
@@ -888,11 +893,13 @@ void AntTweakBarWrapper::LoadSettings()
 		//Record
 		infile >> ignoreToken >> g_export_obj;
 		infile >> ignoreToken >> g_simulation->recordTextPD;
+		infile >> ignoreToken >> g_simulation->recordTextPDiter;
 		infile >> ignoreToken >> g_simulation->recordTextCPD;
 		infile >> ignoreToken >> g_simulation->recordTextCPDLoss;
 		infile >> ignoreToken >> g_simulation->recordTextFEPR;
 		infile >> ignoreToken >> g_simulation->m_record_quantities;
 		infile >> ignoreToken >> g_simulation->recordTextEnergy;
+		infile >> ignoreToken >> g_simulation->recordTextHeight;
 
 		//
 		infile >> ignoreToken >> g_simulation->m_processing_collision;
