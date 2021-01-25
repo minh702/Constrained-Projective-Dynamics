@@ -178,6 +178,8 @@ public:
 	void LoadPerConstraintMaterialProperties(const char* filename);
 	void SelectTetConstraints(const std::vector<unsigned int>& indices);
 
+
+
 	// eigen value visualization mesh
 	void NewVisualizationMesh();
 	void DeleteVisualizationMesh();
@@ -473,6 +475,8 @@ private:
 	EigenVector3 evaluateAngularMomentum(const VectorX& x, const VectorX& v);
 	EigenVector3 evaluateLinearMomentumAndGradient(const VectorX& v, Matrix& cpv);
 	EigenVector3 evaluateLinearMomentum(const VectorX& v);
+
+	ScalarType evaluateGravityPotentialEnergyAndGradient(const VectorX& x, VectorX& gradient);
 
 	//cpd
 	void set_prefactored_matrix();
