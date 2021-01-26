@@ -86,6 +86,7 @@ VectorX g_ck;
 Matrix g_gcpx;
 Matrix g_Ainv_gck, g_gck, g_gcl, g_gcp, g_gcm, g_Ainv_gcl, g_Ainv_gcp, g_Ainv_gcm, g_Ainv_gca, g_gca;
 
+ScalarType g_padding = 0.03;
 ScalarType radius = 30.f;
 EigenVector3 test(0,-30,0);
 VectorX g_fixed_positions;
@@ -654,18 +655,17 @@ void Simulation::Update()
 
 			m_alpha = 0;
 
-			/*m_linear_momentum_init += g_gcp.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
-			m_angular_momentum_init += g_gcl.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;*/
+			g_com += m_linear_momentum_init * m_h;
+			m_linear_momentum_init += g_gcp.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
+			m_angular_momentum_init += g_gcl.transpose() * m_mesh->m_inv_mass_matrix * m_external_force;
 
 			EigenMatrix3 inertia = g_gcl.transpose() * m_mesh->m_inv_mass_matrix * g_gcl;
 			EigenVector3 v, w;
 			v = m_linear_momentum_init / m_mesh->m_total_mass;
 			w = m_rest_inertia.inverse() * m_angular_momentum_init;
-			m_Hrb = 0.5f * v.dot(m_linear_momentum_init) + 0.5f * w.dot(m_angular_momentum_init);
-
+			m_Hrb = 0.5f * m_angular_momentum_init.dot(w) + 0.5f * m_linear_momentum_init.dot(v);
 			m_Hrb = fabs(m_Hrb);
-			g_com += m_linear_momentum_init * m_h;
-			//m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
+			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
 		
 			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
 				m_Hrb *= (1 + 0.002);
@@ -725,8 +725,8 @@ void Simulation::Update()
 
 			m_Hrb = fabs(m_Hrb);
 
-		}*/
-	
+		}
+	*/
 		if (recordTextCPD && m_enable_cpd)
 		{
 			std::ofstream out(fileName, std::ios::app);
@@ -2114,7 +2114,8 @@ void Simulation::dampVelocity()
 		break;
 
 	case DAMPING_OURS:
-		m_hamiltonian = m_hamiltonian - m_h * m_damping_coefficient * (m_hamiltonian - m_Hrb);
+		ScalarType Hrbpadding = (1 + g_padding) * m_Hrb;
+		m_hamiltonian = m_hamiltonian - m_h * m_damping_coefficient * (m_hamiltonian - Hrbpadding);
 		break;
 
 	}
@@ -2502,7 +2503,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	nanoseconds result;
 
 	//ScalarType Hblend = m_hamiltonian;
-	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * m_Hrb;
+	ScalarType Hrbpadding = (1 + g_padding) * m_Hrb;
+	ScalarType Hblend = (1 - m_alpha) * m_hamiltonian + m_alpha * Hrbpadding;
 	ScalarType ce = evaluateEnergyAndGradient(x, gf_k);
 	ScalarType current_energy = ce - m_h * m_h * Hblend;
 
@@ -2604,7 +2606,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
-			if (1)
+			if (m_handles.size() < 1 && m_gravity_constant < 0.001 )
 			{
 				VectorX ck(7);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
@@ -2653,7 +2655,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				else
 					inv_eps = 0.f;
 
-				ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
+				ScalarType dh = m_h * m_h * (m_hamiltonian - Hrbpadding);
 				g_gck.col(6) = g_gch;
 				g_Ainv_gck.col(6) = g_Ainv_gch;
 				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck /*+ dcst.transpose() * dcst*/;
