@@ -223,10 +223,11 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_mesh_bar, "c2z", TW_TYPE_SCALAR_TYPE, &(g_mesh->m_corners[1][2]), " label='Z' group='Corner2 Position' ");
 	TwDefine(" 'Mesh Settings'/'Corner2 Position' group='Cloth Settings'");
 	// selection
-	TwEnumVal mouseModeEV[3] = { { GUI_MODE_SELECTION, "Selection (Q)" },
+	TwEnumVal mouseModeEV[4] = { { GUI_MODE_SELECTION, "Selection (Q)" },
 							 	 { GUI_MODE_TRANSLATION, "Translation (W)" },
-								 { GUI_MODE_ROTATION, "Rotation (R)" } };
-	TwType mouseMode = TwDefineEnum("MouseMode", mouseModeEV, 3);
+								 { GUI_MODE_ROTATION, "Rotation (R)" },
+								 { GUI_MODE_INTERACT, "Interact (I)" } };
+	TwType mouseMode = TwDefineEnum("MouseMode", mouseModeEV, 4);
 	TwAddVarRW(m_mesh_bar, "Mouse Mode", mouseMode, &g_selection_tool->m_gui_mode, " group='Handle' ");
 	TwAddVarRW(m_mesh_bar, "Random Handle Color", TwType(sizeof(bool)), &(g_random_handle_color), " group='Handle' ");
 	TwAddVarRW(m_mesh_bar, "Handle Color", TW_TYPE_COLOR3F, &(g_handle_color[0]), " group='Handle' colormode=hls ");

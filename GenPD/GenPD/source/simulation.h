@@ -155,6 +155,8 @@ public:
 	void LoadHandles(const char* filename);
 	void ResetHandles();
 
+	//void pushVertex(int idx);
+
 	// save laplacian matrix
 	void SaveSparseMatrix(const SparseMatrix& A, const char* filename);
 	void SaveLaplacianMatrix(const char* filename);

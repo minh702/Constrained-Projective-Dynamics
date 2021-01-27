@@ -68,7 +68,7 @@ void RenderWrapper::InitShader(const char* vert_path, const char* frag_path)
     glBindAttribLocation(m_shaderprog_handle, 0, "v_position");
     glBindAttribLocation(m_shaderprog_handle, 1, "v_color");
     glBindAttribLocation(m_shaderprog_handle, 2, "v_normal");
-	glBindAttribLocation(m_shaderprog_handle, 3, "v_texcoord");
+    glBindAttribLocation(m_shaderprog_handle, 3, "v_texcoord");
 
     // attach shader to the shader program
     glAttachShader(m_shaderprog_handle, m_vert_handle);
@@ -80,11 +80,11 @@ void RenderWrapper::InitShader(const char* vert_path, const char* frag_path)
         printLinkInfoLog(m_shaderprog_handle);
 
     // query uniform locations from openGL.
-	m_vbo_handle.m_uniform_modelview = glGetUniformLocation(m_shaderprog_handle, "u_modelviewMatrix");
-	m_vbo_handle.m_uniform_projection = glGetUniformLocation(m_shaderprog_handle, "u_projMatrix");
-	m_vbo_handle.m_uniform_transformation = glGetUniformLocation(m_shaderprog_handle, "u_transformMatrix");
-	m_vbo_handle.m_uniform_enable_texture = glGetUniformLocation(m_shaderprog_handle, "u_choose_tex");
-	m_vbo_handle.m_uniform_texture_sampler = glGetUniformLocation(m_shaderprog_handle, "u_sampler1");
+    m_vbo_handle.m_uniform_modelview = glGetUniformLocation(m_shaderprog_handle, "u_modelviewMatrix");
+    m_vbo_handle.m_uniform_projection = glGetUniformLocation(m_shaderprog_handle, "u_projMatrix");
+    m_vbo_handle.m_uniform_transformation = glGetUniformLocation(m_shaderprog_handle, "u_transformMatrix");
+    m_vbo_handle.m_uniform_enable_texture = glGetUniformLocation(m_shaderprog_handle, "u_choose_tex");
+    m_vbo_handle.m_uniform_texture_sampler = glGetUniformLocation(m_shaderprog_handle, "u_sampler1");
 
     // activate the shader program.
     glUseProgram(m_shaderprog_handle);
@@ -92,39 +92,39 @@ void RenderWrapper::InitShader(const char* vert_path, const char* frag_path)
 
 bool RenderWrapper::InitTexture(const char* tex_path)
 {
-	int x,y,n;
+    int x,y,n;
     unsigned char *data = stbi_load(tex_path, &x, &y, &n, 0);
 
-	if (data == NULL) {
-		fprintf(stderr, "Error, texture was missing.\n");
-		return false;
+    if (data == NULL) {
+        fprintf(stderr, "Error, texture was missing.\n");
+        return false;
     } else {
-		GLint mode;
-		if (n == 4) 
-		{
-			mode = GL_RGBA;
-		}
-		else if (n == 3) 
-		{
-			mode = GL_RGB;
-		}
-		else
-		{
-			fprintf(stderr, "Error, texture formap unknown.\n");
-		}
-		
-		glGenTextures(1, &m_texture);
-		glBindTexture(GL_TEXTURE_2D, m_texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, mode, x, y, 0, mode, GL_UNSIGNED_BYTE, data);
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GLint mode;
+        if (n == 4) 
+        {
+            mode = GL_RGBA;
+        }
+        else if (n == 3) 
+        {
+            mode = GL_RGB;
+        }
+        else
+        {
+            fprintf(stderr, "Error, texture formap unknown.\n");
+        }
+        
+        glGenTextures(1, &m_texture);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, mode, x, y, 0, mode, GL_UNSIGNED_BYTE, data);
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glActiveTexture(GL_TEXTURE0);
-		glUniform1i(m_vbo_handle.m_uniform_enable_texture, 0);
-		glBindTexture(GL_TEXTURE_2D, m_texture);
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(m_vbo_handle.m_uniform_enable_texture, 0);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
 
-		free(data);
-		return true;
+        free(data);
+        return true;
     }
 }
 
@@ -140,19 +140,19 @@ void RenderWrapper::CleanupShader()
 void RenderWrapper::SetCameraProjection(glm::mat4 projection)
 {
     glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(&projection[0][0]);
-	
-	ActivateShaderprog();
-	glUniformMatrix4fv(m_vbo_handle.m_uniform_projection, 1, false, &projection[0][0]);
+    glLoadMatrixf(&projection[0][0]);
+    
+    ActivateShaderprog();
+    glUniformMatrix4fv(m_vbo_handle.m_uniform_projection, 1, false, &projection[0][0]);
 }
 
 void RenderWrapper::SetCameraModelview(glm::mat4 modelview)
 {
     glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(&modelview[0][0]);
-	
-	ActivateShaderprog();
-	glUniformMatrix4fv(m_vbo_handle.m_uniform_modelview, 1, false, &modelview[0][0]);
+    glLoadMatrixf(&modelview[0][0]);
+    
+    ActivateShaderprog();
+    glUniformMatrix4fv(m_vbo_handle.m_uniform_modelview, 1, false, &modelview[0][0]);
 }
 
 void RenderWrapper::ActivateShaderprog()
@@ -179,7 +179,7 @@ char* RenderWrapper::textFileRead(const char* fileName)
     char* text = NULL;
 
     if (fileName != NULL) {
-		FILE* file;
+        FILE* file;
         fopen_s(&file, fileName, "rt");
 
         if (file != NULL) {

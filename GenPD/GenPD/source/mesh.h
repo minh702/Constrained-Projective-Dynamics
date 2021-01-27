@@ -97,7 +97,7 @@ public:
 	unsigned int m_system_dimension; // 3m
 	unsigned int m_expanded_system_dimension; //6s
 	unsigned int m_expanded_system_dimension_1d; //2s
-
+	bool m_is_interact;
 	// vertices positions/previous positions/mass
 	VectorX m_restpose_positions; // 1x3m
 	VectorX m_current_positions; // 1x3m

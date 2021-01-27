@@ -542,6 +542,10 @@ void key_press(unsigned char key, int x, int y) {
 			g_simulation->DeleteHandle();
 			g_simulation->SetReprefactorFlag();
 			break;
+
+		case 'z':
+
+			break;
 		}
 	}
 
@@ -550,53 +554,14 @@ void key_press(unsigned char key, int x, int y) {
 
 void mouse_click(int button, int state, int x, int y)
 {
-   // if (!TwEventMouseButtonGLUT(button, state, x, y))
-   // {
-   //     switch(state)
-   //     {
-   //     case GLUT_DOWN:
-   //         if (glutGetModifiers() == GLUT_ACTIVE_ALT)
-   //         {
-   //             // left: 0. right: 2. middle: 1.
-   //             g_button_mask |= 0x01 << button;
-   //             g_mouse_old_x = x;
-   //             g_mouse_old_y = y;
-   //         }
-   //         else if (glutGetModifiers() == GLUT_ACTIVE_CTRL)
-   //         {
-   //             // ctrl: 3
-   //             g_button_mask |= 0x01 << 3;
-   //             g_mouse_old_x = x;
-   //             g_mouse_old_y = y;
-   //         }
-		//	else
-			//{
-			//	if (g_simulation->TryToToggleAttachmentConstraint(GLM2Eigen(g_camera->GetCameraPosition()), GLM2Eigen(g_camera->GetRaycastDirection(x, y))))
-			//	{ // hit something
-			//		g_simulation->SetReprefactorFlag();
-			//	}
-			//}
-   //        break;
-   //     case GLUT_UP:
-   //         if (glutGetModifiers() == GLUT_ACTIVE_CTRL)
-   //         {// special case for ctrl
-   //             button = 3;
-   //         }
 
-   //         g_simulation->UnselectAttachmentConstraint();
-
-   //         unsigned char mask_not = ~g_button_mask;
-   //         mask_not |= 0x01 << button;
-   //         g_button_mask = ~mask_not;
-   //         break;
-   //     }
-   // }
 	if (!TwEventMouseButtonGLUT(button, state, x, y))
 	{
 		switch (state)
 		{
 		case GLUT_DOWN:
 			// left: 2^0. right: 2^2. middle: 2^1.
+			//std::cout << "c" << std::endl;
 			g_button_mask |= 0x01 << button;
 			g_mouse_old_x = x;
 			g_mouse_old_y = y;
@@ -615,6 +580,15 @@ void mouse_click(int button, int state, int x, int y)
 					break;
 				case GUI_MODE_ROTATION:
 					g_selection_tool->TranslateRotateFirstPoint();
+					g_mouse_down = true;
+					break;
+
+				case GUI_MODE_INTERACT:
+					//std::cout << "test" << std::endl;
+					//g_selection_tool->SelectInteractPoint(x, y, g_screen_width, g_screen_height, g_mesh->m_positions, g_camera->GetMVP());
+					g_selection_tool->SelectVertices(g_mesh->m_positions, g_camera->GetMVP());
+					g_selection_tool->PushSelectedVertices(g_mesh,g_camera->GetCameraPosition());
+					
 					g_mouse_down = true;
 					break;
 				}
@@ -659,7 +633,8 @@ void mouse_motion(int x, int y)
 		float dx, dy;
 		dx = (float)(x - g_mouse_old_x);
 		dy = (float)(y - g_mouse_old_y);
-
+	
+		//std::cout << dx <<" " <<dy<< std::endl;
 		if (g_button_mask & 0x01)
 		{// left button
 			// alt + left button
@@ -669,17 +644,27 @@ void mouse_motion(int x, int y)
 			}
 			else
 			{
-				g_selection_tool->SelectSecondPoint(x, y, g_screen_width, g_screen_height);
+				
 				if (g_selection_tool->GetMode() == GUI_MODE_TRANSLATION)
 				{
+					g_selection_tool->SelectSecondPoint(x, y, g_screen_width, g_screen_height);
 					g_simulation->MoveHandleTemporary(g_camera->GetCurrentTargetPoint(x, y));
 				}
 				else if (g_selection_tool->GetMode() == GUI_MODE_ROTATION)
 				{
+					g_selection_tool->SelectSecondPoint(x, y, g_screen_width, g_screen_height);
 					ScalarType theta;
 					glm::vec3 axis;
 					g_camera->GetCurrentRotation(x, y, axis, theta);
 					g_simulation->RotateHandleTemporary(axis, theta);
+				}
+				else if (g_selection_tool->GetMode() == GUI_MODE_INTERACT)
+				{
+					g_selection_tool->SetInteractBoundingBox(x, y, g_screen_width, g_screen_height);
+						
+					glm::vec3 axis = g_camera->GetCurrentTargetPoint(x, y);
+
+					std::cout << "d" << std::endl;
 				}
 			}
 		}
@@ -749,6 +734,11 @@ void mouse_over(int x, int y)
 {
 	if (!TwEventMouseMotionGLUT(x, y))
 	{
+		if (g_selection_tool->GetMode() == GUI_MODE_INTERACT)
+		{
+			//std::cout << "a" << std::endl;
+			g_selection_tool->SetInteractBoundingBox(x, y, g_screen_width, g_screen_height);
+		}
 		if (g_button_mask == 0)
 		{
 			if (g_selection_tool->HoverSelectHandle(g_simulation, g_camera->CastRay(x, y), g_camera->GetMVP()))

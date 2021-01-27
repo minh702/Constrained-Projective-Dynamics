@@ -86,12 +86,11 @@ VectorX g_ck;
 Matrix g_gcpx;
 Matrix g_Ainv_gck, g_gck, g_gcl, g_gcp, g_gcm, g_Ainv_gcl, g_Ainv_gcp, g_Ainv_gcm, g_Ainv_gca, g_gca;
 
-ScalarType g_padding = 0.03;
+ScalarType g_padding = 0.1;
 ScalarType radius = 30.f;
 EigenVector3 test(0,-30,0);
 VectorX g_fixed_positions;
 Eigen::Vector4i g_fixed_indices;
-
 
 // comparison function for sort
 
@@ -318,7 +317,7 @@ void Simulation::Reset()
 
 	if ( fabs(m_hamiltonian - m_Hrb) < 0.1 )
 	{
-		m_Hrb *= (1 + 0.01);
+		m_Hrb *= (1 + 0.1);
 	}
 	std::cout << m_Hrb << std::endl;
 	std::cout << m_hamiltonian << std::endl;
@@ -375,6 +374,7 @@ void Simulation::Reset()
 	g_total_iterations = 0;
 #endif
 }
+
 
 void Simulation::set_prefactored_matrix()
 {
@@ -609,7 +609,7 @@ void Simulation::Update()
 	string fileName;
 
 
-	// update external force
+	
 	calculateExternalForce();
 
 	ScalarType old_h = m_h;
@@ -621,23 +621,9 @@ void Simulation::Update()
 	is_collision = false;
 	for (unsigned int substepping_i = 0; substepping_i != m_sub_stepping; substepping_i ++)
 	{
-	
-		//if (m_processing_collision)
-		//{
-		//	for (int i = 0; i < m_mesh->m_vertices_number; i++)
-		//	{
-		//		if (m_mesh->m_current_positions.y() < g_bottom)
-		//		{
-		//			//is_collision = true;
-		//			//m_external_force.block_vector(i).y() += m_collision_stiffness * pow((m_mesh->m_current_positions.y() - g_bottom),2);
-		//		}
-		//	}
-		//}
-
 		computeConstantVectorsYandZ();
 	
 		start = system_clock::now();
-
 		//m_hamiltonian = Evalaute;
 		//g_com = g_gcp.transpose() * m_mesh->m_current_positions;
 		VectorX f_ext(m_mesh->m_system_dimension);
@@ -645,7 +631,20 @@ void Simulation::Update()
 
 		if (m_enable_cpd)
 		{
+
+
 			set_prefactored_matrix();
+
+			if (m_mesh->m_is_interact)
+			{
+				ScalarType k_before = evaluateKineticEnergy(m_mesh->m_previous_velocities);
+				m_linear_momentum_init = g_gcp.transpose() * m_mesh->m_current_velocities;
+				m_angular_momentum_init = g_gcl.transpose() * m_mesh->m_current_velocities;
+				ScalarType k_after = evaluateKineticEnergy(m_mesh->m_current_velocities);
+				m_hamiltonian += (k_after - k_before);
+				m_mesh->m_is_interact = false;
+			}
+
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
 				VectorX f_int;
@@ -666,9 +665,7 @@ void Simulation::Update()
 			m_Hrb = 0.5f * m_angular_momentum_init.dot(w) + 0.5f * m_linear_momentum_init.dot(v);
 			m_Hrb = fabs(m_Hrb);
 			m_hamiltonian += m_h * m_external_force.dot(m_mesh->m_current_velocities);
-		
-			if (fabs(m_hamiltonian - m_Hrb) < 0.1)
-				m_Hrb *= (1 + 0.002);
+	
 
 			VectorX vn = m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			LBFGSKernelLinearSolve(g_Ainv_vn, vn, 1);

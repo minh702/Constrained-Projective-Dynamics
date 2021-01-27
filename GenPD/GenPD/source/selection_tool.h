@@ -46,7 +46,8 @@ typedef enum
 {
 	GUI_MODE_SELECTION,
 	GUI_MODE_TRANSLATION,
-	GUI_MODE_ROTATION
+	GUI_MODE_ROTATION,
+	GUI_MODE_INTERACT
 
 } GUIMode;
 
@@ -65,7 +66,9 @@ public:
 	inline std::vector<glm::vec3>& SelectedVertices() {return m_selected_vertices;}
 
 	void Reset();
-
+	void SelectInteractPoint(int x, int y, int width, int height, const std::vector<glm::vec3>& vertices, glm::mat4 mvp);
+	void PushSelectedVertices(Mesh* mesh, glm::vec3 cam_pos);
+	void DeSelectInteractPoint();
 	// select
 	// box selection for vertices (selection mode: click and drag) 
 	void SelectFirstPoint(int x, int y, int width, int height, int selection_mode); // 1 = new, 2 = append, 4 = delete
@@ -75,7 +78,7 @@ public:
 	// hover selection for handles (translate or rotate mode: hover to select)
 	bool HoverSelectHandle(Simulation* sim, const std::vector<glm::vec3>& ray, glm::mat4 mvp); 
 	// !select
-
+	void SetInteractBoundingBox(int x, int y, int width, int height);
 	// translate (translate mode: drag to translate, finalize when release button)
 	void TranslateRotateFirstPoint();
 
@@ -101,7 +104,7 @@ public:
 	//inline const float& P1Y() { return p1y; }
 	//inline const float& P2X() { return p2x; }
 	//inline const float& P2Y() { return p2y; }
-
+	float m_interact_size;
 protected:
 	GUIMode m_gui_mode;
 	// selection;

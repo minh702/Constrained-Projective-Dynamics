@@ -37,7 +37,7 @@ extern int g_screen_height;
 
 void SelectionTool::Reset()
 {
-	m_gui_mode = GUI_MODE_SELECTION;
+	m_gui_mode = GUI_MODE_INTERACT;
 	m_draw_selection_box = false;
 	m_draw_translation_rotation = false;
 	m_hover_with_handle = false;
@@ -45,6 +45,88 @@ void SelectionTool::Reset()
 	m_selected_indices.clear();
 	m_selected_vertices.clear();
 }
+
+void SelectionTool::PushSelectedVertices(Mesh* mesh, glm::vec3 cam_pos)
+{
+
+	if (m_selected_indices.size() > 0)
+		mesh->m_is_interact = true;
+	else
+		mesh->m_is_interact = false;
+	mesh->m_previous_velocities = mesh->m_current_velocities;
+#pragma omp parallel
+	{
+#pragma omp for
+		for (int i = 0; i < m_selected_indices.size(); i++)
+		{
+			glm::vec3 xi = m_selected_vertices[i];
+			glm::vec3 impulse = glm::normalize(xi - cam_pos);
+			float strength = 50.f;
+			float inv_mi = mesh->m_inv_mass_matrix.coeff(i, i);
+			mesh->m_current_velocities.block_vector(m_selected_indices[i]) += GLM2Eigen(strength * impulse);
+		}
+	}
+	
+
+}
+
+void SelectionTool::DeSelectInteractPoint()
+{
+	m_selected_indices.clear();
+	m_selected_vertices.clear();
+}
+
+void SelectionTool::SelectInteractPoint(int x, int y, int width, int height, const std::vector<glm::vec3>& vertices, glm::mat4 mvp)
+{
+
+
+	int dx = 20;
+	int dy = 20;
+
+
+	int x1 = x - dx;
+	int y1 = y - dy;
+
+	int x2 = x + dx;
+	int y2 = y + dy;
+
+	p1x = (float)x1 / (float)width;
+	p1y = (float)y1 / (float)height;
+
+
+	p1x = 2.0f * p1x - 1.0f;
+	p1y = 1.0f - 2.0f * p1y;
+
+	p2x = (float)x2 / (float)width;
+	p2y = (float)y2 / (float)height;
+
+
+	p2x = 2.0f * p2x - 1.0f;
+	p2y = 1.0f - 2.0f * p2y;
+
+
+	m_selected_indices.clear();
+	m_selected_vertices.clear();
+
+	for (unsigned int i = 0; i < vertices.size(); ++i)
+	{
+		glm::vec4 v = glm::vec4(vertices[i], 1.0f);
+		v = mvp * v;
+		if (inside_selection_box(v))
+		{
+			//std::cout << "s" << std::endl;
+			// selected, add the index of it to selected_indices
+			
+			m_selected_indices.push_back(i);
+			m_selected_vertices.push_back(vertices[i]);
+			
+		}
+
+	}
+	//std::cout << m_selected_indices.size() << std::endl;
+
+
+} 
 
 void SelectionTool::SelectFirstPoint(int x, int y, int width, int height, int selection_mode)
 {
@@ -126,6 +208,7 @@ void SelectionTool::SelectVertices(const std::vector<glm::vec3>& vertices, glm::
 				v = mvp*v;
 				if (inside_selection_box(v))
 				{
+					//std::cout << "s" << std::endl;
 					// selected, add the index of it to selected_indices
 					if (m_selection_mode == 1)
 					{
@@ -188,12 +271,64 @@ bool SelectionTool::HoverSelectHandle(Simulation* sim, const std::vector<glm::ve
 	m_hover_with_handle = false;
 	if (sim->SelectHandle(ray)) // selected
 	{
+		std::cout << "test2" << std::endl;
 		glm::vec4 CoM = mvp * glm::vec4(sim->SelectedHandleCoM(), 1.0f);
 		p1x = CoM.x/CoM.w;
 		p1y = CoM.y/CoM.w;
 		m_hover_with_handle = true; // hover
 	}
 	return m_hover_with_handle;
+}
+
+void SelectionTool::SetInteractBoundingBox(int x, int y, int width, int height)
+{
+	
+	int dx = 20;
+	int dy = 20;
+
+
+	int x1 = x - dx;
+	int y1 = y - dy;
+
+	int x2 = x + dx;
+	int y2 = y + dy;
+
+	p1x = (float)x1 / (float)width;
+	p1y = (float)y1 / (float)height;
+
+
+	p1x = 2.0f * p1x - 1.0f;
+	p1y = 1.0f - 2.0f * p1y;
+
+	p2x = (float)x2 / (float)width;
+	p2y = (float)y2 / (float)height;
+
+
+	p2x = 2.0f * p2x - 1.0f;
+	p2y = 1.0f - 2.0f * p2y;
+
+	if (p1x > p2x)
+	{
+		x_max = p1x;
+		x_min = p2x;
+	}
+	else
+	{
+		x_max = p2x;
+		x_min = p1x;
+	}
+
+	if (p1y > p2y)
+	{
+		y_max = p1y;
+		y_min = p2y;
+	}
+	else
+	{
+		y_max = p2y;
+		y_min = p1y;
+	}
+
 }
 
 void SelectionTool::TranslateRotateFirstPoint()
@@ -215,6 +350,39 @@ void SelectionTool::Draw()
 		break;
 	case GUI_MODE_ROTATION:
 		DrawRotationCircle();
+		break;
+
+	case GUI_MODE_INTERACT:
+		glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glLineStipple(4, 0xAAAA);
+		glEnable(GL_LINE_STIPPLE);
+		glBegin(GL_LINE_LOOP);
+	
+		glColor3f(1.0f, 0.2f, 0.2f);
+	
+		glVertex2f(p1x, p1y);
+		glVertex2f(p1x, p2y);
+		glVertex2f(p2x, p2y);
+		glVertex2f(p2x, p1y);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
+
+		// restore everything
+		glPopMatrix();
+		glPopMatrix();
+		glPopAttrib();
+		glEnable(GL_LIGHTING);
+		glEnable(GL_DEPTH);
 		break;
 	}
 }
@@ -323,6 +491,7 @@ void SelectionTool::DrawTranslationArrows()
 {
 	if (m_hover_with_handle && m_draw_translation_rotation)
 	{
+		std::cout << "test" << std::endl;
 		glPushAttrib(GL_LIGHTING_BIT | GL_LINE_BIT);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH);
@@ -412,7 +581,7 @@ void SelectionTool::HighlightSelectedVertices(const VBO& vbos)
 	for (std::vector<glm::vec3>::iterator it = m_selected_vertices.begin(); it != m_selected_vertices.end(); ++it)
 	{
 		cube.move_to(*it);
-		cube.Draw(vbos);
+		//cube.Draw(vbos);
 	}
 }
 

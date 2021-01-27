@@ -66,12 +66,12 @@ struct VBO
     // vertex, color, normal, texture, index
     GLuint m_vbo, m_cbo, m_nbo, m_tbo, m_ibo;
 
-	//0: modelview; 1: projection; 2: transformation; 3: enable_texture; 4: texture_sampler
-	GLuint m_uniform_modelview;
-	GLuint m_uniform_projection;
-	GLuint m_uniform_transformation;
-	GLuint m_uniform_enable_texture;
-	GLuint m_uniform_texture_sampler;
+    //0: modelview; 1: projection; 2: transformation; 3: enable_texture; 4: texture_sampler
+    GLuint m_uniform_modelview;
+    GLuint m_uniform_projection;
+    GLuint m_uniform_transformation;
+    GLuint m_uniform_enable_texture;
+    GLuint m_uniform_texture_sampler;
 };
 
 #endif
