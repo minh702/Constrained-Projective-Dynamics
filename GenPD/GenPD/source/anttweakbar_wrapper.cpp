@@ -257,7 +257,8 @@ void AntTweakBarWrapper::Init()
 	TwEnumVal optimizationStyleEV[OPTIMIZATION_METHOD_TOTAL_NUM] = { \
 																	{OPTIMIZATION_METHOD_GRADIENT_DESCENT, "Gradient Descent"},\
 																	{OPTIMIZATION_METHOD_NEWTON, "Newton's Method"},\
-																	{OPTIMIZATION_METHOD_LBFGS, "L-BFGS (Our Method)"}
+																	{OPTIMIZATION_METHOD_LBFGS, "L-BFGS (Our Method)"},\
+																	{OPTIMIZATION_METHOD_PBD, "PBD"}
 																  };
 	TwType optimizationStyle = TwDefineEnum("OptimizationMethod", optimizationStyleEV, OPTIMIZATION_METHOD_TOTAL_NUM);
 	TwAddVarRW(m_sim_bar, "Optimization Method", optimizationStyle, &g_simulation->m_optimization_method, " group='Optimization' ");

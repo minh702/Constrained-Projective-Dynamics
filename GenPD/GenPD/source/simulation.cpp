@@ -2359,6 +2359,11 @@ void Simulation::integrateImplicitMethod()
 		case OPTIMIZATION_METHOD_LBFGS:
 			converge = performLBFGSOneIteration(x);
 			break;
+		
+		case OPTIMIZATION_METHOD_PBD:
+			converge = performPBDOneIteration(x);
+			break;
+
 		default:
 			break;
 		}
@@ -2792,6 +2797,14 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	// final touch
 	m_lbfgs_need_update_H0 = false;
 	return converged;
+}
+
+bool Simulation::performPBDOneIteration(VectorX& x)
+{
+
+
+
+	return false;
 }
 
 void Simulation::LBFGSKernelLinearSolve(VectorX & r, VectorX rhs, ScalarType scaled_identity_constant) // Ar = rhs

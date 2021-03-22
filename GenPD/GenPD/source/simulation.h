@@ -67,6 +67,7 @@ typedef enum
 	OPTIMIZATION_METHOD_GRADIENT_DESCENT,
 	OPTIMIZATION_METHOD_NEWTON,
 	OPTIMIZATION_METHOD_LBFGS,
+	OPTIMIZATION_METHOD_PBD,
 	OPTIMIZATION_METHOD_TOTAL_NUM
 
 } OptimizationMethod;
@@ -414,6 +415,7 @@ private:
 	bool performGradientDescentOneIteration(VectorX& x);
 	bool performNewtonsMethodOneIteration(VectorX& x);
 	bool performLBFGSOneIteration(VectorX& x);// our method
+	bool performPBDOneIteration(VectorX& x);// our method
 	void LBFGSKernelLinearSolve(VectorX& r, VectorX gf_k, ScalarType scaled_identity_constant);
 
 	// key initializations and constants computations

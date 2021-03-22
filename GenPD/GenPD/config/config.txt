@@ -1,18 +1,18 @@
-HasEnd              0
-TotalFrame          1000
+HasEnd              1
+TotalFrame          150
 MeshBody            1
 Wireframe           1
 Wireframe           1
 Texture             0
 ScreenWidth         1920
-ScreenHeight        1017
+ScreenHeight        1202
 
 MeshType            1
 MeshMass            10
-TetFilePath         torus.1
+TetFilePath         cube
 TetScaling          1
 TetFlip             0
-TetRotation         90
+TetRotation         0
 ClothDimension      60 60
 ClothCorners        -5 8 -5 5 8 5
 
@@ -26,17 +26,17 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
-StretchStiffness    1000
-BendingStiffness    20
+StretchStiffness    5
+BendingStiffness    0
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  2020
+LaplacianStiffness  10
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
 RestiCoefficient    0.99
 FrictionCoefficient 0
-IterationsPerFrame  40
+IterationsPerFrame  10
 DefinitenessFix     0
 LSEnable            0
 LSExact             0
@@ -52,17 +52,17 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 100 0
+AngularMomentum     0 0 0
 LinearMomentum      0 0 0
-Scale               0 0 0
+Scale               0.3 0 0
 
-FEPREnable          0
-FEPRThreshold       0.001
+FEPREnable          1
+FEPRThreshold       0.0001
 FEPRMaxIter         100
 
-CPDEnable           1
+CPDEnable           0
 CPDThreshold        0.0001
-CPDMaxIter          10
+CPDMaxIter          100
 
 ExportOBJ           0
 RecordPD            0
