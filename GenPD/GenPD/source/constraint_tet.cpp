@@ -213,6 +213,13 @@ void TetConstraint::SetMaterialProperty(MaterialType type, ScalarType mu, Scalar
 	m_laplacian_coeff = laplacian_coeff;
 }
 
+void TetConstraint::performPBDprojection(VectorX& x)
+{
+
+
+
+}
+
 ScalarType TetConstraint::ComputeLaplacianWeight()
 {
 	// read section 4.1 in our paper 

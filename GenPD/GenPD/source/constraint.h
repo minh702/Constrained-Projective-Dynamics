@@ -76,6 +76,8 @@ public:
 
 	virtual bool VertexIncluded(unsigned int vi) { return false; }
 
+
+	virtual void performPBDprojection(VectorX& x) { std::cout << "Warning: reach <Constraint::performPBDprojection> base class virtual function." << std::endl;  }
 	virtual ScalarType  EvaluateEnergy(const VectorX& x) { std::cout << "Warning: reach <Constraint::EvaluatePotentialEnergy> base class virtual function." << std::endl; return 0; }
 	virtual ScalarType  GetEnergy() { std::cout << "Warning: reach <Constraint::GetPotentialEnergy> base class virtual function." << std::endl; return 0; }
 	virtual void  EvaluateGradient(const VectorX& x, VectorX& gradient) { std::cout << "Warning: reach <Constraint::EvaluateGradient> base class virtual function." << std::endl; }
@@ -232,6 +234,7 @@ public:
 
 	virtual void GetMaterialProperty(MaterialType& type, ScalarType& mu, ScalarType& lambda, ScalarType& kappa);
 	virtual void SetMaterialProperty(MaterialType type, ScalarType mu, ScalarType lambda, ScalarType kappa, ScalarType laplacian_coeff);
+	void performPBDprojection(VectorX& x);
 	virtual ScalarType ComputeLaplacianWeight();
 
 	virtual ScalarType  EvaluateEnergy(const VectorX& x);

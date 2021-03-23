@@ -1,11 +1,11 @@
-HasEnd              1
+HasEnd              0
 TotalFrame          150
 MeshBody            1
 Wireframe           1
 Wireframe           1
 Texture             0
 ScreenWidth         1920
-ScreenHeight        1202
+ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
@@ -20,17 +20,17 @@ HandleColor         0.3 1 0.3
 RandomHandleColor   0
 
 SimMethod           0
-OptimizationMethod  2
-Timestep            0.0333
+OptimizationMethod  3
+Timestep            0.03
 SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
-StretchStiffness    5
-BendingStiffness    0
+StretchStiffness    20
+BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  10
+LaplacianStiffness  60
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
@@ -52,15 +52,15 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 0 0
+AngularMomentum     100 0 0
 LinearMomentum      0 0 0
-Scale               0.3 0 0
+Scale               0.2 0 0
 
-FEPREnable          1
+FEPREnable          0
 FEPRThreshold       0.0001
 FEPRMaxIter         100
 
-CPDEnable           0
+CPDEnable           1
 CPDThreshold        0.0001
 CPDMaxIter          100
 

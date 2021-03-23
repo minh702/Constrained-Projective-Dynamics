@@ -70,6 +70,7 @@ ScalarType g_bottom = -10;
 //for cpd
 
 
+Matrix  g_cTM_inv_c;
 VectorX g_gravity_grad;
 VectorX g_prev_x;
 EigenVector3 g_ac, g_lc;
@@ -2656,6 +2657,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 				if (recordTextCPDLoss)
 				{
+
 					if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
 					{
 						fileName = "./TextData/cloth" + txtForLoss;
@@ -2803,6 +2805,41 @@ bool Simulation::performPBDOneIteration(VectorX& x)
 {
 
 
+	VectorX gradient;
+	ScalarType potential_energy = evaluateEnergyAndGradient(x, gradient);
+
+	ScalarType lambda = 0; 
+	
+	ScalarType scale = gradient.dot(m_mesh->m_inv_mass_matrix * gradient);
+
+	
+	if (m_enable_cpd)
+	{
+		VectorX ck(7);
+		ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
+		ck.block_vector(1) = (g_gcl.transpose() * x - m_angular_momentum_init * m_h);
+		ck(6) = (potential_energy - m_hamiltonian * m_h * m_h);
+
+		g_gck.col(6) = gradient + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
+		Matrix cTM_inv_c = g_gck.transpose() * m_mesh->m_inv_mass_matrix * g_gck;
+		VectorX lambda_m = cTM_inv_c.inverse() * ck;
+		x = x - m_mesh->m_inv_mass_matrix * g_gck * lambda_m;
+
+		if (m_show_cpd_loss)
+			std::cout << ck.norm() << std::endl;
+
+
+		return false;
+	}
+
+
+	if (scale > 0.001);
+	lambda = (potential_energy - m_hamiltonian * m_h * m_h) / scale;
+
+	x = x - m_mesh->m_inv_mass_matrix * gradient * lambda;
+
+
+	
 
 	return false;
 }
