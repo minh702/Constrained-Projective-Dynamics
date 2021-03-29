@@ -59,6 +59,13 @@ int g_total_iterations;
 #endif
 
 #define C_DIM 7
+
+VectorX g_v;
+VectorX g_normal;
+VectorX g_fc;
+VectorX g_gc, g_Ainv_gc;
+ScalarType g_error;
+
 TimerWrapper g_integration_timer;
 TimerWrapper g_lbfgs_timer;
 TimerWrapper g_fepr_timer;
@@ -180,9 +187,20 @@ Simulation::~Simulation()
 	DeleteVisualizationMesh();
 }
 
+
+void Simulation::SetMesh(Mesh* mesh)
+{
+	m_mesh = mesh;
+	CollisionDetector tmp;
+	m_collision_detector = tmp;
+	m_collision_detector.addObject((TetMesh*)m_mesh);
+}
+
 void Simulation::Reset()
 {	
+	g_v.resize(m_mesh->m_system_dimension);
 
+	g_v.setZero();
 	EigenMatrixx3 rhs_n3(m_mesh->m_current_positions.size() / 3, 3);
 	Vector3mx1ToMatrixmx3(m_mesh->m_current_positions, rhs_n3);
 	m_y.resize(m_mesh->m_system_dimension);
@@ -221,7 +239,17 @@ void Simulation::Reset()
 	m_mesh->m_expanded_system_dimension = 0;
 	m_mesh->m_expanded_system_dimension_1d = 0;
 
-
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		if (m_mesh->m_current_positions[i * 3 + 2] < 0)
+		{
+			m_mesh->m_current_velocities[i * 3 + 2] = 2.0f;
+		}
+		else
+		{
+			m_mesh->m_current_velocities[i * 3 + 2] = -2.0f;
+		}
+	}
 
 	setupConstraints();
 	SetMaterialProperty();
@@ -261,7 +289,7 @@ void Simulation::Reset()
 	{
 		//m_mesh->m_current_positions.block_vector(i) -= centerOfMass;
 		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
-		m_mesh->m_current_velocities.block_vector(i) = xi.cross(angular_velocity) + linear_velocity;
+		m_mesh->m_current_velocities.block_vector(i) += xi.cross(angular_velocity) + linear_velocity;
 	}
 
 	//set scale 
@@ -323,6 +351,8 @@ void Simulation::Reset()
 	// lbfgs
 	m_lbfgs_restart_every_frame = true;
 	m_lbfgs_need_update_H0 = true;
+	g_gc.resize(m_mesh->m_system_dimension);
+	g_Ainv_gc.resize(m_mesh->m_system_dimension);
 
 	// solver type
 	m_solver_type = SOLVER_TYPE_DIRECT_LLT;
@@ -2345,9 +2375,73 @@ void Simulation::integrateImplicitMethod()
 		iter = m_iterations_per_frame;
 	}
 
+	g_normal.resize(m_mesh->m_system_dimension);
+	g_normal.setZero();
+	vector<CollisionInfo> coll_Info = m_collision_detector.detectCollision(x);
+
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
-		
+		g_error = 0;
+		g_gc.setZero();
+		g_Ainv_gc.setZero();
+		//handle collision
+		for (int i = 0; i < coll_Info.size(); i++) // multiple objects 
+		{
+			for (int j = 0; j < coll_Info[i].verticeList.size(); j++)
+			{
+				ScalarType depth = coll_Info[i].penetrationDepth[j];
+				glm::vec3 normal = coll_Info[i].penetrationDirection[j];
+				EigenVector3 nor(normal.x, normal.y, normal.z);
+				EigenVector3 grad_j = -nor * depth;
+				g_gc.block_vector(coll_Info[i].verticeList[j]) = grad_j;
+				g_error += 0.5 * grad_j.dot(grad_j);
+			}
+		}
+		//for (int i = 0; i < m_mesh->m_vertices_number; i++)
+		//{
+		//	//detect plane collision  
+		//	EigenVector3 plane_normal(0, 1, 0);
+		//	plane_normal.normalize();
+		//	EigenVector3 plane_vertex(0, -5, 0);
+		//	EigenVector3 dx = x.block_vector(i) - plane_vertex;
+		//	if (plane_normal.dot(dx) < 0)
+		//	{
+		//		g_normal.block_vector(i) = plane_normal;
+		//		EigenVector3 p_i = -plane_normal.dot(x.block_vector(i) - plane_vertex) * plane_normal + x.block_vector(i);
+		//		EigenVector3 grad_i = x.block_vector(i) - p_i;
+		//		g_gc.block_vector(i) = grad_i;
+		//		g_error += 0.5 * grad_i.dot(grad_i);
+		//	}
+		//	//detect sphere collision 
+		//	/*EigenVector3 center(0, -10, 0);
+		//	ScalarType length = 5;
+		//	EigenVector3 dx = x.block_vector(i) - center;
+		//	if ( dx.dot(dx) < length*length)
+		//	{
+		//		EigenVector3 normal = dx.normalized();
+		//		EigenVector3 p_i = center + length*normal;
+		//		EigenVector3 grad_i = x.block_vector(i) - p_i;
+		//		g_normal.block_vector(i) = normal;
+		//		g_gc.block_vector(i) += grad_i;
+		//		g_error += 0.5 * grad_i.dot(grad_i);
+		//	}*/
+		//}
+		//handle attachments 
+		//for (int i = 0; i < m_handles.size(); i++)
+		//{
+		//	for (int j = 0; j < m_handles[i].attachment_constraints.size(); j++)
+		//	{
+		//		//EigenVector3 p_i = center + length * normal;
+		//		unsigned int idx = m_handles[i].attachment_constraints[j]->GetConstrainedVertexIndex();
+		//		EigenVector3 p_i = m_handles[i].attachment_constraints[j]->GetFixedPoint();
+		//		EigenVector3 grad_i = x.block_vector(idx) - p_i;
+		//		g_gc.block_vector(idx) = grad_i;
+		//		g_error += 0.5 * grad_i.dot(grad_i);
+		//	}
+		//}
+		//std::cout << g_gc.size() << std::endl;
+		LBFGSKernelLinearSolve(g_Ainv_gc, g_gc, 1);
+
 		g_integration_timer.Tic();
 		switch (m_optimization_method)
 		{

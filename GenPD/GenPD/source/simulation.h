@@ -41,6 +41,7 @@
 #include "constraint.h"
 #include "scene.h"
 #include "handle.h"
+#include "CollisionDetector.h"
 
 #ifdef PARDISO_SUPPORT
 #include <Eigen/PardisoSupport>
@@ -194,7 +195,7 @@ public:
 		m_prefactorization_flag = false;
 		m_prefactorization_flag_newton = false;
 	}
-	inline void SetMesh(Mesh* mesh) {m_mesh = mesh;}
+	void SetMesh(Mesh* mesh);
 	inline void SetScene(Scene* scene) {m_scene = scene;}
 	inline void SetStepMode(bool step_mode) {m_step_mode = step_mode;}
 	inline ScalarType Timestep() { return m_h; }
@@ -207,6 +208,7 @@ protected:
 	bool m_step_mode;
 
 	// simulation constants
+	CollisionDetector m_collision_detector;
 	ScalarType m_gravity_constant;
 	MaterialType m_material_type;
 	ScalarType m_stiffness_attachment;

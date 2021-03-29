@@ -9,10 +9,10 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         cube
+TetFilePath         two_bars
 TetScaling          1
 TetFlip             0
-TetRotation         0
+TetRotation         90
 ClothDimension      60 60
 ClothCorners        -5 8 -5 5 8 5
 
@@ -20,7 +20,7 @@ HandleColor         0.3 1 0.3
 RandomHandleColor   0
 
 SimMethod           0
-OptimizationMethod  3
+OptimizationMethod  2
 Timestep            0.03
 SubStepping         1
 OpenMP              1
@@ -52,9 +52,9 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     100 0 0
+AngularMomentum     0 0 0
 LinearMomentum      0 0 0
-Scale               0.2 0 0
+Scale               0 0 0
 
 FEPREnable          0
 FEPRThreshold       0.0001

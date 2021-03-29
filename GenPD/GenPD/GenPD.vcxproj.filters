@@ -69,6 +69,9 @@
     <Filter Include="Source Files\math\tensor">
       <UniqueIdentifier>{47262523-496f-4ac4-a333-c1dfa8dda8cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\core\CollisionDetection">
+      <UniqueIdentifier>{256e2141-e0e0-4fee-a940-429a9d025cd6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -145,6 +148,9 @@
     </ClCompile>
     <ClCompile Include="source\camera.cpp">
       <Filter>Source Files\framework\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CollisionDetector.cpp">
+      <Filter>Source Files\core\CollisionDetection</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +249,9 @@
     </ClInclude>
     <ClInclude Include="source\camera.h">
       <Filter>Source Files\framework\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CollisionDetector.h">
+      <Filter>Source Files\core\CollisionDetection</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -69,10 +69,10 @@ class Mesh
 public:
 	Mesh() : m_mesh_type() {}
 	Mesh(MeshType mesh_type) : m_mesh_type(mesh_type) {}
-	virtual ~Mesh() {Cleanup();}
+	virtual ~Mesh() { Cleanup(); }
 
 	void Reset();
-	virtual bool Init() {std::cout << "Warning: reach base class virtual init function." << std::endl; return false;}
+	virtual bool Init() { std::cout << "Warning: reach base class virtual init function." << std::endl; return false; }
 	virtual void Cleanup();
 	virtual void Update();
 
@@ -137,11 +137,11 @@ public:
 
 protected:
 	// initialize every particle pos / vel / mass / color.
-	virtual void generateParticleList() {std::cout << "Warning: reach base class virtual function." << std::endl;}
+	virtual void generateParticleList() { std::cout << "Warning: reach base class virtual function." << std::endl; }
 	// generate triangle list from vetices
-	virtual void generateTriangleList() {std::cout << "Warning: reach base class virtual function." << std::endl;}
+	virtual void generateTriangleList() { std::cout << "Warning: reach base class virtual function." << std::endl; }
 	// generate edge list from the geometry representation.
-	virtual void generateEdgeList() {std::cout << "Warning: reach base class virtual function." << std::endl;}
+	virtual void generateEdgeList() { std::cout << "Warning: reach base class virtual function." << std::endl; }
 
 	// jitter the initial condition.
 	void jitterParticlesList();
@@ -156,7 +156,7 @@ class ClothMesh : public Mesh
 
 public:
 	ClothMesh() : Mesh(MESH_TYPE_CLOTH) {}
-	ClothMesh(unsigned int dim0, unsigned int dim1) : Mesh(MESH_TYPE_CLOTH) {m_dim[0] = dim0; m_dim[1] = dim1;}
+	ClothMesh(unsigned int dim0, unsigned int dim1) : Mesh(MESH_TYPE_CLOTH) { m_dim[0] = dim0; m_dim[1] = dim1; }
 	virtual ~ClothMesh() {}
 
 	virtual bool Init();
@@ -176,15 +176,21 @@ class TetMesh : public Mesh
 	friend class AntTweakBarWrapper;
 	friend class Simulation;
 
+	struct Tet {
+		unsigned int id1, id2, id3, id4;
+	};
+
 public:
 	TetMesh() : Mesh(MESH_TYPE_TET), m_loaded_mesh(NULL) {}
-	virtual ~TetMesh() {if(m_loaded_mesh) {delete m_loaded_mesh;}}
+	virtual ~TetMesh() { if (m_loaded_mesh) { delete m_loaded_mesh; } }
 
 	virtual bool Init();
 
+	std::vector<Tet> m_tet_list;
+
 protected:
 	// tet mesh if loaded from mesh file
-	MeshLoader *m_loaded_mesh;
+	MeshLoader* m_loaded_mesh;
 
 protected:
 
@@ -194,6 +200,7 @@ protected:
 	virtual void generateTriangleList();
 	// generate edge list from the geometry representation.
 	virtual void generateEdgeList();
+	void generateTetList();
 };
 
 #endif

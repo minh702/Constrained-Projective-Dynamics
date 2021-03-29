@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="source\anttweakbar_wrapper.cpp" />
     <ClCompile Include="source\camera.cpp" />
+    <ClCompile Include="source\CollisionDetector.cpp" />
     <ClCompile Include="source\constraint.cpp" />
     <ClCompile Include="source\constraint_attachment.cpp" />
     <ClCompile Include="source\constraint_penalty.cpp" />
@@ -49,6 +50,7 @@
     <ClInclude Include="source\anttweakbar_wrapper.h" />
     <ClInclude Include="source\camera.h" />
     <ClInclude Include="source\clock.h" />
+    <ClInclude Include="source\CollisionDetector.h" />
     <ClInclude Include="source\constraint.h" />
     <ClInclude Include="source\fps.h" />
     <ClInclude Include="source\global_headers.h" />
