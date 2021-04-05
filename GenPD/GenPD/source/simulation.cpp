@@ -76,7 +76,7 @@ ScalarType g_bottom = -10;
 
 //for cpd
 
-
+Matrix g_S[2];
 Matrix  g_cTM_inv_c;
 VectorX g_gravity_grad;
 VectorX g_prev_x;
@@ -239,17 +239,58 @@ void Simulation::Reset()
 	m_mesh->m_expanded_system_dimension = 0;
 	m_mesh->m_expanded_system_dimension_1d = 0;
 
+	int size[2] = {0,0};
+
+	std::vector<SparseMatrixTriplet> s0_triplet;
+	std::vector<SparseMatrixTriplet> s1_triplet;
+
+	s0_triplet.clear();
+	s1_triplet.clear();
+	for (int i = 0; i < m_mesh->m_vertices_number; i++)
+	{
+		/*s0_triplet.push_back(SparseMatrixTriplet(3 * i + 0, 3 * i + 0, 1));
+		s0_triplet.push_back(SparseMatrixTriplet(3 * i + 1, 3 * i + 1, 1));
+		s0_triplet.push_back(SparseMatrixTriplet(3 * i + 2, 3 * i + 2, 1));*/
+		if (m_mesh->m_current_positions[i * 3 + 2] < 0)
+		{
+			//m_mesh->m_current_velocities[i * 3 + 2] = 2.0f;
+			
+			size[0]++;
+		}
+		else
+		{
+			//m_mesh->m_current_velocities[i * 3 + 2] = -2.0f;
+		/*	s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 0, 3 * i + 0, 1));
+			s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 1, 3 * i + 1, 1));
+			s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 2, 3 * i + 2, 1));*/
+			size[1]++;
+			
+		}
+	}
+	
+	g_S[0].resize(3 * size[0], m_mesh->m_system_dimension);
+	g_S[1].resize(3 * size[1], m_mesh->m_system_dimension);
+
+
+	int s[2] = {0,0};
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		if (m_mesh->m_current_positions[i * 3 + 2] < 0)
 		{
-			m_mesh->m_current_velocities[i * 3 + 2] = 2.0f;
+			g_S[0](3*s[0] + 0, 3 * i + 0) = 1;
+			g_S[0](3 * s[0] + 1, 3 * i + 1) = 1;
+			g_S[0](3 * s[0] + 2, 3 * i + 2) = 1;
+			
 		}
 		else
 		{
-			m_mesh->m_current_velocities[i * 3 + 2] = -2.0f;
+			g_S[0](3 * s[1] + 0, 3 * i + 0) = 1;
+			g_S[0](3 * s[1] + 1, 3 * i + 1) = 1;
+			g_S[0](3 * s[1] + 2, 3 * i + 2) = 1;
+			
 		}
 	}
+
 
 	setupConstraints();
 	SetMaterialProperty();
@@ -260,13 +301,15 @@ void Simulation::Reset()
 	VectorX f(m_mesh->m_system_dimension);
 	f.setZero();
 
-
-
 	EigenMatrix3 inertia;
 	EigenVector3 centerOfMass;
 	inertia.setZero();
 	centerOfMass.setZero();
 
+
+
+	VectorX s0_position = g_S[0] * m_mesh->m_current_positions;
+	VectorX s1_position = g_S[1] * m_mesh->m_current_positions;
 	// compute angular velocity
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
@@ -2378,17 +2421,15 @@ void Simulation::integrateImplicitMethod()
 	g_normal.setZero();
 
 
+	vector<CollisionInfo> coll_Info = m_collision_detector.detectCollision(x);
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
-
-
-		vector<CollisionInfo> coll_Info = m_collision_detector.detectCollision(x);
 		g_error = 0;
 		g_gc.setZero();
 		g_Ainv_gc.setZero();
 		//handle collision
 		
-		std::cout << coll_Info.size() << std::endl;
+		//std::cout << coll_Info.size() << std::endl;
 		for (int i = 0; i < coll_Info.size(); i++) // multiple objects 
 		{
 			for (int j = 0; j < coll_Info[i].verticeList.size(); j++)
