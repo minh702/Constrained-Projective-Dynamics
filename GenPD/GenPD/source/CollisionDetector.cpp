@@ -11,7 +11,7 @@ void CollisionDetector::addObject(TetMesh* mesh)
 	unsigned int point_num = mesh->m_positions.size();
 
 	vector<vector<int>> adj_list(point_num);
-	
+
 	for (int i = 0; i < mesh->m_edge_list.size(); i++) {
 		adj_list[mesh->m_edge_list[i].m_v1].push_back(mesh->m_edge_list[i].m_v2);
 		adj_list[mesh->m_edge_list[i].m_v2].push_back(mesh->m_edge_list[i].m_v1);
@@ -59,10 +59,10 @@ vector<CollisionInfo> CollisionDetector::detectCollision(VectorX& x)
 
 			if(tetra and candidate point intersets){
 				add collision info to return list;
-				
+
 			}
 
-			 
+
 		}
 	}
 		timestamp++;
@@ -77,53 +77,53 @@ vector<CollisionInfo> CollisionDetector::detectCollision(VectorX& x)
 	}
 
 	vector<CollisionInfo> ret;
-	
+
 	initPointStateTable();
 	mapVertices();
 	mapFaces();
 
-	
+
 	//Let's find collision point
 
 	//iter all mesh
 	for (int mesh_inx = 0; mesh_inx < m_obj_list.size(); mesh_inx++) {
-		
+
 
 		TetMesh* penetrated = m_obj_list[mesh_inx];
-	
+
 		// iter each tetrahedron
 		for (int tet_inx = 0; tet_inx < penetrated->m_tet_list.size(); tet_inx++) {
-			
+
 
 			glm::vec3 aabb_min;
 			glm::vec3 aabb_max;
 
 			//calculate aabb of tetrahedron
 			calculateTetAABB(penetrated, tet_inx, aabb_min, aabb_max);
-			
+
 
 			//iter overlapping cell of aabb
-			for (float x = aabb_min.x; x <= aabb_max.x+gridSize; x+=gridSize) {
-				for (float y = aabb_min.y; y <= aabb_max.y+gridSize;  y+= gridSize) {
-					for (float z =aabb_min.z; z <= aabb_max.z+gridSize; z+= gridSize) { 
+			for (float x = aabb_min.x; x <= aabb_max.x + gridSize; x += gridSize) {
+				for (float y = aabb_min.y; y <= aabb_max.y + gridSize; y += gridSize) {
+					for (float z = aabb_min.z; z <= aabb_max.z + gridSize; z += gridSize) {
 
 						//calculate hashkey
 						int key = calculateKey(x, y, z);
 
-						for (list<MappedVertice>::iterator iter = hashTableV[key].begin() ; iter != hashTableV[key].end() && iter->timeStamp == timeStamp; iter++) {
+						for (list<MappedVertice>::iterator iter = hashTableV[key].begin(); iter != hashTableV[key].end() && iter->timeStamp == timeStamp; iter++) {
 
 							// penetrating candidate vertex 
 							int penetrating_index = iter->obj_index;
 							int vertex_index = iter->vectice_index;
 							glm::vec3 point = m_obj_list[penetrating_index]->m_positions[vertex_index];
-							
+
 							//check intersection test between penetrated tetrahedron and point
-							if (IsIntersectTetPoint(penetrated,tet_inx, point )) {
-								
+							if (IsIntersectTetPoint(penetrated, tet_inx, point)) {
+
 								bool find = false;
-								
+
 								for (int col_inx = 0; col_inx < ret.size(); col_inx++) {
-								
+
 
 									if (ret[col_inx].penetratingMesh == m_obj_list[penetrating_index] && ret[col_inx].penetratedMesh == penetrated) {
 										find = true;
@@ -133,7 +133,7 @@ vector<CollisionInfo> CollisionDetector::detectCollision(VectorX& x)
 
 								}
 								if (!find) {
-								
+
 									ret.push_back(
 										CollisionInfo{
 											penetrated,
@@ -146,7 +146,7 @@ vector<CollisionInfo> CollisionDetector::detectCollision(VectorX& x)
 										}
 									);
 								}
-								
+
 
 
 							}
@@ -171,30 +171,30 @@ vector<CollisionInfo> CollisionDetector::detectCollision(VectorX& x)
 
 	}
 
-	
+
 	// make all vertice vector unique
 	for (auto& collisioninfo : ret) makeVectorUnique(collisioninfo.verticeList);
 
-	
+
 	for (auto& collisioninfo : ret) {
 		collisioninfo.penetrationDepth.resize(collisioninfo.verticeList.size(), 0.0f);
 		collisioninfo.penetrationDirection.resize(collisioninfo.verticeList.size(), glm::vec3(0));
 	}
 	/*
-	
+
 	1. identify all collision point (completed)
 	2. identify all intersection edge
 	3. calcuculate exact point , normal
 	4. propagate
-	
+
 	*/
 
 	computePenetration(ret);
 
-	
+
 
 	// after 1000 iter, clean outdated data
-	if (timeStamp % 1000 == 999) {
+	if (timeStamp % 10000 == 9999) {
 		cleanHashTable();
 		timeStamp = 0;
 	}
@@ -212,10 +212,10 @@ vector<CollisionInfo> CollisionDetector::detectSelfCollision(VectorX& x)
 void CollisionDetector::DrawCollisionPoint(const VBO& vbos)
 {
 	Cube cube(DEFAULT_SELECTION_RADIUS, DEFAULT_SELECTION_RADIUS, DEFAULT_SELECTION_RADIUS);
-	
+
 	cube.change_color(glm::vec3(1.0f, 0.0f, 0.0f)); // highlight using reed
-	
-	
+
+
 	glm::vec3 m_x_i;
 
 	for (unsigned int i = 0; i < previous.size(); i++) {
@@ -244,9 +244,9 @@ void CollisionDetector::DrawPenetration(const VBO& vbos)
 	vector<unsigned int> elementVector;
 	int num = 1;
 	glLineWidth(3.0f);
-	
+
 	for (int i = 0; i < previous.size(); i++) {
-		
+
 		for (int j = 0; j < previous[i].verticeList.size(); j++) {
 			int meshIndex = i;
 			int vIndex = previous[i].verticeList[j];
@@ -259,7 +259,7 @@ void CollisionDetector::DrawPenetration(const VBO& vbos)
 
 			positionVector.push_back(p1);
 			positionVector.push_back(p2);
-			
+
 			elementVector.push_back(num++);
 			elementVector.push_back(num++);
 
@@ -271,14 +271,14 @@ void CollisionDetector::DrawPenetration(const VBO& vbos)
 
 	// position
 	glBindBuffer(GL_ARRAY_BUFFER, vbos.m_vbo);
-	glBufferData(GL_ARRAY_BUFFER, 3*vertexSize * sizeof(float), &positionVector[0], GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * vertexSize * sizeof(float), &positionVector[0], GL_DYNAMIC_DRAW);
 
 	// color
 	std::vector<glm::vec3> colors;
 	colors.resize(positionVector.size());
 	std::fill(colors.begin(), colors.end(), glm::vec3(1.0f, 0, 0));
 	glBindBuffer(GL_ARRAY_BUFFER, vbos.m_cbo);
-	glBufferData(GL_ARRAY_BUFFER, 3*vertexSize * sizeof(float), &colors[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 3 * vertexSize * sizeof(float), &colors[0], GL_STATIC_DRAW);
 
 	// indices
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.m_ibo);
@@ -297,9 +297,9 @@ void CollisionDetector::DrawPenetration(const VBO& vbos)
 	glUniformMatrix4fv(vbos.m_uniform_transformation, 1, false, &identity[0][0]);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbos.m_ibo);
-	glDrawArrays(GL_LINES,0, element_num);
+	glDrawArrays(GL_LINES, 0, element_num);
 	//glDrawElements(GL_TRIANGLES, element_num, GL_UNSIGNED_INT, 0);
-	
+
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
@@ -348,26 +348,26 @@ void CollisionDetector::mapVertices()
 void CollisionDetector::mapFaces()
 {
 	static int m = 1;
-	
+
 	for (int i = 0; i < m_obj_list.size(); i++) {
 
-		for (int f = 0; 3*f < m_obj_list[i]->m_triangle_list.size(); ++f) {
-			
+		for (int f = 0; 3 * f < m_obj_list[i]->m_triangle_list.size(); ++f) {
+
 			glm::vec3 aabb_max, aabb_min;
 
 			calculateTriAABB(m_obj_list[i], f, aabb_min, aabb_max);
 			m++;
 			if (m % 100 == 99) {
 				int index1 = m_obj_list[i]->m_triangle_list[3 * f];
-				int index2 = m_obj_list[i]->m_triangle_list[3 * f+1];
-				int index3 = m_obj_list[i]->m_triangle_list[3 * f+2];
+				int index2 = m_obj_list[i]->m_triangle_list[3 * f + 1];
+				int index3 = m_obj_list[i]->m_triangle_list[3 * f + 2];
 
 				glm::vec3 p1 = m_obj_list[i]->m_positions[index1];
 				glm::vec3 p2 = m_obj_list[i]->m_positions[index2];
 
 				glm::vec3 p3 = m_obj_list[i]->m_positions[index3];
 
-	
+
 			}
 
 
@@ -377,7 +377,7 @@ void CollisionDetector::mapFaces()
 
 
 						int key = calculateKey(x, y, z);
-						
+
 						hashTableF[key].push_front(
 							MappedFace{
 								i,
@@ -398,7 +398,7 @@ void CollisionDetector::mapFaces()
 
 
 	}
-	
+
 }
 
 int CollisionDetector::calculateKey(float x, float y, float z)
@@ -408,17 +408,17 @@ int CollisionDetector::calculateKey(float x, float y, float z)
 	// input: spatial position x ,y, z
 	// output: Hash key
 
-	
+
 	int a1 = ((int)floorf(x / gridSize)) * p1;
 	int a2 = ((int)floorf(y / gridSize)) * p2;
 	int a3 = ((int)floorf(z / gridSize)) * p3;
 	//printf_s("calculate key input:  (x: %f, y: %f, z: %f)  output: (a1: %d, a2: %d, a3: %d) \n", x, y, z, ((int)floorf(x / gridSize)), ((int)floorf(y / gridSize)), ((int)floorf(z / gridSize)));
 
-	int ret= ( a1 ^ a2 ^ a3 ) % n;
+	int ret = (a1 ^ a2 ^ a3) % n;
 
-	
 
-	if(ret<0 ) ret+=n;
+
+	if (ret < 0) ret += n;
 	return ret;
 }
 
@@ -441,29 +441,29 @@ bool CollisionDetector::IsIntersectTetPoint(TetMesh* mesh, unsigned int tet_inde
 	glm::vec3 barycentricV1 = x2 - x1;
 	glm::vec3 barycentricV2 = x3 - x1;
 	glm::vec3 barycentricV3 = x4 - x1;
-	glm::vec3 p_x0= point -x1; //p-x0 vector
+	glm::vec3 p_x0 = point - x1; //p-x0 vector
 
 	glm::mat3x3 A(barycentricV1, barycentricV2, barycentricV3);
 
 	//TODO: what if non invertibe?
-	glm::mat3x3 Ainverse= glm::inverse(A);
+	glm::mat3x3 Ainverse = glm::inverse(A);
 	glm::vec3 solution = Ainverse * p_x0;
 
 	if (solution.x > 0 && solution.y > 0 && solution.z > 0 && solution.x + solution.y + solution.z < 1) return true;
 	return false;
 }
 
-bool CollisionDetector::IsIntersectTriLine(TetMesh* mesh, int tri_index, glm::vec3 pStart,glm::vec3 pEnd,glm::vec3& exactPoint)
+bool CollisionDetector::IsIntersectTriLine(TetMesh* mesh, int tri_index, glm::vec3 pStart, glm::vec3 pEnd, glm::vec3& exactPoint)
 {
 
 
-	
 
-	
+
+
 
 	glm::vec3 p1 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index]];
-	glm::vec3 p2 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index+1]];
-	glm::vec3 p3 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index+2]];
+	glm::vec3 p2 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index + 1]];
+	glm::vec3 p3 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index + 2]];
 
 
 	// check if member of triangle
@@ -490,8 +490,8 @@ bool CollisionDetector::IsIntersectTriLine(TetMesh* mesh, int tri_index, glm::ve
 		exactPoint = p3;
 		return true;
 	}*/
-	
-	
+
+
 
 
 
@@ -499,17 +499,17 @@ bool CollisionDetector::IsIntersectTriLine(TetMesh* mesh, int tri_index, glm::ve
 	glm::vec3 e1 = p2 - p1;
 	glm::vec3 e2 = p3 - p1;
 	glm::vec3 d = pEnd - pStart;
-	
+
 
 	float b1, b2, t;
 
 	float coeff = 1.f / (glm::dot(glm::cross(d, e2), e1));
-	
+
 	b1 = coeff * (glm::dot(glm::cross(d, e2), e));
 	b2 = coeff * (glm::dot(glm::cross(e, e1), d));
 	t = coeff * (glm::dot(glm::cross(e, e1), e2));
 
-	
+
 
 	if (b1 >= 0 && b2 >= 0 && b1 + b2 <= 1 && t >= 0 && t <= 1) {
 		exactPoint = pStart + t * d;
@@ -519,23 +519,23 @@ bool CollisionDetector::IsIntersectTriLine(TetMesh* mesh, int tri_index, glm::ve
 
 }
 
-void CollisionDetector::calculateTetAABB(TetMesh* mesh, unsigned int tet_index,glm::vec3& minout,glm::vec3& maxout)
+void CollisionDetector::calculateTetAABB(TetMesh* mesh, unsigned int tet_index, glm::vec3& minout, glm::vec3& maxout)
 {
 
 	/*
 	*  calculate aabb of tetrahedron
-	* 
+	*
 	*
 	*/
 	float minx, miny, minz, maxx, maxy, maxz;
 
-	
+
 	glm::vec3 p1 = mesh->m_positions[mesh->m_tet_list[tet_index].id1];
 	glm::vec3 p2 = mesh->m_positions[mesh->m_tet_list[tet_index].id2];
 	glm::vec3 p3 = mesh->m_positions[mesh->m_tet_list[tet_index].id3];
 	glm::vec3 p4 = mesh->m_positions[mesh->m_tet_list[tet_index].id4];
 
-	minx = min({p1.x,p2.x,p3.x,p4.x});
+	minx = min({ p1.x,p2.x,p3.x,p4.x });
 	miny = min({ p1.y,p2.y,p3.y,p4.y });
 	minz = min({ p1.z,p2.z,p3.z,p4.z });
 
@@ -552,7 +552,7 @@ void CollisionDetector::calculateTetAABB(TetMesh* mesh, unsigned int tet_index,g
 	maxout.z = maxz;
 
 
-	return ;
+	return;
 }
 
 void CollisionDetector::calculateTriAABB(TetMesh* mesh, unsigned int tri_index, glm::vec3& minout, glm::vec3& maxout)
@@ -562,25 +562,25 @@ void CollisionDetector::calculateTriAABB(TetMesh* mesh, unsigned int tri_index, 
 	*
 	*
 	*/
-	
+
 	float minx, miny, minz, maxx, maxy, maxz;
 
-	
+
 	glm::vec3 p1 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index]];
-	glm::vec3 p2 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index+1]];
-	glm::vec3 p3 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index+2]];
+	glm::vec3 p2 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index + 1]];
+	glm::vec3 p3 = mesh->m_positions[mesh->m_triangle_list[3 * tri_index + 2]];
 
 	/*printf_s("aabb p1: (%f,%f,%f)\n ", p1.x, p1.y, p1.z);
 	printf_s("aabb p2: (%f,%f,%f)\n ", p2.x, p2.y, p2.z);
 	printf_s("aabb p3: (%f,%f,%f)\n ", p3.x, p3.y, p3.z);*/
 
-	minx = min({ p1.x,p2.x,p3.x});
-	miny = min({ p1.y,p2.y,p3.y});
-	minz = min({ p1.z,p2.z,p3.z});
+	minx = min({ p1.x,p2.x,p3.x });
+	miny = min({ p1.y,p2.y,p3.y });
+	minz = min({ p1.z,p2.z,p3.z });
 
-	maxx = max({ p1.x,p2.x,p3.x});
-	maxy = max({ p1.y,p2.y,p3.y});
-	maxz = max({ p1.z,p2.z,p3.z});
+	maxx = max({ p1.x,p2.x,p3.x });
+	maxy = max({ p1.y,p2.y,p3.y });
+	maxz = max({ p1.z,p2.z,p3.z });
 
 	minout.x = minx;
 	minout.y = miny;
@@ -592,24 +592,24 @@ void CollisionDetector::calculateTriAABB(TetMesh* mesh, unsigned int tri_index, 
 
 	/*printf_s("aabb min: (%f,%f,%f)\n ", minout.x, minout.y, minout.z);
 	printf_s("aabb max: (%f,%f,%f)\n ", maxout.x, maxout.y, maxout.z);*/
-	
-	
+
+
 	return;
 }
 
 void CollisionDetector::voxelTraversal(glm::vec3 pStart, glm::vec3 pEnd, vector<int>& hashkeyList)
 {
-	
+
 	float tDeltaX, tDeltaY, tDeltaZ;
 	float tMaxX, tMaxY, tMaxZ;
 	glm::vec3 d = pEnd - pStart;
 	vector<float> tList;
 
-	tDeltaX = abs( gridSize / (pEnd.x - pStart.x));
+	tDeltaX = abs(gridSize / (pEnd.x - pStart.x));
 	tDeltaY = abs(gridSize / (pEnd.y - pStart.y));
 	tDeltaZ = abs(gridSize / (pEnd.z - pStart.z));
 
-	
+
 	//TODO: hash key list return
 
 	tMaxX = tDeltaX * (1.0 - (pStart.x / gridSize - floorf(pStart.x / gridSize)));
@@ -620,9 +620,9 @@ void CollisionDetector::voxelTraversal(glm::vec3 pStart, glm::vec3 pEnd, vector<
 	//assert(tMaxX >= 0.0f && tMaxX < 1.0f && tMaxY >= 0.0f && tMaxY < 1.0f && tMaxZ >= 0.0f && tMaxZ < 1.0f);
 
 	tList.push_back(0.0f);
-	while (min({tMaxX,tMaxY,tMaxZ}) <1.0f ) {
-		
-	
+	while (min({ tMaxX,tMaxY,tMaxZ }) < 1.0f) {
+
+
 		if (tMaxX < tMaxY) {
 			if (tMaxX < tMaxZ) {
 				tList.push_back(tMaxX);
@@ -649,15 +649,15 @@ void CollisionDetector::voxelTraversal(glm::vec3 pStart, glm::vec3 pEnd, vector<
 
 	}
 	tList.push_back(1.0f);
-	
+
 	for (unsigned int i = 0; i < tList.size(); i++) {
 		glm::vec3 vPoint;
-		
-		
+
+
 		vPoint = pStart + (tList[i] + epsilone) * d;
 		int key = calculateKey(vPoint.x, vPoint.y, vPoint.z);
 		hashkeyList.push_back(key);
-		
+
 	}
 
 	return;
@@ -676,7 +676,7 @@ void CollisionDetector::cleanHashTable()
 		hashTableF[i].clear();
 	}
 	std::cout << "Hash table cleaned!\n";
-	
+
 
 }
 
@@ -698,17 +698,17 @@ void CollisionDetector::makeVectorUnique(vector<int>& v)
 
 void CollisionDetector::initPointStateTable()
 {
-	
+
 	for (int i = 0; i < pointStateTable.size(); i++) {
 		unsigned int num = pointStateTable[i].size();
 		pointStateTable[i].resize(num, PointState{ 0.0f,glm::vec3(0),NON_COLLIDE });
-		
+
 	}
 }
 
 void CollisionDetector::computePenetration(vector<CollisionInfo>& collisionInfo)
 {
-	
+
 	// mark colliding point
 	for (int i = 0; i < collisionInfo.size(); i++) {
 		for (int j = 0; j < collisionInfo[i].verticeList.size(); j++) {
@@ -727,10 +727,10 @@ void CollisionDetector::computePenetration(vector<CollisionInfo>& collisionInfo)
 			vector<float> w;
 			vector<glm::vec3> xi_p;
 			vector<glm::vec3> n;
-			
+
 			for (int k = 0; k < topologyList[meshIndex][vertexIndex].size(); k++) {
 				int adjIndex = topologyList[meshIndex][vertexIndex][k];
-			
+
 				//TODO: compute penetration, propagate penetration
 				if (pointStateTable[meshIndex][vertexIndex].isProcessed == COLLIDE_NOT_PROCESSED && pointStateTable[meshIndex][adjIndex].isProcessed == NON_COLLIDE) {
 
@@ -743,19 +743,19 @@ void CollisionDetector::computePenetration(vector<CollisionInfo>& collisionInfo)
 					voxelTraversal(startP, endP, candidateHashKeyList);
 					makeVectorUnique(candidateHashKeyList);
 
-					bool isFind=findNormalAndPoint(startP, endP, candidateHashKeyList, normal, exactPoint);
-				
+					bool isFind = findNormalAndPoint(startP, endP, candidateHashKeyList, normal, exactPoint);
+
 					if (isFind) {
 						float w_;
 						if (checkSamePoint(startP, exactPoint)) {
-							
+
 							w_ = 1.f / (glm::length(endP - exactPoint) * glm::length(endP - exactPoint));
 							w.push_back(w_);
 							xi_p.push_back(exactPoint - endP);
 							n.push_back(normal);
 
-							printf_s("v index: %d, adjindex: %d\n", vertexIndex, adjIndex);
-						
+							//printf_s("v index: %d, adjindex: %d\n", vertexIndex, adjIndex);
+
 
 						}
 						else {
@@ -763,27 +763,27 @@ void CollisionDetector::computePenetration(vector<CollisionInfo>& collisionInfo)
 							w.push_back(w_);
 							xi_p.push_back(exactPoint - startP);
 							n.push_back(normal);
-					
+
 						}
 
-						
+
 
 					}
-	
+
 
 				}
 			}
-			
+
 
 			collisionInfo[i].penetrationDepth[j] = weightAverageD(w, xi_p, n);
 			collisionInfo[i].penetrationDirection[j] = weightAverageN(w, n);
-			
+
 			pointStateTable[meshIndex][vertexIndex].isProcessed = COLLIDE_PROCESSED;
 			pointStateTable[meshIndex][vertexIndex].penetrationDepth = collisionInfo[i].penetrationDepth[j];
 			pointStateTable[meshIndex][vertexIndex].penetrationDirection = collisionInfo[i].penetrationDirection[j];
-			
-			printf_s("mesh index: %d, vertex index: %d collide processed\n",meshIndex,vertexIndex);
-	
+
+			//printf_s("mesh index: %d, vertex index: %d collide processed\n",meshIndex,vertexIndex);
+
 
 
 
@@ -792,7 +792,7 @@ void CollisionDetector::computePenetration(vector<CollisionInfo>& collisionInfo)
 	}
 
 	propagatePenetration();
-	
+
 	updateCollisionInfo(collisionInfo);
 
 
@@ -813,10 +813,10 @@ void CollisionDetector::computePenetrationBf(vector<CollisionInfo>& collisionInf
 
 			glm::vec3 collidingPoint = m_obj_list[penetratingIndex]->m_positions[vertexIndex];
 			glm::vec3 shortestPoint;
-			
+
 
 			findShortest(m_obj_list[penetratedIndex], collidingPoint, shortestPoint);
-			
+
 			float depth = glm::length(shortestPoint - collidingPoint);
 			glm::vec3 direction = glm::normalize(shortestPoint - collidingPoint);
 
@@ -837,7 +837,7 @@ void CollisionDetector::computePenetrationBf(vector<CollisionInfo>& collisionInf
 
 void CollisionDetector::propagatePenetration()
 {
-	
+
 	queue<pair<int, int>> q;
 	//printf_s("initializing \n");
 
@@ -845,7 +845,7 @@ void CollisionDetector::propagatePenetration()
 		for (int j = 0; j < pointStateTable[i].size(); j++) {
 
 			if (pointStateTable[i][j].isProcessed == COLLIDE_PROCESSED) {
-				
+
 				int meshIndex = i;
 				int vertexIndex = j;
 
@@ -860,7 +860,7 @@ void CollisionDetector::propagatePenetration()
 			}
 			/*else if (pointStateTable[i][j].isProcessed == COLLIDE_NOT_PROCESSED) {
 				printf_s("mesh index : %d, v index: %d collide not processed\n", i, j);
-				
+
 			}*/
 
 
@@ -873,7 +873,7 @@ void CollisionDetector::propagatePenetration()
 	//	printf_s("something wrong!\n");
 	//}
 	while (!q.empty()) {
-		
+
 		pair<int, int> popData = q.front();
 		q.pop();
 		printf_s("df\n");
@@ -911,12 +911,12 @@ float CollisionDetector::weightAverageD(vector<float>& w, vector<glm::vec3> xi_p
 	float sum2 = 0;
 	int size = w.size();
 	for (int i = 0; i < size; i++) {
-		
+
 		sum += w[i];
-		sum2 +=w[i]* glm::dot(xi_p[i], n[i]);
+		sum2 += w[i] * glm::dot(xi_p[i], n[i]);
 	}
 	//printf_s("weight Average depth: %f\n",sum2/sum);
-	return sum2/sum;
+	return sum2 / sum;
 }
 
 glm::vec3 CollisionDetector::weightAverageN(vector<float>& w, vector<glm::vec3>& n)
@@ -940,7 +940,7 @@ glm::vec3 CollisionDetector::weightAverageN(vector<float>& w, vector<glm::vec3>&
 void CollisionDetector::processCollidingPoint(int meshIndex, int collidingIndex)
 {
 
-	
+
 	vector<float> depth;
 	vector<glm::vec3> dir;
 	vector<glm::vec3> adjPos;
@@ -950,11 +950,11 @@ void CollisionDetector::processCollidingPoint(int meshIndex, int collidingIndex)
 		int adjVertex = topologyList[meshIndex][collidingIndex][i];
 		if (pointStateTable[meshIndex][adjVertex].isProcessed == COLLIDE_PROCESSED) {
 			float m = pointStateTable[meshIndex][adjVertex].penetrationDepth;
-			glm::vec3 r= pointStateTable[meshIndex][adjVertex].penetrationDirection;
+			glm::vec3 r = pointStateTable[meshIndex][adjVertex].penetrationDirection;
 			depth.push_back(m);
 			dir.push_back(r);
 			adjPos.push_back(m_obj_list[meshIndex]->m_positions[adjVertex]);
-		
+
 		}
 
 
@@ -1015,7 +1015,7 @@ bool CollisionDetector::findNormalAndPoint(glm::vec3 startP, glm::vec3 endP, vec
 
 				normal = glm::cross(p2 - p1, p3 - p2);
 				normal = glm::normalize(normal);
-				
+
 
 				return true;
 			}
@@ -1058,13 +1058,13 @@ void CollisionDetector::findShortest(TetMesh* mesh, glm::vec3 collidingPoint, gl
 {
 	float min = 99999;
 
-	for (int i = 0; 3*i < mesh->m_triangle_list.size(); i++) {
+	for (int i = 0; 3 * i < mesh->m_triangle_list.size(); i++) {
 
-		int index1 = mesh->m_triangle_list[3*i];
-		int index2 = mesh->m_triangle_list[3 * i+1];
-		int index3 = mesh->m_triangle_list[3 * i+2];
+		int index1 = mesh->m_triangle_list[3 * i];
+		int index2 = mesh->m_triangle_list[3 * i + 1];
+		int index3 = mesh->m_triangle_list[3 * i + 2];
 
-		
+
 
 		glm::vec3 p1 = mesh->m_positions[index1];
 		glm::vec3 p2 = mesh->m_positions[index2];
@@ -1074,7 +1074,7 @@ void CollisionDetector::findShortest(TetMesh* mesh, glm::vec3 collidingPoint, gl
 			continue;
 		}
 
-		float len = glm::length(p1- collidingPoint);
+		float len = glm::length(p1 - collidingPoint);
 		if (len < min) {
 			shortest = p1;
 			min = len;
@@ -1104,9 +1104,9 @@ int CollisionDetector::debug_checkReallynoIntersection(glm::vec3 startP, glm::ve
 	int ret = 0;
 	glm::vec3 ep(0);
 	for (int i = 0; i < m_obj_list.size(); i++) {
-		
-		for (int f = 0; 3*f < m_obj_list[i]->m_triangle_list.size(); f++) {
-			
+
+		for (int f = 0; 3 * f < m_obj_list[i]->m_triangle_list.size(); f++) {
+
 
 			if (IsIntersectTriLine(m_obj_list[i], f, startP, endP, ep)) {
 				ret++;

@@ -39,7 +39,7 @@
 #include <fstream>
 #include <iostream>
 #include <chrono>
-
+#include "CollisionDetector.h"
 using namespace std;
 using namespace chrono;
 
@@ -684,7 +684,6 @@ void Simulation::Update()
 		}*/
 		if (m_enable_cpd)
 		{
-
 			set_prefactored_matrix();
 			if (m_mesh->m_current_velocities.squaredNorm() < 0.0001)
 			{
@@ -795,7 +794,7 @@ void Simulation::Update()
 		// damping
 		dampVelocity();
 	
-
+		
 		// damping
 	
 	}
@@ -2377,14 +2376,19 @@ void Simulation::integrateImplicitMethod()
 
 	g_normal.resize(m_mesh->m_system_dimension);
 	g_normal.setZero();
-	vector<CollisionInfo> coll_Info = m_collision_detector.detectCollision(x);
+
 
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
+
+
+		vector<CollisionInfo> coll_Info = m_collision_detector.detectCollision(x);
 		g_error = 0;
 		g_gc.setZero();
 		g_Ainv_gc.setZero();
 		//handle collision
+		
+		std::cout << coll_Info.size() << std::endl;
 		for (int i = 0; i < coll_Info.size(); i++) // multiple objects 
 		{
 			for (int j = 0; j < coll_Info[i].verticeList.size(); j++)
@@ -2694,50 +2698,60 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	start = system_clock::now();
 	if (m_enable_cpd)
 	{
-		if (0)
+		if (1)
 		{
-			Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
-			Eigen::LLT<Eigen::MatrixXf> llt;
-			llt.compute(cTAinv_c);
-			VectorX ck(6);
-			ck.block_vector(0) = g_gcp.transpose() * x - g_com;
-			ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
-			//std::cout << ck.norm() << std::endl;
-			//m_cpd_threshold = 10e-6;
-			/*if (ck.norm() < m_cpd_threshold)
-				return true;*/
-			ck += g_gcm.transpose() * p_k;
-			VectorX lambda = llt.solve(ck);
-			p_k -= g_Ainv_gcm * lambda;
 
-			if (recordTextCPDLoss)
-			{
-				if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
-				{
-					fileName = "./TextData/cloth" + txtForLoss;
-				}
-				else
-				{
+			ScalarType lambda = 0.f;
+			ScalarType dcAdc = g_gc.dot(g_Ainv_gc);
 
-					fileName = m_mesh->m_tet_file_path + txtForLoss;
-					fileName = "./TextData/" + fileName;
-				}
-				std::ofstream outLoss(fileName, std::ios::app);
-				if (outLoss.is_open())
-				{
-					string token = "\t";
-					if (ck.norm() < m_cpd_threshold)
-					{
-						token = "\n";
-					}
-					outLoss << std::to_string(ck.norm()) + token;
-				}
-				outLoss.close();
-			}
+			if (dcAdc > 1e-5)
+				lambda = g_error / dcAdc;
+			
+			
+			VectorX dr = g_Ainv_gc*lambda;
+			p_k -= dr;
+
+			//Matrix cTAinv_c = g_gcm.transpose() * g_Ainv_gcm;
+			//Eigen::LLT<Eigen::MatrixXf> llt;
+			//llt.compute(cTAinv_c);
+			//VectorX ck(6);
+			//ck.block_vector(0) = g_gcp.transpose() * x - g_com;
+			//ck.block_vector(1) = g_gcl.transpose() * x - m_angular_momentum_init * m_h;
+			////std::cout << ck.norm() << std::endl;
+			////m_cpd_threshold = 10e-6;
+			///*if (ck.norm() < m_cpd_threshold)
+			//	return true;*/
+			//ck += g_gcm.transpose() * p_k;
+			//VectorX lambda = llt.solve(ck);
+			//p_k -= g_Ainv_gcm * lambda;
+
+			//if (recordTextCPDLoss)
+			//{
+			//	if (m_mesh->m_mesh_type == MESH_TYPE_CLOTH)
+			//	{
+			//		fileName = "./TextData/cloth" + txtForLoss;
+			//	}
+			//	else
+			//	{
+
+			//		fileName = m_mesh->m_tet_file_path + txtForLoss;
+			//		fileName = "./TextData/" + fileName;
+			//	}
+			//	std::ofstream outLoss(fileName, std::ios::app);
+			//	if (outLoss.is_open())
+			//	{
+			//		string token = "\t";
+			//		if (ck.norm() < m_cpd_threshold)
+			//		{
+			//			token = "\n";
+			//		}
+			//		outLoss << std::to_string(ck.norm()) + token;
+			//	}
+			//	outLoss.close();
+			//}
 		}
 		else
 		{
-
 			g_gch = gf_k + m_mesh->m_mass_matrix * m_mesh->m_current_velocities * m_h;
 			g_Ainv_gch = r + g_Ainv_vn;
 			if (m_handles.size() == 0)

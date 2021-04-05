@@ -566,8 +566,8 @@ bool TetMesh::Init()
 
 	generateParticleList();
 	generateTriangleList();
-	//generateEdgeList();
-
+	generateEdgeList();
+	generateTetList();
 	return true;
 }
 
@@ -735,5 +735,21 @@ void TetMesh::generateEdgeList()
 			new_edge.m_v2 = i2;
 			m_edge_list.push_back(new_edge);
 		}
+	}
+}
+
+void TetMesh::generateTetList()
+{
+	unsigned int size = m_loaded_mesh->m_tets.size();
+	m_tet_list.resize(size);
+
+	for (int i = 0; i != size; ++i)
+	{
+		MeshLoader::Tet& tet = m_loaded_mesh->m_tets[i];
+		m_tet_list[i].id1 = tet.id1;
+		m_tet_list[i].id2 = tet.id2;
+		m_tet_list[i].id3 = tet.id3;
+		m_tet_list[i].id4 = tet.id4;
+
 	}
 }
