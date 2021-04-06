@@ -84,6 +84,11 @@ EigenVector3 g_ac, g_lc;
 VectorX g_st;
 
 EigenVector3 g_angular_momentum, g_linear_momentum;
+EigenVector3 g_angular_momentum2, g_linear_momentum2;
+
+ScalarType g_hamiltonian, g_hamiltonian2;
+
+
 EigenVector3 g_com;
 EigenVector3 g_current_angular_momentum, g_current_linear_momentum;
 ScalarType g_total_energy, g_rigid_energy, g_system_energy;
@@ -244,8 +249,8 @@ void Simulation::Reset()
 	std::vector<SparseMatrixTriplet> s0_triplet;
 	std::vector<SparseMatrixTriplet> s1_triplet;
 
-	s0_triplet.clear();
-	s1_triplet.clear();
+	//s0_triplet.clear();
+	//s1_triplet.clear();
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		/*s0_triplet.push_back(SparseMatrixTriplet(3 * i + 0, 3 * i + 0, 1));
@@ -253,13 +258,13 @@ void Simulation::Reset()
 		s0_triplet.push_back(SparseMatrixTriplet(3 * i + 2, 3 * i + 2, 1));*/
 		if (m_mesh->m_current_positions[i * 3 + 2] < 0)
 		{
-			//m_mesh->m_current_velocities[i * 3 + 2] = 2.0f;
+			m_mesh->m_current_velocities[i * 3 + 2] = 3.0f;
 			
 			size[0]++;
 		}
 		else
 		{
-			//m_mesh->m_current_velocities[i * 3 + 2] = -2.0f;
+			m_mesh->m_current_velocities[i * 3 + 2] = -3.0f;
 		/*	s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 0, 3 * i + 0, 1));
 			s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 1, 3 * i + 1, 1));
 			s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 2, 3 * i + 2, 1));*/
@@ -310,6 +315,10 @@ void Simulation::Reset()
 
 	VectorX s0_position = g_S[0] * m_mesh->m_current_positions;
 	VectorX s1_position = g_S[1] * m_mesh->m_current_positions;
+
+
+	VectorX s0_velocity = g_S[0] * m_mesh->m_current_velocities;
+	VectorX s1_velocity = g_S[1] * m_mesh->m_current_velocities;
 	// compute angular velocity
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
@@ -330,9 +339,8 @@ void Simulation::Reset()
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		//m_mesh->m_current_positions.block_vector(i) -= centerOfMass;
-		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
-		m_mesh->m_current_velocities.block_vector(i) += xi.cross(angular_velocity) + linear_velocity;
+		EigenVector3 ri = m_mesh->m_current_positions.block_vector(i) - centerOfMass;
+		m_mesh->m_current_velocities.block_vector(i) += ri.cross(angular_velocity) + linear_velocity;
 	}
 
 	//set scale 
@@ -344,12 +352,12 @@ void Simulation::Reset()
 	}
 
 	//compute gravity gradient
-	ScalarType gravity_potential = 0;
+	/*ScalarType gravity_potential = 0;
 	g_gravity_grad.resize(m_mesh->m_system_dimension);
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
 		g_gravity_grad.block_vector(i) = EigenVector3(0, m_gravity_constant, 0);
-	}
+	}*/
 
 
 	//clamp to box
@@ -2798,8 +2806,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			if (m_handles.size() == 0)
 			{
 				VectorX ck(7);
-				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
-				ck.block_vector(1) = (g_gcl.transpose() * x - m_angular_momentum_init * m_h);
+				ck.block_vector(0) = (g_gcp.transpose() *g_S[0].transpose() * g_S[0] *x - g_com);
+				ck.block_vector(1) = (g_gcl.transpose() * g_S[0].transpose() * g_S[0] *x - m_angular_momentum_init * m_h);
 				ck(6) = current_energy;
 				//std::cout << ck.norm() << std::endl;
 				//m_cpd_threshold = 10e-6;
@@ -2838,7 +2846,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 				if (cnorm < m_cpd_threshold)
 					return true;
-				ScalarType inv_eps;
+				ScalarType inv_eps;          
 				if (m_hamiltonian < m_Hrb)
 					inv_eps = 10e7;
 				else
@@ -2855,7 +2863,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 				ck += g_gck.transpose() * p_k;
 				VectorX lambda = llt.solve(ck);
 				p_k -= g_Ainv_gck * lambda;
-				m_alpha -= inv_eps * dh * lambda(6);
+				m_alpha -= inv_eps * dh * lambda(6);       
 				/*g_st -= dcst* lambda;*/
 				//return false 
 			}

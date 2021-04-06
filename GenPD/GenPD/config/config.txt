@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         two_cube
+TetFilePath         two_cube2
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -26,11 +26,11 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
-StretchStiffness    5
+StretchStiffness    100
 BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  30
+LaplacianStiffness  220
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
