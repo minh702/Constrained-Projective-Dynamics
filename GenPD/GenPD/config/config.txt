@@ -26,17 +26,17 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
-StretchStiffness    100
+StretchStiffness    300
 BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  220
+LaplacianStiffness  620
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
 RestiCoefficient    0.99
 FrictionCoefficient 0
-IterationsPerFrame  5
+IterationsPerFrame  10
 DefinitenessFix     0
 LSEnable            0
 LSExact             0
@@ -54,7 +54,7 @@ LBFGSWindowSize     0
 
 AngularMomentum     0 0 0
 LinearMomentum      0 0 0
-Scale               0 0 0
+Scale               0.1 0 0
 
 FEPREnable          0
 FEPRThreshold       0.0001

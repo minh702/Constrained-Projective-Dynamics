@@ -100,6 +100,8 @@ Matrix g_gcpx;
 Matrix g_Ainv_gck, g_gck, g_gcl, g_gcp, g_gcm, g_Ainv_gcl, g_Ainv_gcp, g_Ainv_gcm, g_Ainv_gca, g_gca;
 
 
+
+bool g_toggle = false;
 VectorX g_fixed_positions;
 Eigen::Vector4i g_fixed_indices;
 
@@ -258,13 +260,13 @@ void Simulation::Reset()
 		s0_triplet.push_back(SparseMatrixTriplet(3 * i + 2, 3 * i + 2, 1));*/
 		if (m_mesh->m_current_positions[i * 3 + 2] < 0)
 		{
-			m_mesh->m_current_velocities[i * 3 + 2] = 3.0f;
+			//m_mesh->m_current_velocities[i * 3 + 2] = 3.0f;
 			
 			size[0]++;
 		}
 		else
 		{
-			m_mesh->m_current_velocities[i * 3 + 2] = -3.0f;
+			//m_mesh->m_current_velocities[i * 3 + 2] = -3.0f;
 		/*	s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 0, 3 * i + 0, 1));
 			s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 1, 3 * i + 1, 1));
 			s1_triplet.push_back(SparseMatrixTriplet(3 * size[1] + 2, 3 * i + 2, 1));*/
@@ -2747,7 +2749,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 	start = system_clock::now();
 	if (m_enable_cpd)
 	{
-		if (1)
+		if (g_toggle == true)
 		{
 
 			ScalarType lambda = 0.f;
@@ -2798,6 +2800,8 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			//	}
 			//	outLoss.close();
 			//}
+
+			//g_toggle = false;
 		}
 		else
 		{
@@ -2806,9 +2810,10 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			if (m_handles.size() == 0)
 			{
 				VectorX ck(7);
-				ck.block_vector(0) = (g_gcp.transpose() *g_S[0].transpose() * g_S[0] *x - g_com);
-				ck.block_vector(1) = (g_gcl.transpose() * g_S[0].transpose() * g_S[0] *x - m_angular_momentum_init * m_h);
+				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
+				ck.block_vector(1) = (g_gcl.transpose() * x - m_angular_momentum_init * m_h);
 				ck(6) = current_energy;
+				//ck(7) = g_error;
 				//std::cout << ck.norm() << std::endl;
 				//m_cpd_threshold = 10e-6;
 
@@ -2854,7 +2859,9 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 				ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
 				g_gck.col(6) = g_gch;
+				//g_gck.col(7) = g_gc;
 				g_Ainv_gck.col(6) = g_Ainv_gch;
+				//g_Ainv_gck.col(7) = g_Ainv_gc;
 				Eigen::MatrixXf cTAinv_c = g_gck.transpose() * g_Ainv_gck /*+ dcst.transpose() * dcst*/;
 				cTAinv_c(6, 6) += inv_eps * dh * dh;
 				Eigen::LLT<Eigen::MatrixXf> llt;
