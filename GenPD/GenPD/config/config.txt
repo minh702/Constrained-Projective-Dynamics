@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         two_cube2
+TetFilePath         two_cube
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -52,16 +52,16 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     0 0 0
+AngularMomentum     50 0 0
 LinearMomentum      0 0 0
-Scale               0.1 0 0
+Scale               0 0 0
 
 FEPREnable          0
-FEPRThreshold       0.0001
+FEPRThreshold       0.001
 FEPRMaxIter         100
 
-CPDEnable           1
-CPDThreshold        1.0001
+CPDEnable           0
+CPDThreshold        0.001
 CPDMaxIter          100
 
 ExportOBJ           0
