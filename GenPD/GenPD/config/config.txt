@@ -53,14 +53,14 @@ LBFGSType           1
 LBFGSWindowSize     0
 
 AngularMomentum     50 0 0
-LinearMomentum      0 0 0
+LinearMomentum      0 0 10
 Scale               0 0 0
 
 FEPREnable          0
 FEPRThreshold       0.001
 FEPRMaxIter         100
 
-CPDEnable           0
+CPDEnable           1
 CPDThreshold        0.001
 CPDMaxIter          100
 
