@@ -372,13 +372,13 @@ void Simulation::Reset()
 
 	for (int i = 0; i < m_mesh->m_vertices_number; i++)
 	{
-		if (g_S[0](3 * i + 0, 3 * i + 0) != 1)
+		if (g_S[0](3 * i + 0, 3 * i + 0) == 1)
 		{
-			m_mesh->m_current_velocities.block_vector(i) = linear_velocity2;
+			m_mesh->m_current_velocities.block_vector(i) = linear_velocity + angular_velocity;
 		}
 		else
 		{
-			m_mesh->m_current_velocities.block_vector(i) = linear_velocity;
+			m_mesh->m_current_velocities.block_vector(i) = linear_velocity2 + angular_velocity2;
 		}
 	}
 
@@ -503,13 +503,28 @@ void Simulation::set_prefactored_matrix()
 	ScalarType gravity_potential = 0;
 	//m_bl = m_angular_momentum;
 	EigenVector3 com = g_com / g_s_total_mass[0];
+	EigenVector3 com2 = g_com2 / g_s_total_mass[1];
+
+
 #pragma omp parallel
 {
 		#pragma omp  for 
 		for (int i = 0; i < m_mesh->m_vertices_number; i++)
 		{
-			ScalarType mi = g_s_mass_matrix[1].coeff(i, i);
-			EigenVector3 ri = g_S[0] * m_mesh->m_current_positions.block_vector(i) - com;
+			ScalarType mi;
+			EigenVector3 ri;
+			if (g_S[0](3 * i, 3 * i) == 1)
+			{
+				mi = g_s_mass_matrix[0].coeff(3*i, 3*i);
+				ri = m_mesh->m_current_positions.block_vector(i) - com;
+
+			}
+			else
+			{
+				mi = g_s_mass_matrix[1].coeff(3*i, 3*i);
+				ri = m_mesh->m_current_positions.block_vector(i) - com2;
+
+			}
 			// x - angular momentum gradient
 			g_gcl(3 * i + 0, 0) = g_gcm(3 * i + 0, 3) = g_gck(3 * i + 0, 3) = 0.f;
 			g_gcl(3 * i + 1, 0) = g_gcm(3 * i + 1, 3) = g_gck(3 * i + 1, 3) = -mi * ri.z();
@@ -526,32 +541,6 @@ void Simulation::set_prefactored_matrix()
 			g_gcl(3 * i + 2, 2) = g_gcm(3 * i + 2, 5) = g_gck(3 * i + 2, 5) = 0.f;
 			//m_bl -= m_com.cross
 		}
-}
-
-EigenVector3 com2 = g_com2 / g_s_total_mass[1];
-#pragma omp parallel
-{
-#pragma omp  for 
-	for (int i = 0; i < m_mesh->m_vertices_number; i++)
-	{
-		ScalarType mi = g_s_mass_matrix[1].coeff(i, i);
-		EigenVector3 ri = g_S[1] * m_mesh->m_current_positions.block_vector(i) - com2;
-		// x - angular momentum gradient
-		g_gcl(3 * i + 0, 0) = g_gcm(3 * i + 0, 3) = g_gck(3 * i + 0, 3) = 0.f;
-		g_gcl(3 * i + 1, 0) = g_gcm(3 * i + 1, 3) = g_gck(3 * i + 1, 3) = -mi * ri.z();
-		g_gcl(3 * i + 2, 0) = g_gcm(3 * i + 2, 3) = g_gck(3 * i + 2, 3) = mi * ri.y();
-
-		// y - angular momentum gradient
-		g_gcl(3 * i + 0, 1) = g_gcm(3 * i + 0, 4) = g_gck(3 * i + 0, 4) = mi * ri.z();
-		g_gcl(3 * i + 1, 1) = g_gcm(3 * i + 1, 4) = g_gck(3 * i + 1, 4) = 0.f;
-		g_gcl(3 * i + 2, 1) = g_gcm(3 * i + 2, 4) = g_gck(3 * i + 2, 4) = -mi * ri.x();
-
-		// z - angular momentum gradient		
-		g_gcl(3 * i + 0, 2) = g_gcm(3 * i + 0, 5) = g_gck(3 * i + 0, 5) = -mi * ri.y();
-		g_gcl(3 * i + 1, 2) = g_gcm(3 * i + 1, 5) = g_gck(3 * i + 1, 5) = mi * ri.x();
-		g_gcl(3 * i + 2, 2) = g_gcm(3 * i + 2, 5) = g_gck(3 * i + 2, 5) = 0.f;
-		//m_bl -= m_com.cross
-	}
 }
 
 
@@ -2838,14 +2827,14 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			llt.compute(cTAinv_c);
 			VectorX ck(6);
 			ck.block_vector(0) = g_gcp.transpose() * g_S[0] * x - g_com;
-			ck.block_vector(1) = g_gcl.transpose() * g_S[0] * x - g_angular_momentum * m_h;
+			ck.block_vector(1) = g_gcl.transpose() * g_S[0] * x - m_angular_momentum_init * m_h;
 
 
 
 			llt2.compute(cTAinv_c2);
 			VectorX ck2(6);
 			ck2.block_vector(0) = g_gcp.transpose() * g_S[1] * x - g_com2;
-			ck2.block_vector(1) = g_gcl.transpose() * g_S[1] * x + g_angular_momentum * m_h;
+			ck2.block_vector(1) = g_gcl.transpose() * g_S[1] * x + m_angular_momentum_init * m_h;
 			
 			//std::cout << ck.norm() << std::endl;
 			//m_cpd_threshold = 10e-6;
