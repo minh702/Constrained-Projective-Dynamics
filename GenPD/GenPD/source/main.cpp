@@ -120,6 +120,7 @@ void mouse_over(int, int);
 void TW_CALL set_handle(void*);
 void TW_CALL save_handle(void*);
 void TW_CALL load_handle(void*);
+void TW_CALL reset_to_zero(void*);
 void TW_CALL reset_handle(void*);
 void TW_CALL reset_simulation(void*);
 void TW_CALL step_through(void*);
@@ -223,7 +224,7 @@ int main(int argc, char ** argv){
 	glutReshapeWindow(g_screen_width, g_screen_height);
 
 	//for data extract. if used to test, convert 'true'.
-	g_pause = false;
+	g_pause = true;
 
 	// bind function callbacks
 	glutDisplayFunc(display);
@@ -885,6 +886,12 @@ void TW_CALL load_handle(void*)
 {
 	g_simulation->LoadHandles(DEFAULT_CONFIG_HANDLE_FILE);
 }
+
+void TW_CALL reset_to_zero(void*)
+{
+
+}
+
 void TW_CALL reset_handle(void*)
 {
 	g_simulation->ResetHandles();

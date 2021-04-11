@@ -1,5 +1,5 @@
-HasEnd              0
-TotalFrame          150
+HasEnd              1
+TotalFrame          99
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -9,8 +9,8 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         two_cube2
-TetScaling          1
+TetFilePath         bear_twins
+TetScaling          0.5
 TetFlip             0
 TetRotation         0
 ClothDimension      60 60
@@ -53,18 +53,20 @@ LBFGSType           1
 LBFGSWindowSize     0
 
 AngularMomentum     0 0 0
-LinearMomentum      0 0 -10
+AngularMomentum2     0 0 0
+LinearMomentum      0 0 50
+LinearMomentum      0 0 -50
 Scale               0 0 0
 
 FEPREnable          0
-FEPRThreshold       0.001
-FEPRMaxIter         100
+FEPRThreshold       0
+FEPRMaxIter         0
 
 CPDEnable           0
-CPDThreshold        0.001
+CPDThreshold        0.0001
 CPDMaxIter          100
 
-ExportOBJ           0
+ExportOBJ           1
 RecordPD            0
 RecordCPD           0
 RecordCPDLoss       0

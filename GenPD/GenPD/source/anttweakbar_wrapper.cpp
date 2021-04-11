@@ -73,6 +73,7 @@ extern bool g_export_obj;
 extern void TW_CALL set_handle(void*);
 extern void TW_CALL save_handle(void*);
 extern void TW_CALL load_handle(void*);
+extern void TW_CALL reset_to_zero(void*);
 extern void TW_CALL reset_handle(void*);
 extern void TW_CALL reset_simulation(void*);
 extern void TW_CALL step_through(void*);
@@ -133,6 +134,7 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_control_panel_bar, "FEPR", TwType(sizeof(bool)), &g_simulation->recordTextFEPR, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "Quantities", TwType(sizeof(bool)), &g_simulation->m_record_quantities, "group='Recording To Text'");
 	TwAddVarRW(m_control_panel_bar, "Energy", TwType(sizeof(bool)), &g_simulation->recordTextEnergy, "group='Recording To Text'");
+	TwAddVarRW(m_control_panel_bar, "Quantities Twins", TwType(sizeof(bool)), &g_simulation->m_record_quantities_twins, "group='Recording To Text'");
 	TwDefine(" 'Control Panel'/'Recording To Text' group='State Control'");
 	TwAddSeparator(m_control_panel_bar, NULL, "");
 	// visualization
@@ -188,6 +190,7 @@ void AntTweakBarWrapper::Init()
 	TwAddButton(m_control_panel_bar, "Load Settings", LoadSettings, this, " ");
 	TwAddButton(m_control_panel_bar, "Default Settings", SetDefaultSettings, this, " ");
 	TwAddSeparator(m_control_panel_bar, NULL, "");
+	TwAddButton(m_control_panel_bar, "Reset to Zero", reset_to_zero, NULL, " ");
 	TwAddButton(m_control_panel_bar, "Reset Camera", reset_camera, NULL, " ");
 	TwAddButton(m_control_panel_bar, "Reset Simulation", reset_simulation, NULL, " ");
 	//!Control Panel bar
@@ -746,9 +749,15 @@ void AntTweakBarWrapper::SaveSettings()
 		outfile << "AngularMomentum     " << g_simulation->m_angular_momentum_init.x() << " " \
 										  << g_simulation->m_angular_momentum_init.y() << " " \
 										  << g_simulation->m_angular_momentum_init.z() << std::endl;
+		outfile << "AngularMomentum2     " << g_simulation->m_angular_momentum_init2.x() << " " \
+										   << g_simulation->m_angular_momentum_init2.y() << " " \
+										   << g_simulation->m_angular_momentum_init2.z() << std::endl;
 		outfile << "LinearMomentum      " << g_simulation->m_linear_momentum_init.x() << " " \
 										  << g_simulation->m_linear_momentum_init.y() << " " \
 										  << g_simulation->m_linear_momentum_init.z() << std::endl;
+		outfile << "LinearMomentum      " << g_simulation->m_linear_momentum_init2.x() << " " \
+										  << g_simulation->m_linear_momentum_init2.y() << " " \
+										  << g_simulation->m_linear_momentum_init2.z() << std::endl;
 		outfile << "Scale               " << g_simulation->m_scale_x << " " \
 										  << g_simulation->m_scale_y << " " \
 										  << g_simulation->m_scale_z << std::endl;
@@ -878,9 +887,15 @@ void AntTweakBarWrapper::LoadSettings()
 		infile >> ignoreToken >> g_simulation->m_angular_momentum_init.x() \
 			>> g_simulation->m_angular_momentum_init.y() \
 			>> g_simulation->m_angular_momentum_init.z();
+		infile >> ignoreToken >> g_simulation->m_angular_momentum_init2.x() \
+			>> g_simulation->m_angular_momentum_init2.y() \
+			>> g_simulation->m_angular_momentum_init2.z();
 		infile >> ignoreToken >> g_simulation->m_linear_momentum_init.x() \
 			>> g_simulation->m_linear_momentum_init.y() \
 			>> g_simulation->m_linear_momentum_init.z();
+		infile >> ignoreToken >> g_simulation->m_linear_momentum_init2.x() \
+			>> g_simulation->m_linear_momentum_init2.y() \
+			>> g_simulation->m_linear_momentum_init2.z();
 		infile >> ignoreToken >> g_simulation->m_scale_x \
 			>> g_simulation->m_scale_y \
 			>> g_simulation->m_scale_z; //helpppp

@@ -930,7 +930,7 @@ void Simulation::Update()
 	{
 		ScalarType mi = m_mesh->m_mass_matrix.coeff(3 * i, 3 * i);
 		EigenVector3 vi = m_mesh->m_current_velocities.block_vector(i);
-		EigenVector3 xi = m_mesh->m_current_velocities.block_vector(i);
+		EigenVector3 xi = m_mesh->m_current_positions.block_vector(i);
 
 		if (g_S[0](3*i,3*i) ==  1)
 		{
@@ -953,6 +953,21 @@ void Simulation::Update()
 	std::cout << p1.transpose() << " " << p2.transpose() << std::endl;
 	std::cout << l1.transpose() << " " << l2.transpose() << std::endl;
 
+	if (m_record_quantities_twins)
+	{
+		string fileName = "TwinsQuantities.txt";
+
+		std::ofstream out(filePath + fileName, std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(p1.x()) + " " + std::to_string(p1.y()) + " " + std::to_string(p1.z()) << endl;
+			out << std::to_string(l1.x()) + " " + std::to_string(l1.y()) + " " + std::to_string(l1.z()) << endl;
+			out << std::to_string(p2.x()) + " " + std::to_string(p2.y()) + " " + std::to_string(p2.z()) << endl;
+			out << std::to_string(l2.x()) + " " + std::to_string(l2.y()) + " " + std::to_string(l2.z()) << endl;
+		}
+		out.close();
+
+	}
 
 	if (m_record_quantities) //per frame
 	{

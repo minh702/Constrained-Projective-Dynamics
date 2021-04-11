@@ -307,6 +307,7 @@ protected:
 	bool recordTextCPDLoss;
 	bool recordTextFEPR;
 	bool m_record_quantities;
+	bool m_record_quantities_twins;
 	bool recordTextEnergy;
 
 	// line search 
