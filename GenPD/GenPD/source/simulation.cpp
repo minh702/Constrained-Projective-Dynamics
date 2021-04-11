@@ -220,7 +220,7 @@ void Simulation::Reset()
 	m_y.resize(m_mesh->m_system_dimension);
 	m_external_force.resize(m_mesh->m_system_dimension);
 
-	g_gck.resize(m_mesh->m_system_dimension, 7);
+	g_gck.resize(m_mesh->m_system_dimension, 8);
 	g_gcm.resize(m_mesh->m_system_dimension, 6);
 	g_gcl.resize(m_mesh->m_system_dimension, 3);
 	g_gcp.resize(m_mesh->m_system_dimension, 3);
@@ -231,7 +231,7 @@ void Simulation::Reset()
 	g_gcl.setZero();
 	g_gcm.setZero();
 	g_gck.setZero();
-	g_Ainv_gck.resize(m_mesh->m_system_dimension, 7);
+	g_Ainv_gck.resize(m_mesh->m_system_dimension, 8);
 	g_Ainv_gcm.resize(m_mesh->m_system_dimension, 6);
 	g_Ainv_gcm.setZero();
 	g_Ainv_gcl.resize(m_mesh->m_system_dimension, 3);
@@ -995,7 +995,7 @@ void Simulation::Update()
 	}
 	m_h = old_h;
 }
-
+ 
 void Simulation::Draw(const VBO& vbos)
 {
 	//// draw attachment constraints
@@ -2506,26 +2506,27 @@ void Simulation::integrateImplicitMethod()
 
 		std::cout << "no collision" << std::endl;
 	}
-	g_error = 0;
-	g_gc.setZero();
-	g_Ainv_gc.setZero();
+	
 
-	for (int i = 0; i < coll_Info.size(); i++) // multiple objects 
-	{
-		for (int j = 0; j < coll_Info[i].verticeList.size(); j++)
-		{
-			ScalarType depth = coll_Info[i].penetrationDepth[j];
-			glm::vec3 normal = coll_Info[i].penetrationDirection[j];
-			EigenVector3 nor(normal.x, normal.y, normal.z);
-			EigenVector3 grad_j = -nor * depth;
-			g_gc.block_vector(coll_Info[i].verticeList[j]) = grad_j;
-			g_error += 0.5 * grad_j.dot(grad_j);
-		}
-	}
 	for (m_current_iteration = 0; !converge && m_current_iteration < iter; ++m_current_iteration)
 	{
-		
-
+	
+		g_error = 0;
+		g_gc.setZero();
+		g_Ainv_gc.setZero();
+		vector<CollisionInfo> coll_Info = m_collision_detector.detectCollision(x);
+		for (int i = 0; i < coll_Info.size(); i++) // multiple objects 
+		{
+			for (int j = 0; j < coll_Info[i].verticeList.size(); j++)
+			{
+				ScalarType depth = coll_Info[i].penetrationDepth[j];
+				glm::vec3 normal = coll_Info[i].penetrationDirection[j];
+				EigenVector3 nor(normal.x, normal.y, normal.z);
+				EigenVector3 grad_j = -nor * depth;
+				g_gc.block_vector(coll_Info[i].verticeList[j]) = grad_j;
+				g_error += 0.5 * grad_j.dot(grad_j);
+			}
+		}
 		//handle collision
 		
 		//std::cout << coll_Info.size() << std::endl;
@@ -2832,7 +2833,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 		if (0)
 		{
 			VectorX ck(6);
-			if (g_detect_collision)
+			if (1)
 			{
 				ScalarType lambda = 0.f;
 				ScalarType dcAdc = g_gc.dot(g_Ainv_gc);
@@ -2916,11 +2917,11 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 			g_Ainv_gch = r + g_Ainv_vn;
 			if (m_handles.size() == 0)
 			{
-				VectorX ck(7);
+				VectorX ck(8);
 				ck.block_vector(0) = (g_gcp.transpose() * x - g_com);
 				ck.block_vector(1) = (g_gcl.transpose() * x - g_angular_momentum * m_h);
 				ck(6) = current_energy;
-				//ck(7) = g_error;
+				ck(7) = g_error;
 				//std::cout << ck.norm() << std::endl;
 				//m_cpd_threshold = 10e-6;
 
@@ -2966,7 +2967,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 				ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
 				g_gck.col(6) = g_gch;
-				//g_gck.col(7) = g_gc;
+				g_gck.col(7) = g_gc;
 				g_Ainv_gck.col(6) = g_Ainv_gch;
 				//g_Ainv_gck.col(7) = g_Ainv_gc;
 				Eigen::MatrixXf cTAinv_c = g_gck.transpose()*g_Ainv_gck /*+ dcst.transpose() * dcst*/;
@@ -3006,7 +3007,17 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 					return true;
 				ScalarType ctac = g_gch.transpose() * g_Ainv_gch;
 				ScalarType lh = (current_energy + g_gch.transpose() * p_k) / ctac;
-				p_k -= lh * g_Ainv_gch;
+				//p_k -= lh * g_Ainv_gch;
+
+
+
+				ScalarType lambda = 0.f;
+				ScalarType dcAdc = g_gc.dot(g_Ainv_gc);
+
+				if (dcAdc > 1e-5)
+					lambda = g_error / dcAdc;
+
+				p_k -=(lh * g_Ainv_gch + g_Ainv_gc * lambda);
 			}
 		}
 	}

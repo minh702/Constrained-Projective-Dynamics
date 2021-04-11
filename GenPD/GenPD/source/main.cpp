@@ -177,19 +177,6 @@ int main(int argc, char ** argv){
 	//test();
 
 	// gl init
-
-
-	Eigen::Matrix3f m;
-	m.setIdentity();
-	std::ofstream file("t.txt");
-
-	std::cout << m << std::endl;
-	if (file)
-	{
-		file << m ;
-	}
-	
-	file.close();
 	glutInit(&argc, argv);
 #ifdef HIGH_PRECISION
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
