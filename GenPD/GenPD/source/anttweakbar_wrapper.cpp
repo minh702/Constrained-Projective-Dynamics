@@ -359,6 +359,17 @@ void AntTweakBarWrapper::Init()
 	TwAddVarRW(m_sim_bar, "L y", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.y(), " group='Angular Momentum' "); //here
 	TwAddVarRW(m_sim_bar, "L z", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init.z(), " group='Angular Momentum' "); //here
 
+	//Linear Momentum
+	TwAddVarRW(m_sim_bar, "P x2", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init2.x(), " group='Linear Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "P y2", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init2.y(), " group='Linear Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "P z2", TW_TYPE_SCALAR_TYPE, &g_simulation->m_linear_momentum_init2.z(), " group='Linear Momentum' "); //here
+	TwDefine(" 'Simulation Settings'/'Linear Momentum' group='Demo'");
+
+	//Angular Momentum
+	TwAddVarRW(m_sim_bar, "L x2", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init2.x(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "L y2", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init2.y(), " group='Angular Momentum' "); //here
+	TwAddVarRW(m_sim_bar, "L z2", TW_TYPE_SCALAR_TYPE, &g_simulation->m_angular_momentum_init2.z(), " group='Angular Momentum' "); //here
+
 	TwDefine(" 'Simulation Settings'/'Angular Momentum' group='Demo'");
 	// Scale
 	TwAddVarRW(m_sim_bar, "Scale X", TW_TYPE_SCALAR_TYPE, &g_simulation->m_scale_x, " group='Scale' ");

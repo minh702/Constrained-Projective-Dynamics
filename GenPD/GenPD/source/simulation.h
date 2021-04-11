@@ -224,8 +224,13 @@ protected:
 	ScalarType m_scale_x;
 	ScalarType m_scale_y;
 	ScalarType m_scale_z;
+
+
 	EigenVector3 m_angular_momentum_init;
 	EigenVector3 m_linear_momentum_init;
+
+	EigenVector3 m_angular_momentum_init2;
+	EigenVector3 m_linear_momentum_init2;
 
 	// integration and optimization method
 	IntegrationMethod m_integration_method;
