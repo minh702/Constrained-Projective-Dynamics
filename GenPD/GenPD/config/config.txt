@@ -9,7 +9,7 @@ ScreenHeight        1017
 
 MeshType            1
 MeshMass            10
-TetFilePath         two_cube
+TetFilePath         cube
 TetScaling          1
 TetFlip             0
 TetRotation         0
@@ -26,11 +26,11 @@ SubStepping         1
 OpenMP              1
 TetConstraintType   0
 AttachmentStiffness 2000
-StretchStiffness    300
+StretchStiffness    500
 BendingStiffness    20
 KappaStiffness      0
 AutoLaplacian       1
-LaplacianStiffness  620
+LaplacianStiffness  1020
 GravityConstant     0
 DampingType         2
 DampingCoefficient  0
@@ -52,9 +52,9 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     20 0 0
-LinearMomentum      0 0 -10
-Scale               0 0 0
+AngularMomentum     0 0 0
+LinearMomentum      0 0 0
+Scale               0.1 0 0
 
 FEPREnable          0
 FEPRThreshold       0.001
