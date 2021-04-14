@@ -2689,11 +2689,11 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 				if (cnorm < m_cpd_threshold)
 					return true;
-				ScalarType inv_eps;
-				if (m_hamiltonian < m_Hrb)
+				ScalarType inv_eps = 10e7;
+			/*	if (m_hamiltonian < m_Hrb)
 					inv_eps = 10e7;
 				else
-					inv_eps = 0.f;
+					inv_eps = 0.f;*/
 
 				ScalarType dh = m_h * m_h * (m_hamiltonian - m_Hrb);
 				g_gck.col(6) = g_gch;
