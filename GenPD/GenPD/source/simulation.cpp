@@ -770,6 +770,18 @@ void Simulation::Update()
 	
 	}
 
+	if (1)
+	{
+		string fileName = "alpha.txt";
+		std::ofstream out(filePath + fileName, std::ios::app);
+		if (out.is_open())
+		{
+			out << std::to_string(m_alpha) << endl;
+		}
+		out.close();
+
+	}
+
 	if (m_record_quantities) //per frame
 	{
 		VectorX x = m_mesh->m_current_positions;
@@ -2689,7 +2701,7 @@ bool Simulation::performLBFGSOneIteration(VectorX& x)
 
 				if (cnorm < m_cpd_threshold)
 					return true;
-				ScalarType inv_eps = 10e7;
+				ScalarType inv_eps = 10e-7;
 			/*	if (m_hamiltonian < m_Hrb)
 					inv_eps = 10e7;
 				else

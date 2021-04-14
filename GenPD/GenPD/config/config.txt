@@ -1,5 +1,5 @@
-HasEnd              0
-TotalFrame          150
+HasEnd              1
+TotalFrame          25
 MeshBody            1
 Wireframe           1
 Wireframe           1
@@ -12,7 +12,7 @@ MeshMass            10
 TetFilePath         bear
 TetScaling          1
 TetFlip             0
-TetRotation         0
+TetRotation         -90
 ClothDimension      60 60
 ClothCorners        -5 8 -5 5 8 5
 
@@ -52,9 +52,9 @@ AnimDir             0 0 0
 LBFGSType           1
 LBFGSWindowSize     0
 
-AngularMomentum     100 0 0
-LinearMomentum      0 0 0
-Scale               0.2 0 0
+AngularMomentum     0 300 0
+LinearMomentum      0 300 0
+Scale               0 0 0
 
 FEPREnable          0
 FEPRThreshold       0.0001
